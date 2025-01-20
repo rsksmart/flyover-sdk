@@ -1,0 +1,67 @@
+<%
+const { modelTypes, utils, config } = it;
+const { formatDescription, require, _, Ts, pascalCase } = utils;
+
+
+const CONTENT_FIELD_REGEX = /^[a-zA-Z][a-zA-Z0-9]*\??: [A-Za-z0-9]+,/
+
+const isBigIntField = name => {
+  name = name.toLowerCase();
+  return name.includes('fee') ||
+    name.includes('value') ||
+    name.includes('amount') ||
+    name.includes('cost') ||
+    /^nonce:*/.test(name)
+}
+
+const parseFieldToBigint = line => {
+  const parts = line.split(' ');
+  parts[1] = 'bigint,'
+  return parts.join(' ')
+}
+
+const parseContractFields = contract => contract.content.split('\n')
+  .map(line => {
+    line = line.trim();
+    if (CONTENT_FIELD_REGEX.test(line) && isBigIntField(line)) {
+      return parseFieldToBigint(line);
+    } else {
+      return line;
+    }
+  })
+  .join('\n');
+
+const dataContractTemplates = {
+  enum: (contract) => {
+    return `enum ${contract.name} {\r\n${contract.content} \r\n }`;
+  },
+  interface: (contract) => {
+    const newContent = parseContractFields(contract);
+    contract.content = newContent;
+    const interface = `interface ${contract.name} {\r\n${contract.content}}\r\n`
+    if (contract.required === undefined) {
+      return interface;
+    } else {
+      const requiredFields = `\r\nexport const ${pascalCase(contract.name + 'RequiredFields')}:string[] =
+        [${contract.required?.map(field => `"${field}"`)}]\r\n `;
+      return interface + requiredFields;
+    }
+  },
+  type: (contract) => {
+    const newContent = parseContractFields(contract);
+    contract.content = newContent;
+    return `type ${contract.name} = ${contract.content}`;
+  },
+}
+%>
+
+<% if (config.internalTemplateOptions.addUtilRequiredKeysType) { %>
+type <%~ config.Ts.CodeGenKeyword.UtilRequiredKeys %><T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
+<% } %>
+
+<% modelTypes.forEach((contract) => { %>
+  <%~ includeFile('./data-contract-jsdoc.ejs', { ...it, data: { ...contract, ...contract.typeData } }) %>
+  export <%~ (dataContractTemplates[contract.typeIdentifier] || dataContractTemplates.type)(contract) %>
+
+
+<% }) %>
