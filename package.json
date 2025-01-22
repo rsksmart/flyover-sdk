@@ -18,14 +18,14 @@
         "errors-sync": "./scripts/errors-sync.sh",
         "lbc-sync": "./scripts/lbc-sync.sh",
         "build:clean": "rm -r lib node_modules; npm i && npm run build",
-        "test:integration": "jest --verbose --testPathPattern=integration-test",
-        "lint": "npx eslint --ignore-path .eslintignore --ext .ts --fix .",
-        "lint:validation": "npx eslint --ignore-path .eslintignore --ext .ts .",
+        "test:integration": "cd integration-test && npm run test:integration",
+        "lint": "npx eslint --ignore-path .eslintignore --ext .ts --fix . && cd integration-test && npm run lint",
+        "lint:validation": "npx eslint --ignore-path .eslintignore --ext .ts . && cd integration-test && npm run lint:validate",
         "prepare": "pip3 install pre-commit && pre-commit install"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/rsksmart/unified-bridges-sdk.git"
+        "url": "https://github.com/rsksmart/flyover-sdk.git"
     },
     "keywords": [
         "Flyover",

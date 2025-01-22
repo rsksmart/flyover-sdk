@@ -22,7 +22,7 @@ export const FlyoverNetworks = deepFreeze({
     chainId: 31
   },
   Regtest: {
-    lbcAddress: '0x8901a2Bbf639bFD21A97004BA4D7aE2BD00B8DA8',
+    lbcAddress: '0x7557fcE0BbFAe81a9508FF469D481f2c72a8B5f3',
     chainId: 33
   }
 } as const)

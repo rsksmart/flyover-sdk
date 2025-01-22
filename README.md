@@ -1,6 +1,7 @@
 # Flyover SDK
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/rsksmart/flyover-sdk/badge)](https://scorecard.dev/viewer/?uri=github.com/rsksmart/flyover-sdk)
 [![CodeQL](https://github.com/rsksmart/flyover-sdk/workflows/CodeQL/badge.svg)](https://github.com/rsksmart/flyover-sdk/actions?query=workflow%3ACodeQL)
+[![CI](https://github.com/rsksmart/flyover-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/rsksmart/flyover-sdk/actions/workflows/ci.yml)
 
 Flyover SDK simplifies the integration between client applications and the components of the Flyover Protocol by providing an easy to use interface.
 ## Installation
@@ -56,7 +57,7 @@ However we advice to only use `Mainnet` or `Testnet` for integration purposes as
 - **disableChecksum**: this parameter tells the FlyoverSDK whether to disable the RSK checksum validation for the RSK addresses involved in the PegIn and PegOut operations or not. It is false by default.
 
 ## Connect to RSK
-If you need to connect to RSK to execute some operation then you need to create an RSKConnection and provide it to 
+If you need to connect to RSK to execute some operation then you need to create an RSKConnection and provide it to
 Flyover object
 ```javascript
     const rsk = await BlockchainConnection.createUsingStandard(window.ethereum)
@@ -70,10 +71,10 @@ or you can set it after creation
 Also you can provide your own regtest LBC address if you want to connect to a local node for development purposes
 ```javascript
     const rsk = await BlockchainConnection.createUsingStandard(window.ethereum)
-    const flyover = new Flyover({ 
-        rskConnection: rsk, 
-        network: 'Regtest', 
-        customLbcAddress: '0x1eD614cd3443EFd9c70F04b6d777aed947A4b0c4' 
+    const flyover = new Flyover({
+        rskConnection: rsk,
+        network: 'Regtest',
+        customLbcAddress: '0x1eD614cd3443EFd9c70F04b6d777aed947A4b0c4'
     })
 ```
 There are 3 ways to create an RSK connection, you can check them in RSKConnection class documentation

@@ -1,0 +1,20 @@
+{
+    "name": "bridges-integration-tests",
+    "version": "1.0.0",
+    "description": "Integration tests for FlyoverSDK",
+    "main": "index.js",
+    "scripts": {
+        "test:integration": "rm -rf node_modules && npm i && jest --verbose --testPathPattern=test",
+        "lint": "npx eslint --ignore-path .eslintignore --ext .ts --fix .",
+        "lint:validate": "npx eslint --ignore-path .eslintignore --ext .ts ."
+    },
+    "author": "Luis Chavez",
+    "license": "ISC",
+    "private": true,
+    "dependencies": {
+        "@rsksmart/flyover-sdk": "file:.."
+    },
+    "devDependencies": {
+        "eth-provider": "^0.13.7"
+    }
+}
