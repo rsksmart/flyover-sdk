@@ -1,33 +1,36 @@
 import { describe, test, beforeAll, expect } from '@jest/globals'
-import { BlockchainConnection } from '@rsksmart/bridges-core-sdk'
+import { assertTruthy, BlockchainConnection } from '@rsksmart/bridges-core-sdk'
 import { Flyover, type PegoutQuote, type LiquidityProvider, type AcceptedPegoutQuote, FlyoverUtils } from '@rsksmart/flyover-sdk'
-import { readFile } from 'fs/promises'
-import { EXTENDED_TIMEOUT, TEST_URL } from './common/constants'
+import { integrationTestConfig } from '../config'
+import { EXTENDED_TIMEOUT } from './common/constants'
+import { fakeTokenResolver } from './common/utils'
 
 describe('Flyover pegout process should', () => {
   let flyover: Flyover
-  let providers: LiquidityProvider[]
+  let provider: LiquidityProvider
   let quotes: PegoutQuote[]
   let selectedQuote: PegoutQuote
   let acceptedQuote: AcceptedPegoutQuote
 
   beforeAll(async () => {
     flyover = new Flyover({
-      network: 'Regtest',
+      network: integrationTestConfig.network,
       allowInsecureConnections: true,
-      captchaTokenResolver: async () => Promise.resolve(''),
+      captchaTokenResolver: fakeTokenResolver,
       disableChecksum: true
     })
-    const buffer = await readFile('fake-credentials.json')
-    const credentials: { encryptedJson: any, password: string } = JSON.parse(buffer.toString())
-    const rsk = await BlockchainConnection.createUsingEncryptedJson(credentials.encryptedJson, credentials.password, TEST_URL)
+    const rsk = await BlockchainConnection.createUsingPassphrase(
+      integrationTestConfig.testMnemonic,
+      integrationTestConfig.nodeUrl
+    )
     await flyover.connectToRsk(rsk)
   })
 
   test('return providers list from LiquidityBridgeContract', async () => {
-    providers = await flyover.getLiquidityProviders()
-    const provider = providers.at(0)
-    expect(providers).toBeTruthy()
+    const providers = await flyover.getLiquidityProviders()
+    const selectedProvider = providers.find(p => p.id === integrationTestConfig.providerId)
+    assertTruthy(selectedProvider, 'Provider not found')
+    provider = selectedProvider
     expect(providers.length).toBeGreaterThan(0)
     expect(provider?.apiBaseUrl).not.toBeUndefined()
     expect(provider?.id).not.toBeUndefined()
@@ -52,12 +55,11 @@ describe('Flyover pegout process should', () => {
   })
 
   test('get pegout quotes for a specific provider', async () => {
-    const provider = providers[0]! // eslint-disable-line @typescript-eslint/no-non-null-assertion
     flyover.useLiquidityProvider(provider)
     quotes = await flyover.getPegoutQuotes({
-      to: 'bcrt1q0tsujvxstk5c38zuyjwlwwf2vue76sul5rkcpu',
-      valueToTransfer: BigInt('600000000000000000'),
-      rskRefundAddress: '0xa2193A393aa0c94A4d52893496F02B56C61c36A1'
+      to: integrationTestConfig.btcAddress,
+      valueToTransfer: integrationTestConfig.pegoutAmount,
+      rskRefundAddress: integrationTestConfig.rskAddress
     })
 
     expect(quotes).toBeTruthy()

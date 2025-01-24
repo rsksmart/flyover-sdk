@@ -1,33 +1,36 @@
 import { describe, test, beforeAll, expect } from '@jest/globals'
-import { readFile } from 'fs/promises'
 import { type AcceptedQuote, Flyover, FlyoverUtils, type ValidatePeginTransactionOptions, type LiquidityProvider, type Quote } from '@rsksmart/flyover-sdk'
-import { TEST_URL } from './common/constants'
 import { BlockchainConnection, assertTruthy } from '@rsksmart/bridges-core-sdk'
+import { integrationTestConfig } from '../config'
+import { fakeTokenResolver, getUtxosFromMempoolSpace } from './common/utils'
+import { Transaction, payments, networks } from 'bitcoinjs-lib'
 
 describe('Flyover pegin process should', () => {
   let flyover: Flyover
-  let providers: LiquidityProvider[]
+  let provider: LiquidityProvider
   let quotes: Quote[]
   let quote: Quote
   let acceptedQuote: AcceptedQuote
 
   beforeAll(async () => {
     flyover = new Flyover({
-      network: 'Regtest',
+      network: integrationTestConfig.network,
       allowInsecureConnections: true,
-      captchaTokenResolver: async () => Promise.resolve(''),
+      captchaTokenResolver: fakeTokenResolver,
       disableChecksum: true
     })
-    const buffer = await readFile('fake-credentials.json')
-    const credentials: { encryptedJson: any, password: string } = JSON.parse(buffer.toString())
-    const rsk = await BlockchainConnection.createUsingEncryptedJson(credentials.encryptedJson, credentials.password, TEST_URL)
+    const rsk = await BlockchainConnection.createUsingPassphrase(
+      integrationTestConfig.testMnemonic,
+      integrationTestConfig.nodeUrl
+    )
     await flyover.connectToRsk(rsk)
   })
 
   test('return providers list from LiquidityBridgeContract', async () => {
-    providers = await flyover.getLiquidityProviders()
-    const provider = providers.at(0)
-    expect(providers).toBeTruthy()
+    const providers = await flyover.getLiquidityProviders()
+    const selectedProvider = providers.find(p => p.id === integrationTestConfig.providerId)
+    assertTruthy(selectedProvider, 'Provider not found')
+    provider = selectedProvider
     expect(providers.length).toBeGreaterThan(0)
     expect(provider?.apiBaseUrl).not.toBeUndefined()
     expect(provider?.id).not.toBeUndefined()
@@ -52,13 +55,12 @@ describe('Flyover pegin process should', () => {
   })
 
   test('get quotes for a specific provider', async () => {
-    const provider = providers[0]! // eslint-disable-line @typescript-eslint/no-non-null-assertion
     flyover.useLiquidityProvider(provider)
     quotes = await flyover.getQuotes({
-      callEoaOrContractAddress: '0xa2193A393aa0c94A4d52893496F02B56C61c36A1',
+      callEoaOrContractAddress: integrationTestConfig.rskAddress,
       callContractArguments: '',
-      valueToTransfer: BigInt('600000000000000000'),
-      rskRefundAddress: '0xa2193A393aa0c94A4d52893496F02B56C61c36A1'
+      valueToTransfer: integrationTestConfig.peginAmount,
+      rskRefundAddress: integrationTestConfig.rskAddress
     })
 
     expect(quotes).toBeTruthy()
@@ -137,55 +139,44 @@ describe('Flyover pegin process should', () => {
   })
 
   test('validate the PegIn deposit transaction', async () => {
-    const rpcUrl = 'http://localhost:5555/wallet/main'
-    const rpcUser = 'test'
-    const rpcPassword = 'test'
-
+    const tx = new Transaction()
     const options: ValidatePeginTransactionOptions = {
       throwError: true
     }
 
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: 'Basic ' + Buffer.from(rpcUser + ':' + rpcPassword).toString('base64')
-    }
     const weiTotal = FlyoverUtils.getQuoteTotal(quote)
     const satToWeiConversion = BigInt(10) ** BigInt(10)
-    const btcToSatConversion = BigInt(10) ** BigInt(8)
     let satsTotal = weiTotal / satToWeiConversion
     if (weiTotal % satToWeiConversion !== BigInt(0)) {
       satsTotal += BigInt(1)
     }
-    const createResult = await fetch(rpcUrl, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 0,
-        method: 'createrawtransaction',
-        params: {
-          outputs: {
-            [acceptedQuote.bitcoinDepositAddressHash]: Number(satsTotal) / Number(btcToSatConversion)
-          }
-        }
-      })
-    }).then(async res => res.json())
+    const payment = payments.p2sh({ address: acceptedQuote.bitcoinDepositAddressHash, network: networks.testnet })
+    assertTruthy(payment.output)
+    tx.addOutput(payment.output, Number(satsTotal))
 
-    const fundResult = await fetch(rpcUrl, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 0,
-        method: 'fundrawtransaction',
-        params: [createResult.result, { fee_rate: 25 }]
-      })
-    }).then(async res => res.json())
+    const availableUtxos = await getUtxosFromMempoolSpace(
+      integrationTestConfig.mempoolSpaceUrl,
+      // we use the pegout address because we just need an address with UTXOs
+      // to fund the tx, we're not going to actually sign it
+      integrationTestConfig.btcAddress
+    )
 
+    let total = BigInt(0)
+    let i = 0
+    while (total < satsTotal && i < availableUtxos.length) {
+      const utxo = availableUtxos[i]
+      assertTruthy(utxo)
+      tx.addInput(Buffer.from(utxo.txid, 'hex'), utxo.vout)
+      total += utxo.value
+      i++
+    }
+    if (total < satsTotal) {
+      throw new Error('Not enough UTXOs to fund the transaction')
+    }
     const result = await flyover.validatePeginTransaction({
       quoteInfo: quote,
       acceptInfo: acceptedQuote,
-      btcTx: fundResult.result.hex
+      btcTx: tx.toHex()
     }, options)
     expect(result).toBe('')
   })
