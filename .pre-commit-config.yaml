@@ -34,3 +34,4 @@ repos:
       language: system
       types: [file]
       files: ^.*\.(ts|js)$
+      pass_filenames: false

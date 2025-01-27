@@ -1,0 +1,29 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true,
+        "node": true
+    },
+    "extends": "standard-with-typescript",
+    "overrides": [
+        {
+            "files": "*",
+            "rules": {
+                "@typescript-eslint/no-throw-literal": "off",
+                "@typescript-eslint/strict-boolean-expressions": "off",
+                "@typescript-eslint/restrict-template-expressions": "off",
+                "@typescript-eslint/restrict-plus-operands": "off",
+                "@typescript-eslint/no-unnecessary-type-assertion": "off",
+                "@typescript-eslint/return-await": "off",
+                "no-return-await": "error"
+            }
+        }
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module",
+        "project": "./tsconfig.json"
+    },
+    "rules": {
+    }
+}
