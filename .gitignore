@@ -8,3 +8,4 @@ lbc-code/
 .nx
 .idea
 .DS_Store
+.env
