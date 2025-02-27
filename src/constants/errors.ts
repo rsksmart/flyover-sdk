@@ -9,19 +9,19 @@ export interface FlyoverError {
  * Object with errors messages and codes
  */
 export const Errors = deepFreeze({
-  LPS_DID_NOT_RETURN_STATUS: {
+  LPS_DID_NOT_RETURN_QUOTE_STATUS: {
     code: 'Flyover0001',
-    description: 'Liquidity Provider did not return a status'
+    description: 'Liquidity Provider did not return quote status'
   },
-  QUOTE_DOES_NOT_HAVE_A_CALL_FOR_USER_TX_HASH: {
+  QUOTE_STATUS_DOES_NOT_HAVE_A_CALL_FOR_USER_TX_HASH: {
     code: 'Flyover0002',
-    description: 'Quote does not have a callForUserTxHash'
+    description: 'Quote status does not have a callForUserTxHash'
   },
-  TRANSACTION_NOT_FOUND: {
+  QUOTE_STATUS_TRANSACTION_NOT_FOUND: {
     code: 'Flyover0003',
-    description: 'Transaction not found on blockchain'
+    description: 'Quote status transaction not found on blockchain'
   },
-  CALL_FOR_USER_EVENT_NOT_FOUND: {
+  QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_CALL_FOR_USER_EVENT: {
     code: 'Flyover0004',
     description: 'CallForUser event not found in logs'
   }

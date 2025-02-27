@@ -19,6 +19,7 @@ import { getPegoutStatus } from './getPegoutStatus'
 import { getAvailableLiquidity } from './getAvailableLiquidity'
 import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
 import { RskBridge } from '../blockchain/bridge'
+import { isQuotePaid } from './isQuotePaid'
 
 jest.mock('ethers')
 
@@ -36,6 +37,7 @@ jest.mock('./getPeginStatus')
 jest.mock('./getPegoutStatus')
 jest.mock('./getAvailableLiquidity')
 jest.mock('./validatePeginTransaction')
+jest.mock('./isQuotePaid')
 
 const mockedGetQuote = getQuote as jest.Mock<typeof getQuote>
 const mockedGetPegoutQuote = getPegoutQuote as jest.Mock<typeof getPegoutQuote>
@@ -617,6 +619,37 @@ describe('Flyover object should', () => {
       expect(flyover).not.toHaveProperty('rskBridge')
       await flyover.validatePeginTransaction(params)
       expect(flyover).not.toHaveProperty('rskBridge', undefined)
+    })
+  })
+
+  describe('isQuotePaid method should', () => {
+    test('invoke correctly isQuotePaid', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(connectionMock)
+      await flyover.isQuotePaid('testQuoteHash')
+      expect(isQuotePaid).toBeCalledTimes(1)
+      expect(isQuotePaid).toBeCalledWith(
+        expect.any(Object), // httpClient
+        providerMock, // liquidityProvider
+        'testQuoteHash', // quoteHash
+        connectionMock // rskConnection
+      )
+    })
+
+    test('fail if liquidity provider has not been selected', async () => {
+      await flyover.connectToRsk(connectionMock)
+      await expect(flyover.isQuotePaid('testQuoteHash'))
+        .rejects.toThrow('You need to select a provider to do this operation')
+    })
+
+    test('fail when allowInsecureConnections is false and Provider apiBaseUrl is insecure', async () => {
+      (flyover as any).config.allowInsecureConnections = false
+      const provider = { ...providerMock }
+      provider.apiBaseUrl = 'http://localhost:1234'
+      flyover.useLiquidityProvider(provider)
+      await flyover.connectToRsk(connectionMock)
+      await expect(flyover.isQuotePaid('testQuoteHash'))
+        .rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
     })
   })
 })

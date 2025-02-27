@@ -26,12 +26,11 @@ export async function isQuotePaid (
   try {
     // Get the pegin status from the Liquidity Provider
     peginStatus = await getPeginStatusWithRetries(httpClient, provider, quoteHash)
-    console.log('Pegin status: ', peginStatus)
   } catch (error) {
     console.error('Error getting pegin status:', error)
     return {
       isPaid: false,
-      error: Errors.LPS_DID_NOT_RETURN_STATUS
+      error: Errors.LPS_DID_NOT_RETURN_QUOTE_STATUS
     }
   }
 
@@ -39,7 +38,7 @@ export async function isQuotePaid (
   if (!peginStatus?.status?.callForUserTxHash) {
     return {
       isPaid: false,
-      error: Errors.QUOTE_DOES_NOT_HAVE_A_CALL_FOR_USER_TX_HASH
+      error: Errors.QUOTE_STATUS_DOES_NOT_HAVE_A_CALL_FOR_USER_TX_HASH
     }
   }
 
@@ -48,27 +47,21 @@ export async function isQuotePaid (
   if (!receipt) {
     return {
       isPaid: false,
-      error: Errors.TRANSACTION_NOT_FOUND
+      error: Errors.QUOTE_STATUS_TRANSACTION_NOT_FOUND
     }
   }
-  console.log('Receipt: ', receipt)
 
   // Parse the logs
   const parsedLogs = await parseLogs(receipt, rskConnection)
-
-  console.log('Quote hash: ', quoteHash)
-  console.log('Parsed logs: ', parsedLogs)
 
   // Find CallForUser event and check if quoteHash matches
   const normalizedQuoteHash = quoteHash.toLowerCase().replace('0x', '')
 
   const callForUserEvent = parsedLogs.find(log => {
-    const normalizedEventQuoteHash = log?.args.quoteHash?.toLowerCase().replace('0x', '')
+    const normalizedEventQuoteHash = log?.args.quoteHash ? log?.args.quoteHash?.toLowerCase().replace('0x', '') : null
     return log?.name === 'CallForUser' &&
       normalizedEventQuoteHash === normalizedQuoteHash
   })
-
-  console.log('callForUserEvent: ', callForUserEvent)
 
   if (callForUserEvent) {
     return {
@@ -77,7 +70,7 @@ export async function isQuotePaid (
   } else {
     return {
       isPaid: false,
-      error: Errors.CALL_FOR_USER_EVENT_NOT_FOUND
+      error: Errors.QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_CALL_FOR_USER_EVENT
     }
   }
 }

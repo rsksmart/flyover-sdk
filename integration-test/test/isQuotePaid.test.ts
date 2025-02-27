@@ -55,16 +55,16 @@ describe('isQuotePaid function should', () => {
     expect(quotes.length).toBeGreaterThan(0)
     quote = quotes[0]!
     console.log(`Quote received. Hash: ${quote.quoteHash}`);
-    
+
     //Accept quote
     acceptedQuote = await flyover.acceptQuote(quote)
 
     expect(acceptedQuote.signature).not.toBeUndefined()
     expect(acceptedQuote.bitcoinDepositAddressHash).not.toBeUndefined()
 
-    console.log(`Please proceed to pay the quote. \n BTC Address:  ${acceptedQuote.bitcoinDepositAddressHash} 
+    console.log(`Please proceed to pay the quote. \n BTC Address:  ${acceptedQuote.bitcoinDepositAddressHash}
       \n amount: ${quote.quote.value} \nTime for deposit: ${quote.quote.timeForDeposit} seconds`);
-    
+
     // Wait for 1.5 times the deposit time
     const waitTimeMs = quote.quote.timeForDeposit * 1000 * 1.5
     console.log(`Waiting for ${waitTimeMs / 1000} seconds...`)
@@ -76,13 +76,3 @@ describe('isQuotePaid function should', () => {
   }, 200000)
 })
 
-// const waitForKeyPress = async (): Promise<void> => {
-//   console.log('Press any key to continue...');
-//   process.stdin.setRawMode(true);
-//   return new Promise(resolve => {
-//     process.stdin.once('data', () => {
-//       process.stdin.setRawMode(false);
-//       resolve();
-//     });
-//   });
-// };
