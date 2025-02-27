@@ -3,6 +3,7 @@
 # Flyover SDK
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/rsksmart/flyover-sdk/badge)](https://scorecard.dev/viewer/?uri=github.com/rsksmart/flyover-sdk)
 [![CodeQL](https://github.com/rsksmart/flyover-sdk/workflows/CodeQL/badge.svg)](https://github.com/rsksmart/flyover-sdk/actions?query=workflow%3ACodeQL)
+[![CI](https://github.com/rsksmart/flyover-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/rsksmart/flyover-sdk/actions/workflows/ci.yml)
 
 Flyover SDK simplifies the integration between client applications and the components of the Flyover Protocol by providing an easy to use interface.
 ## Installation
