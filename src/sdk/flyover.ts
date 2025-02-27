@@ -33,6 +33,7 @@ import { FlyoverNetworks, type FlyoverSupportedNetworks } from '../constants/net
 import { getAvailableLiquidity } from './getAvailableLiquidity'
 import { RskBridge } from '../blockchain/bridge'
 import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
+import { type IsQuotePaidResponse, isQuotePaid } from './isQuotePaid'
 
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
@@ -391,6 +392,12 @@ export class Flyover implements Bridge {
     this.checkLiquidityProvider()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return getPeginStatus(this.httpClient, this.liquidityProvider!, quoteHash)
+  }
+
+  async isQuotePaid (quoteHash: string): Promise<IsQuotePaidResponse> {
+    this.checkLiquidityProvider()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return isQuotePaid(this.httpClient, this.liquidityProvider!, quoteHash, this.config.rskConnection!)
   }
 
   /**
