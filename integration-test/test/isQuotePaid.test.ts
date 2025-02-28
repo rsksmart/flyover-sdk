@@ -4,11 +4,11 @@ import type { AcceptedQuote, PeginQuoteRequest, Quote } from '../../src/api'
 import { integrationTestConfig } from '../config'
 import { fakeTokenResolver } from './common/utils'
 import { Flyover } from '../../src/sdk/flyover'
+import type { IsQuotePaidResponse } from '../../src/sdk/isQuotePaid'
 
 /**
  * This test verifies that the isQuotePaid function returns true if the quote is paid.
- * It does so by getting a quote, waiting for it to be paid, and then checking if the quote is paid.
- * The waiting time is 1.5 times the deposit time. During this time, the quote should be paid manually.
+ * It does so by getting a quote and then checking in a loop if the quote is paid (by the user and the LPS).
  * As prerequisite, the test assumes there is a provider running in the background and also the minimum amount of
  * BTC blocks are mined.
  */
@@ -35,6 +35,8 @@ describe('isQuotePaid function should', () => {
   })
 
   test('return true if the quote is paid', async () => {
+    const RETRY_INTERVAL = 10000
+
     // Get provider
     const providers = await flyover.getLiquidityProviders()
 
@@ -62,16 +64,23 @@ describe('isQuotePaid function should', () => {
     expect(acceptedQuote.signature).not.toBeUndefined()
     expect(acceptedQuote.bitcoinDepositAddressHash).not.toBeUndefined()
 
+    // Info for payment
     console.log(`Please proceed to pay the quote. \n BTC Address:  ${acceptedQuote.bitcoinDepositAddressHash}
-      \n amount: ${quote.quote.value} \nTime for deposit: ${quote.quote.timeForDeposit} seconds`)
+      \nAmount: ${quote.quote.value} \nTime for deposit: ${quote.quote.timeForDeposit} seconds`)
 
-    // Wait for 1.5 times the deposit time
-    const waitTimeMs = quote.quote.timeForDeposit * 1000 * 1.5
-    console.log(`Waiting for ${waitTimeMs / 1000} seconds...`)
-    await new Promise(resolve => setTimeout(resolve, waitTimeMs))
+    // Wait for quote to be paid
+    let response: IsQuotePaidResponse = { isPaid: false }
+    while (!response.isPaid) {
+      response = await flyover.isQuotePaid(quote.quoteHash)
+      console.log(`Response: ${JSON.stringify(response)}`)
+
+      if (!response.isPaid) {
+        console.log(`Retrying in ${RETRY_INTERVAL / 1000} seconds...`)
+        await new Promise(resolve => setTimeout(resolve, RETRY_INTERVAL))
+      }
+    }
 
     // Check if the quote is paid
-    const response = await flyover.isQuotePaid(quote.quoteHash)
     expect(response.isPaid).toBe(true)
   }, 200000)
 })
