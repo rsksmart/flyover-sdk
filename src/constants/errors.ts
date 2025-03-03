@@ -3,12 +3,13 @@ import { deepFreeze } from '@rsksmart/bridges-core-sdk'
 export interface FlyoverError {
   code: string
   description: string
+  detail?: string
 }
 
 /**
  * Object with errors messages and codes
  */
-export const Errors = deepFreeze({
+export const FlyoverErrors = deepFreeze({
   LPS_DID_NOT_RETURN_QUOTE_STATUS: {
     code: 'FLYOVER-SDK-0001',
     description: 'Liquidity Provider did not return quote status'
@@ -26,5 +27,3 @@ export const Errors = deepFreeze({
     description: 'CallForUser event not found in logs'
   }
 } as const)
-
-export type FlyoverErrors = keyof typeof Errors

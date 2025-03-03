@@ -2,8 +2,8 @@ import { describe, test, expect, jest, beforeEach } from '@jest/globals'
 import { isQuotePaid } from './isQuotePaid'
 import { getPeginStatus } from './getPeginStatus'
 import { type HttpClient, type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
-import { type LiquidityProvider/*, providerRequiredFields */ } from '../api'
-import { Errors } from '../constants/errors'
+import { type LiquidityProvider } from '../api'
+import { FlyoverErrors } from '../constants/errors'
 import { type PeginQuoteStatusDTO, type PeginQuoteDTO, type RetainedPeginQuoteDTO } from '../api/bindings/data-contracts'
 
 // Mock getPeginStatus
@@ -51,8 +51,8 @@ const parsedThirdLog = {
 jest.mock('ethers', () => {
   return {
     __esModule: true,
-    Contract: jest.fn().mockImplementation(() => ({
-      interface: {
+    utils: {
+      Interface: jest.fn().mockImplementation(() => ({
         parseLog: jest.fn().mockImplementation((log: any) => {
           // Check the log position and return a parsed log to make it more realistic
           if (log.logIndex === 0) {
@@ -64,8 +64,8 @@ jest.mock('ethers', () => {
           }
           return null
         })
-      }
-    }))
+      }))
+    }
   }
 })
 
@@ -237,14 +237,9 @@ describe('isQuotePaid function should', () => {
 
   test('return isPaid false when LPS does not return quote status', async () => {
     // Mock the implementation of getPeginStatus to always reject
-    const error = new Error('API error')
+    const ERROR_DETAIL = 'API error'
+    const error = new Error(ERROR_DETAIL)
     mockedGetPeginStatus.mockImplementation(async () => Promise.reject(error))
-
-    // Mock console to avoid cluttering the test output
-    const originalConsoleError = console.error
-    console.error = jest.fn()
-    const originalConsoleLog = console.log
-    console.log = jest.fn()
 
     // Mock setTimeout to execute immediately
     const originalSetTimeout = global.setTimeout
@@ -260,13 +255,11 @@ describe('isQuotePaid function should', () => {
       mockConnectionWithReceipt
     )
 
-    // Restore original functions
-    console.error = originalConsoleError
-    console.log = originalConsoleLog
+    // Restore original function
     global.setTimeout = originalSetTimeout
 
     expect(result.isPaid).toBe(false)
-    expect(result.error).toBe(Errors.LPS_DID_NOT_RETURN_QUOTE_STATUS)
+    expect(result.error).toStrictEqual({ ...FlyoverErrors.LPS_DID_NOT_RETURN_QUOTE_STATUS, detail: ERROR_DETAIL })
   })
 
   test('return isPaid false when pegin status does not have callForUserTxHash', async () => {
@@ -280,7 +273,7 @@ describe('isQuotePaid function should', () => {
     )
 
     expect(result.isPaid).toBe(false)
-    expect(result.error).toBe(Errors.QUOTE_STATUS_DOES_NOT_HAVE_A_CALL_FOR_USER_TX_HASH)
+    expect(result.error).toStrictEqual(FlyoverErrors.QUOTE_STATUS_DOES_NOT_HAVE_A_CALL_FOR_USER_TX_HASH)
   })
 
   test('return isPaid false when transaction receipt is not found', async () => {
@@ -294,7 +287,7 @@ describe('isQuotePaid function should', () => {
     )
 
     expect(result.isPaid).toBe(false)
-    expect(result.error).toBe(Errors.QUOTE_STATUS_TRANSACTION_NOT_FOUND)
+    expect(result.error).toBe(FlyoverErrors.QUOTE_STATUS_TRANSACTION_NOT_FOUND)
   })
 
   test('return isPaid false when recipt does not have a callForUser event', async () => {
@@ -309,7 +302,7 @@ describe('isQuotePaid function should', () => {
     )
 
     expect(result.isPaid).toBe(false)
-    expect(result.error).toBe(Errors.QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_CALL_FOR_USER_EVENT)
+    expect(result.error).toBe(FlyoverErrors.QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_CALL_FOR_USER_EVENT)
 
     parsedThirdLog.name = 'CallForUser'
   })
@@ -326,7 +319,7 @@ describe('isQuotePaid function should', () => {
     )
 
     expect(result.isPaid).toBe(false)
-    expect(result.error).toBe(Errors.QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_CALL_FOR_USER_EVENT)
+    expect(result.error).toBe(FlyoverErrors.QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_CALL_FOR_USER_EVENT)
 
     parsedThirdLog.args.quoteHash = FAKE_QUOTE_HASH
   })

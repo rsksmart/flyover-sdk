@@ -1,11 +1,9 @@
 import { getPeginStatus } from './getPeginStatus'
 import { type HttpClient, type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
-import { type LiquidityProvider } from '../api'
-import lbcAbi from '../blockchain/lbc-abi'
-import { Contract, type ContractReceipt } from 'ethers'
-import { Errors, type FlyoverError } from '../constants/errors'
-import { type PeginQuoteStatusDTO } from '../api/bindings/data-contracts'
-import { type LogDescription } from 'ethers/lib/utils'
+import { type LiquidityProvider, type PeginQuoteStatus } from '../api'
+import { type FlyoverError, FlyoverErrors } from '../constants/errors'
+import { parseLBCLogs } from '../blockchain/parsing'
+import { type ContractReceipt } from 'ethers'
 
 export interface IsQuotePaidResponse {
   isPaid: boolean
@@ -21,16 +19,18 @@ export async function isQuotePaid (
   quoteHash: string,
   rskConnection: BlockchainConnection
 ): Promise<IsQuotePaidResponse> {
-  let peginStatus: PeginQuoteStatusDTO
+  let peginStatus: PeginQuoteStatus
 
   try {
     // Get the pegin status from the Liquidity Provider
     peginStatus = await getPeginStatusWithRetries(httpClient, provider, quoteHash)
   } catch (error) {
-    console.error('Error getting pegin status:', error)
     return {
       isPaid: false,
-      error: Errors.LPS_DID_NOT_RETURN_QUOTE_STATUS
+      error: {
+        ...FlyoverErrors.LPS_DID_NOT_RETURN_QUOTE_STATUS,
+        detail: error instanceof Error ? error.message : 'Unknown error'
+      }
     }
   }
 
@@ -38,21 +38,34 @@ export async function isQuotePaid (
   if (!peginStatus?.status?.callForUserTxHash) {
     return {
       isPaid: false,
-      error: Errors.QUOTE_STATUS_DOES_NOT_HAVE_A_CALL_FOR_USER_TX_HASH
+      error: {
+        ...FlyoverErrors.QUOTE_STATUS_DOES_NOT_HAVE_A_CALL_FOR_USER_TX_HASH
+      }
     }
   }
 
   // Get the transaction receipt from the blockchain
-  const receipt = await rskConnection.getTransactionReceipt(peginStatus.status.callForUserTxHash)
-  if (!receipt) {
+  let receipt: ContractReceipt | null = null
+  try {
+    receipt = await rskConnection.getTransactionReceipt(peginStatus.status.callForUserTxHash)
+    if (!receipt) {
+      return {
+        isPaid: false,
+        error: FlyoverErrors.QUOTE_STATUS_TRANSACTION_NOT_FOUND
+      }
+    }
+  } catch (error) {
     return {
       isPaid: false,
-      error: Errors.QUOTE_STATUS_TRANSACTION_NOT_FOUND
+      error: {
+        ...FlyoverErrors.QUOTE_STATUS_TRANSACTION_NOT_FOUND,
+        detail: error instanceof Error ? error.message : 'Unknown error'
+      }
     }
   }
 
   // Parse the logs
-  const parsedLogs = await parseLogs(receipt, rskConnection)
+  const parsedLogs = await parseLBCLogs(receipt)
 
   // Find CallForUser event and check if quoteHash matches
   const normalizedQuoteHash = quoteHash.toLowerCase().replace('0x', '')
@@ -67,11 +80,11 @@ export async function isQuotePaid (
     return {
       isPaid: true
     }
-  } else {
-    return {
-      isPaid: false,
-      error: Errors.QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_CALL_FOR_USER_EVENT
-    }
+  }
+
+  return {
+    isPaid: false,
+    error: FlyoverErrors.QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_CALL_FOR_USER_EVENT
   }
 }
 
@@ -79,7 +92,7 @@ async function getPeginStatusWithRetries (
   httpClient: HttpClient,
   provider: LiquidityProvider,
   quoteHash: string
-): Promise<PeginQuoteStatusDTO> {
+): Promise<PeginQuoteStatus> {
   let attempts = 0
 
   while (attempts < MAX_RETRIES) {
@@ -87,28 +100,10 @@ async function getPeginStatusWithRetries (
       return await getPeginStatus(httpClient, provider, quoteHash)
     } catch (error) {
       attempts++
-      console.log(`Retrying getPeginStatus after ${RETRY_DELAY}ms (attempt ${attempts}/${MAX_RETRIES})`)
       await new Promise(resolve => setTimeout(resolve, RETRY_DELAY))
     }
   }
 
   // Final attempt
   return getPeginStatus(httpClient, provider, quoteHash)
-}
-
-async function parseLogs (receipt: ContractReceipt,
-  rskConnection: BlockchainConnection):
-  Promise<Array<LogDescription | null>> {
-  const contract = new Contract(receipt.to, lbcAbi, rskConnection.signer)
-
-  // Parse the logs
-  const parsedLogs = receipt.logs.map(log => {
-    try {
-      return contract.interface.parseLog(log)
-    } catch (e) {
-      return null
-    }
-  }).filter(Boolean)
-
-  return parsedLogs
 }

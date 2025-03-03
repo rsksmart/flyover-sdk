@@ -629,7 +629,7 @@ describe('Flyover object should', () => {
       await flyover.isQuotePaid('testQuoteHash')
       expect(isQuotePaid).toBeCalledTimes(1)
       expect(isQuotePaid).toBeCalledWith(
-        expect.any(Object), // httpClient
+        (flyover as any).httpClient, // httpClient
         providerMock, // liquidityProvider
         'testQuoteHash', // quoteHash
         connectionMock // rskConnection
@@ -650,6 +650,30 @@ describe('Flyover object should', () => {
       await flyover.connectToRsk(connectionMock)
       await expect(flyover.isQuotePaid('testQuoteHash'))
         .rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
+    })
+
+    test('fail if not connected to RSK', async () => {
+      // Create a new Flyover instance without RSK connection
+      const disconnectedFlyover = new Flyover({
+        network: 'Regtest',
+        allowInsecureConnections: true,
+        captchaTokenResolver: async () => Promise.resolve('')
+      })
+
+      // Set a liquidity provider
+      disconnectedFlyover.useLiquidityProvider(providerMock)
+
+      // Connect to RSK with a connection that returns undefined for chain height
+      const mockConnectionWithNoHeight = {
+        ...connectionMock,
+        getChainHeight: jest.fn().mockImplementation(async () => Promise.resolve(undefined))
+      } as unknown as BlockchainConnection
+
+      await disconnectedFlyover.connectToRsk(mockConnectionWithNoHeight)
+
+      // Expect the method to throw an error about needing to connect to RSK
+      await expect(disconnectedFlyover.isQuotePaid('testQuoteHash'))
+        .rejects.toThrow('Before calling isQuotePaid, you need to connect to RSK using Flyover.connectToRsk')
     })
   })
 })
