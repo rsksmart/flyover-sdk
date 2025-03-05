@@ -226,7 +226,8 @@ describe('isQuotePaid function should', () => {
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockConnectionWithReceipt,
+      'pegin'
     )
 
     expect(result.isPaid).toBe(true)
@@ -252,7 +253,8 @@ describe('isQuotePaid function should', () => {
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockConnectionWithReceipt,
+      'pegin'
     )
 
     // Restore original function
@@ -269,7 +271,8 @@ describe('isQuotePaid function should', () => {
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockConnectionWithReceipt,
+      'pegin'
     )
 
     expect(result.isPaid).toBe(false)
@@ -283,7 +286,8 @@ describe('isQuotePaid function should', () => {
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithoutReceipt
+      mockConnectionWithoutReceipt,
+      'pegin'
     )
 
     expect(result.isPaid).toBe(false)
@@ -298,7 +302,8 @@ describe('isQuotePaid function should', () => {
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockConnectionWithReceipt,
+      'pegin'
     )
 
     expect(result.isPaid).toBe(false)
@@ -315,7 +320,8 @@ describe('isQuotePaid function should', () => {
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockConnectionWithReceipt,
+      'pegin'
     )
 
     expect(result.isPaid).toBe(false)
@@ -331,7 +337,8 @@ describe('isQuotePaid function should', () => {
       mockClient,
       providerMock,
       '0x' + FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockConnectionWithReceipt,
+      'pegin'
     )
 
     expect(result.isPaid).toBe(true)
@@ -343,7 +350,8 @@ describe('isQuotePaid function should', () => {
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockConnectionWithReceipt,
+      'pegin'
     )
 
     expect(result2.isPaid).toBe(true)

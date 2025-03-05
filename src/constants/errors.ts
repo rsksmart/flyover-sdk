@@ -25,5 +25,17 @@ export const FlyoverErrors = deepFreeze({
   QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_CALL_FOR_USER_EVENT: {
     code: 'FLYOVER-SDK-0004',
     description: 'CallForUser event not found in logs'
+  },
+  QUOTE_STATUS_DOES_NOT_HAVE_A_PEGOUT_TX_HASH: {
+    code: 'FLYOVER-SDK-0005',
+    description: 'Pegout status does not have a pegOutTxHash'
+  },
+  QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_A_VALID_OP_RETURN_OUTPUT: {
+    code: 'FLYOVER-SDK-0006',
+    description: 'Pegout bitcoin transaction does not have a valid OP_RETURN output'
+  },
+  NETWORK_NOT_SPECIFIED_FOR_PEG_OUT_QUOTE: {
+    code: 'FLYOVER-SDK-0007',
+    description: 'Network not specified for pegout quote'
   }
 } as const)

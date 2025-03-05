@@ -152,10 +152,11 @@ mockedGetPegoutQuote.mockImplementation(async () => Promise.resolve([pegoutQuote
 
 describe('Flyover object should', () => {
   let flyover: Flyover
+  const FAKE_NETWORK = 'Regtest'
 
   beforeEach(() => {
     flyover = new Flyover({
-      network: 'Regtest',
+      network: FAKE_NETWORK,
       allowInsecureConnections: true,
       captchaTokenResolver: async () => Promise.resolve('')
     })
@@ -623,22 +624,24 @@ describe('Flyover object should', () => {
   })
 
   describe('isQuotePaid method should', () => {
-    test('invoke correctly isQuotePaid', async () => {
+    test('invoke correctly isQuotePaid external function', async () => {
       flyover.useLiquidityProvider(providerMock)
       await flyover.connectToRsk(connectionMock)
-      await flyover.isQuotePaid('testQuoteHash')
+      await flyover.isQuotePaid('testQuoteHash', 'pegin')
       expect(isQuotePaid).toBeCalledTimes(1)
       expect(isQuotePaid).toBeCalledWith(
         (flyover as any).httpClient, // httpClient
         providerMock, // liquidityProvider
         'testQuoteHash', // quoteHash
-        connectionMock // rskConnection
+        connectionMock, // rskConnection
+        'pegin', // typeOfOperation
+        FAKE_NETWORK // network
       )
     })
 
     test('fail if liquidity provider has not been selected', async () => {
       await flyover.connectToRsk(connectionMock)
-      await expect(flyover.isQuotePaid('testQuoteHash'))
+      await expect(flyover.isQuotePaid('testQuoteHash', 'pegin'))
         .rejects.toThrow('You need to select a provider to do this operation')
     })
 
@@ -648,14 +651,14 @@ describe('Flyover object should', () => {
       provider.apiBaseUrl = 'http://localhost:1234'
       flyover.useLiquidityProvider(provider)
       await flyover.connectToRsk(connectionMock)
-      await expect(flyover.isQuotePaid('testQuoteHash'))
+      await expect(flyover.isQuotePaid('testQuoteHash', 'pegin'))
         .rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
     })
 
     test('fail if not connected to RSK', async () => {
       // Create a new Flyover instance without RSK connection
       const disconnectedFlyover = new Flyover({
-        network: 'Regtest',
+        network: FAKE_NETWORK,
         allowInsecureConnections: true,
         captchaTokenResolver: async () => Promise.resolve('')
       })
@@ -672,7 +675,7 @@ describe('Flyover object should', () => {
       await disconnectedFlyover.connectToRsk(mockConnectionWithNoHeight)
 
       // Expect the method to throw an error about needing to connect to RSK
-      await expect(disconnectedFlyover.isQuotePaid('testQuoteHash'))
+      await expect(disconnectedFlyover.isQuotePaid('testQuoteHash', 'pegin'))
         .rejects.toThrow('Before calling isQuotePaid, you need to connect to RSK using Flyover.connectToRsk')
     })
   })

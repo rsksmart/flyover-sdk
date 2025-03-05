@@ -33,7 +33,7 @@ import { FlyoverNetworks, type FlyoverSupportedNetworks } from '../constants/net
 import { getAvailableLiquidity } from './getAvailableLiquidity'
 import { RskBridge } from '../blockchain/bridge'
 import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
-import { type IsQuotePaidResponse, isQuotePaid } from './isQuotePaid'
+import { type IsQuotePaidResponse, isQuotePaid, type TypeOfOperation } from './isQuotePaid'
 
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
@@ -398,14 +398,15 @@ export class Flyover implements Bridge {
 
   /**
    * Checks if a quote has been paid by the LPS. The information is initially provided by the LPS and then
-   * verified in the blockchain.
+   * verified in the blockchain depending on the type of operation (RSK for pegin or Bitcoin for pegout).
    * This function requires that the LPS associated with this quote has been previously selected using the {@link Flyover.useLiquidityProvider} method.
    *
    * @param { string } quoteHash the has of the quote
+   * @param { TypeOfOperation } typeOfOperation the type of operation (pegin or pegout)
    *
    * @returns { IsQuotePaidResponse }
    */
-  async isQuotePaid (quoteHash: string): Promise<IsQuotePaidResponse> {
+  async isQuotePaid (quoteHash: string, typeOfOperation: TypeOfOperation): Promise<IsQuotePaidResponse> {
     this.checkLiquidityProvider()
 
     if (!await this.isConnected()) {
@@ -413,7 +414,7 @@ export class Flyover implements Bridge {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return isQuotePaid(this.httpClient, this.liquidityProvider!, quoteHash, this.config.rskConnection!)
+    return isQuotePaid(this.httpClient, this.liquidityProvider!, quoteHash, this.config.rskConnection!, typeOfOperation, this.config.network)
   }
 
   /**
