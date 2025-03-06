@@ -146,7 +146,7 @@ describe('Flyover pegout process should', () => {
 
     expect(creationData.fixedFee).not.toBeUndefined()
     expect(creationData.gasPrice).not.toBeUndefined()
-    expect(creationData.percentageFee).not.toBeUndefined()
+    expect(creationData.feePercentage).not.toBeUndefined()
     expect(creationData.feeRate).not.toBeUndefined()
   }, EXTENDED_TIMEOUT)
 

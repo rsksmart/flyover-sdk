@@ -146,7 +146,7 @@ describe('Flyover pegin process should', () => {
 
     expect(creationData.fixedFee).not.toBeUndefined()
     expect(creationData.gasPrice).not.toBeUndefined()
-    expect(creationData.percentageFee).not.toBeUndefined()
+    expect(creationData.feePercentage).not.toBeUndefined()
   })
 
   test('validate the PegIn deposit transaction', async () => {
