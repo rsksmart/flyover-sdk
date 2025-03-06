@@ -7,11 +7,13 @@ const CONTENT_FIELD_REGEX = /^[a-zA-Z][a-zA-Z0-9]*\??: [A-Za-z0-9]+,/
 
 const isBigIntField = name => {
   name = name.toLowerCase();
-  return name.includes('fee') ||
+  const isDecimalField = name.includes('feepercentage') || name.includes('rate');
+  const isAmountField = name.includes('fee') ||
     name.includes('value') ||
     name.includes('amount') ||
     name.includes('cost') ||
     /^nonce:*/.test(name)
+  return isAmountField && !isDecimalField;
 }
 
 const parseFieldToBigint = line => {

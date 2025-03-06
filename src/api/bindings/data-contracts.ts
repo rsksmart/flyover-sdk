@@ -76,8 +76,8 @@ export interface AvailableLiquidityDTO {
    */
   peginLiquidityAmount: bigint;
   /**
-   * Available liquidity for PegOut operations in satoshi
-   * @example "500000000"
+   * Available liquidity for PegOut operations in wei
+   * @example "5000000000000000000"
    */
   pegoutLiquidityAmount: bigint;
 }
@@ -208,8 +208,9 @@ export const LiquidityProviderRequiredFields: string[] = [
 ];
 
 export interface PeginConfigurationDTO {
-  callFee?: bigint;
   callTime?: number;
+  feePercentage?: number;
+  fixedFee?: bigint;
   maxValue?: bigint;
   minValue?: bigint;
   penaltyFee?: bigint;
@@ -219,6 +220,17 @@ export interface PeginConfigurationDTO {
 export interface PeginConfigurationRequest {
   configuration?: PeginConfigurationDTO;
 }
+
+export interface PeginCreationDataDTO {
+  /** The fixed fee used to compute the call fee */
+  fixedFee: bigint;
+  /** The gas price used to compute the gas fee */
+  gasPrice: number;
+  /** The percentage fee used to compute the call fee */
+  percentageFee: bigint;
+}
+
+export const PeginCreationDataDtoRequiredFields: string[] = ["gasPrice", "percentageFee", "fixedFee"];
 
 export interface PeginQuoteDTO {
   /** The timestamp of the agreement */
@@ -317,19 +329,22 @@ export const PeginQuoteRequestRequiredFields: string[] = [
 ];
 
 export interface PeginQuoteStatusDTO {
+  /** Values used to compute some fields of the quote */
+  creationData: PeginCreationDataDTO;
   /** Agreed specification of the quote */
   detail: PeginQuoteDTO;
   /** Current status of the quote */
   status: RetainedPeginQuoteDTO;
 }
 
-export const PeginQuoteStatusDtoRequiredFields: string[] = ["detail", "status"];
+export const PeginQuoteStatusDtoRequiredFields: string[] = ["detail", "status", "creationData"];
 
 export interface PegoutConfigurationDTO {
   bridgeTransactionMin?: string;
-  callFee?: bigint;
   expireBlocks?: number;
   expireTime?: number;
+  feePercentage?: number;
+  fixedFee?: bigint;
   maxValue?: bigint;
   minValue?: bigint;
   penaltyFee?: bigint;
@@ -339,6 +354,19 @@ export interface PegoutConfigurationDTO {
 export interface PegoutConfigurationRequest {
   configuration?: PegoutConfigurationDTO;
 }
+
+export interface PegoutCreationDataDTO {
+  /** The fee rate used to compute the gas fee */
+  feeRate: number;
+  /** The fixed fee used to compute the call fee */
+  fixedFee: bigint;
+  /** The gas price used to compute the gas fee */
+  gasPrice: number;
+  /** The percentage fee used to compute the call fee */
+  percentageFee: bigint;
+}
+
+export const PegoutCreationDataDtoRequiredFields: string[] = ["gasPrice", "percentageFee", "fixedFee", "feeRate"];
 
 export interface PegoutQuoteDTO {
   agreementTimestamp: number;
@@ -404,16 +432,21 @@ export interface PegoutQuoteRequest {
 export const PegoutQuoteRequestRequiredFields: string[] = ["to", "valueToTransfer", "rskRefundAddress"];
 
 export interface PegoutQuoteStatusDTO {
+  /** Values used to compute some fields of the quote */
+  creationData: PegoutCreationDataDTO;
   /** Agreed specification of the quote */
   detail: PegoutQuoteDTO;
   /** Current status of the quote */
   status: RetainedPegoutQuoteDTO;
 }
 
-export const PegoutQuoteStatusDtoRequiredFields: string[] = ["detail", "status"];
+export const PegoutQuoteStatusDtoRequiredFields: string[] = ["detail", "status", "creationData"];
 
 export interface ProviderDetail {
+  /** @deprecated */
   fee: bigint;
+  feePercentage: number;
+  fixedFee: bigint;
   maxTransactionValue: bigint;
   minTransactionValue: bigint;
   requiredConfirmations: number;
@@ -421,6 +454,8 @@ export interface ProviderDetail {
 
 export const ProviderDetailRequiredFields: string[] = [
   "fee",
+  "fixedFee",
+  "feePercentage",
   "minTransactionValue",
   "maxTransactionValue",
   "requiredConfirmations",
@@ -517,6 +552,21 @@ export const RetainedPegoutQuoteDtoRequiredFields: string[] = [
   "refundPegoutTxHash",
   "bridgeRefundTxHash",
 ];
+
+export interface ServerInfoDTO {
+  /**
+   * Version commit hash
+   * @example "b7bf393a2b1cedde8ee15b00780f44e6e5d2ba9d"
+   */
+  revision: string;
+  /**
+   * Server version tag
+   * @example "v1.0.0"
+   */
+  version: string;
+}
+
+export const ServerInfoDtoRequiredFields: string[] = ["version", "revision"];
 
 export interface Services {
   btc?: string;
