@@ -43,14 +43,20 @@ describe('Flyover pegout process should', () => {
     if (provider?.providerType === 'pegin' || provider?.providerType === 'both') {
       expect(provider?.pegin).not.toBeUndefined()
       expect(provider?.pegin.fee).not.toBeUndefined()
+      expect(provider?.pegin.feePercentage).not.toBeUndefined()
+      expect(provider?.pegin.fixedFee).not.toBeUndefined()
       expect(provider?.pegin.maxTransactionValue).not.toBeUndefined()
       expect(provider?.pegin.minTransactionValue).not.toBeUndefined()
+      expect(provider?.pegin.fixedFee).toBe(provider?.pegin.fee)
     }
     if (provider?.providerType === 'pegout' || provider?.providerType === 'both') {
       expect(provider?.pegout).not.toBeUndefined()
       expect(provider?.pegout.fee).not.toBeUndefined()
+      expect(provider?.pegout.feePercentage).not.toBeUndefined()
+      expect(provider?.pegout.fixedFee).not.toBeUndefined()
       expect(provider?.pegout.maxTransactionValue).not.toBeUndefined()
       expect(provider?.pegout.minTransactionValue).not.toBeUndefined()
+      expect(provider?.pegout.fixedFee).toBe(provider?.pegout.fee)
     }
   })
 
@@ -120,10 +126,11 @@ describe('Flyover pegout process should', () => {
   }, EXTENDED_TIMEOUT)
 
   test('get status of the accepted quote', async () => {
-    const { detail, status } = await flyover.getPegoutStatus(selectedQuote.quoteHash)
+    const { detail, status, creationData } = await flyover.getPegoutStatus(selectedQuote.quoteHash)
 
     expect(detail).not.toBeUndefined()
     expect(status).not.toBeUndefined()
+    expect(creationData).not.toBeUndefined()
 
     expect(detail.agreementTimestamp).not.toBeUndefined()
     expect(detail.btcRefundAddress).not.toBeUndefined()
@@ -154,6 +161,11 @@ describe('Flyover pegout process should', () => {
     expect(status.signature).not.toBeUndefined()
     expect(status.state).not.toBeUndefined()
     expect(status.userRskTxHash).not.toBeUndefined()
+
+    expect(creationData.fixedFee).not.toBeUndefined()
+    expect(creationData.gasPrice).not.toBeUndefined()
+    expect(creationData.percentageFee).not.toBeUndefined()
+    expect(creationData.feeRate).not.toBeUndefined()
   }, EXTENDED_TIMEOUT)
 
   test.skip('[DISABLED: until we have a way to force a quote expiration] execute refungPegout to get back amount', async () => {

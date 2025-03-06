@@ -19,12 +19,16 @@ const providerMock: LiquidityProvider = {
     requiredConfirmations: 7,
     minTransactionValue: BigInt(1),
     maxTransactionValue: BigInt(100),
+    fixedFee: BigInt(3),
+    feePercentage: 1.25,
     fee: BigInt(1)
   },
   pegout: {
     requiredConfirmations: 5,
     minTransactionValue: BigInt(2),
     maxTransactionValue: BigInt(200),
+    fixedFee: BigInt(5),
+    feePercentage: 0.35,
     fee: BigInt(2)
   }
 }
@@ -95,11 +99,17 @@ describe('getMetadata function should', () => {
       blocksToDeliver: providerMock.pegin.requiredConfirmations,
       fees: [
         {
-          amount: providerMock.pegin.fee,
+          amount: providerMock.pegin.fixedFee,
           decimals: 0,
           type: 'Fixed',
-          description: 'Liquidity provider fee',
+          description: 'Liquidity provider fixed fee',
           unit: 'Wei'
+        },
+        {
+          amount: providerMock.pegin.feePercentage,
+          decimals: 0,
+          type: 'Percental',
+          description: 'Liquidity provider percentage fee. It is a percentage of the pegged value.'
         },
         {
           amount: 2,
@@ -117,11 +127,17 @@ describe('getMetadata function should', () => {
       blocksToDeliver: providerMock.pegout.requiredConfirmations,
       fees: [
         {
-          amount: providerMock.pegout.fee,
+          amount: providerMock.pegout.fixedFee,
           decimals: 0,
           type: 'Fixed',
-          description: 'Liquidity provider fee',
+          description: 'Liquidity provider fixed fee',
           unit: 'Wei'
+        },
+        {
+          amount: providerMock.pegout.feePercentage,
+          decimals: 0,
+          type: 'Percental',
+          description: 'Liquidity provider percentage fee. It is a percentage of the pegged value.'
         },
         {
           amount: 2,
