@@ -29,7 +29,7 @@ API base URL
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:173](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L173)
+[src/api/bindings/data-contracts.ts:173](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L173)
 
 ___
 
@@ -47,7 +47,7 @@ Provider Id
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:178](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L178)
+[src/api/bindings/data-contracts.ts:178](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L178)
 
 ___
 
@@ -65,7 +65,7 @@ Provider Name
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:183](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L183)
+[src/api/bindings/data-contracts.ts:183](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L183)
 
 ___
 
@@ -83,7 +83,7 @@ Provider Address
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:188](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L188)
+[src/api/bindings/data-contracts.ts:188](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L188)
 
 ___
 
@@ -101,7 +101,7 @@ Provider type
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:193](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L193)
+[src/api/bindings/data-contracts.ts:193](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L193)
 
 ___
 
@@ -119,4 +119,4 @@ true
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:198](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L198)
+[src/api/bindings/data-contracts.ts:198](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L198)

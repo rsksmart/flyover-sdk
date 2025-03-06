@@ -270,7 +270,7 @@ ___
 
 #### Defined in
 
-[src/client/httpClient.ts:83](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/client/httpClient.ts#L83)
+[src/client/httpClient.ts:83](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/client/httpClient.ts#L83)
 
 ___
 
@@ -290,7 +290,7 @@ ___
 
 #### Defined in
 
-[src/client/httpClient.ts:13](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/client/httpClient.ts#L13)
+[src/client/httpClient.ts:13](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/client/httpClient.ts#L13)
 
 ___
 
@@ -310,7 +310,7 @@ ___
 
 #### Defined in
 
-[src/client/httpClient.ts:74](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/client/httpClient.ts#L74)
+[src/client/httpClient.ts:74](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/client/httpClient.ts#L74)
 
 ___
 
@@ -333,7 +333,7 @@ ___
 
 #### Defined in
 
-[src/client/httpClient.ts:34](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/client/httpClient.ts#L34)
+[src/client/httpClient.ts:34](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/client/httpClient.ts#L34)
 
 ___
 
@@ -353,7 +353,7 @@ ___
 
 #### Defined in
 
-[src/client/httpClient.ts:23](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/client/httpClient.ts#L23)
+[src/client/httpClient.ts:23](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/client/httpClient.ts#L23)
 
 ___
 
@@ -373,7 +373,7 @@ ___
 
 #### Defined in
 
-[src/client/httpClient.ts:56](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/client/httpClient.ts#L56)
+[src/client/httpClient.ts:56](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/client/httpClient.ts#L56)
 
 ___
 
@@ -395,7 +395,7 @@ ___
 
 #### Defined in
 
-[src/client/httpClient.ts:45](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/client/httpClient.ts#L45)
+[src/client/httpClient.ts:45](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/client/httpClient.ts#L45)
 
 ___
 
@@ -415,7 +415,7 @@ ___
 
 #### Defined in
 
-[src/client/httpClient.ts:4](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/client/httpClient.ts#L4)
+[src/client/httpClient.ts:4](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/client/httpClient.ts#L4)
 
 ___
 
@@ -435,4 +435,4 @@ ___
 
 #### Defined in
 
-[src/client/httpClient.ts:65](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/client/httpClient.ts#L65)
+[src/client/httpClient.ts:65](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/client/httpClient.ts#L65)
