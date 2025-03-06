@@ -24,7 +24,7 @@ The peg-in transaction
 
 #### Defined in
 
-[src/sdk/registerPegin.ts:12](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/registerPegin.ts#L12)
+[src/sdk/registerPegin.ts:12](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/registerPegin.ts#L12)
 
 ___
 
@@ -36,7 +36,7 @@ The block that contains the peg-in transaction
 
 #### Defined in
 
-[src/sdk/registerPegin.ts:16](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/registerPegin.ts#L16)
+[src/sdk/registerPegin.ts:16](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/registerPegin.ts#L16)
 
 ___
 
@@ -48,7 +48,7 @@ The merkle tree path that proves transaction inclusion
 
 #### Defined in
 
-[src/sdk/registerPegin.ts:14](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/registerPegin.ts#L14)
+[src/sdk/registerPegin.ts:14](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/registerPegin.ts#L14)
 
 ___
 
@@ -60,7 +60,7 @@ The quote of the service
 
 #### Defined in
 
-[src/sdk/registerPegin.ts:8](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/registerPegin.ts#L8)
+[src/sdk/registerPegin.ts:8](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/registerPegin.ts#L8)
 
 ___
 
@@ -72,4 +72,4 @@ The signature of the quote
 
 #### Defined in
 
-[src/sdk/registerPegin.ts:10](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/registerPegin.ts#L10)
+[src/sdk/registerPegin.ts:10](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/registerPegin.ts#L10)

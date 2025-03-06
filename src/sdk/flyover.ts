@@ -33,6 +33,7 @@ import { FlyoverNetworks, type FlyoverSupportedNetworks } from '../constants/net
 import { getAvailableLiquidity } from './getAvailableLiquidity'
 import { RskBridge } from '../blockchain/bridge'
 import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
+import { type IsQuotePaidResponse, isQuotePaid } from './isQuotePaid'
 
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
@@ -380,6 +381,8 @@ export class Flyover implements Bridge {
    * @remarks
    * If you want to have a simplified version of the state of the quote to display as a status in
    * a client UI, you can use the {@link getSimpleQuoteStatus} function
+   * This function implies trusting the LPS to provide the correct status of the quote and should
+   * be used  with caution since is not a reliable source of truth.
    *
    * @param { string } quoteHash the has of the quote
    *
@@ -394,13 +397,35 @@ export class Flyover implements Bridge {
   }
 
   /**
+   * Checks if a quote has been paid by the LPS. The information is initially provided by the LPS and then
+   * verified in the blockchain.
+   * This function requires that the LPS associated with this quote has been previously selected using the {@link Flyover.useLiquidityProvider} method.
+   *
+   * @param { string } quoteHash the has of the quote
+   *
+   * @returns { IsQuotePaidResponse }
+   */
+  async isQuotePaid (quoteHash: string): Promise<IsQuotePaidResponse> {
+    this.checkLiquidityProvider()
+
+    if (!await this.isConnected()) {
+      throw new Error('Before calling isQuotePaid, you need to connect to RSK using Flyover.connectToRsk')
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return isQuotePaid(this.httpClient, this.liquidityProvider!, quoteHash, this.config.rskConnection!)
+  }
+
+  /**
    * Returns the information of an accepted pegout quote. This involves the details of the quote
    * and information about its current status in the sever such as the state and the involved
    * transactions hashes
    *
    * @remarks
    * If you want to have a simplified version of the state of the quote to display as a status in
-   * a client UI, you can use the {@link getSimpleQuoteStatus} function
+   * a client UI, you can use the {@link getSimpleQuoteStatus} function.
+   * This function implies trusting the LPS to provide the correct status of the quote and should
+   * be used  with caution since is not a reliable source of truth.
    *
    * @param { string } quoteHash the has of the quote
    *

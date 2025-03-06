@@ -47,7 +47,7 @@
 
 #### Defined in
 
-[src/api/index.ts:37](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/index.ts#L37)
+[src/api/index.ts:37](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/index.ts#L37)
 
 ## Variables
 
@@ -72,16 +72,16 @@ Regtest LBC address will be overrided if  FlyoverConfig.customLbcAddress is prov
 | `Mainnet` | \{ `chainId`: ``30`` = 30; `lbcAddress`: ``"0xAA9cAf1e3967600578727F975F283446A3Da6612"`` = '0xAA9cAf1e3967600578727F975F283446A3Da6612' } |
 | `Mainnet.chainId` | ``30`` |
 | `Mainnet.lbcAddress` | ``"0xAA9cAf1e3967600578727F975F283446A3Da6612"`` |
-| `Regtest` | \{ `chainId`: ``33`` = 33; `lbcAddress`: ``"0x8901a2Bbf639bFD21A97004BA4D7aE2BD00B8DA8"`` = '0x8901a2Bbf639bFD21A97004BA4D7aE2BD00B8DA8' } |
+| `Regtest` | \{ `chainId`: ``33`` = 33; `lbcAddress`: ``"0x7557fcE0BbFAe81a9508FF469D481f2c72a8B5f3"`` = '0x7557fcE0BbFAe81a9508FF469D481f2c72a8B5f3' } |
 | `Regtest.chainId` | ``33`` |
-| `Regtest.lbcAddress` | ``"0x8901a2Bbf639bFD21A97004BA4D7aE2BD00B8DA8"`` |
+| `Regtest.lbcAddress` | ``"0x7557fcE0BbFAe81a9508FF469D481f2c72a8B5f3"`` |
 | `Testnet` | \{ `chainId`: ``31`` = 31; `lbcAddress`: ``"0xc2A630c053D12D63d32b025082f6Ba268db18300"`` = '0xc2A630c053D12D63d32b025082f6Ba268db18300' } |
 | `Testnet.chainId` | ``31`` |
 | `Testnet.lbcAddress` | ``"0xc2A630c053D12D63d32b025082f6Ba268db18300"`` |
 
 #### Defined in
 
-[src/constants/networks.ts:11](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/constants/networks.ts#L11)
+[src/constants/networks.ts:11](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/constants/networks.ts#L11)
 
 ___
 
@@ -107,4 +107,4 @@ ___
 
 #### Defined in
 
-[src/sdk/flyoverUtils.ts:9](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyoverUtils.ts#L9)
+[src/sdk/flyoverUtils.ts:9](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyoverUtils.ts#L9)
