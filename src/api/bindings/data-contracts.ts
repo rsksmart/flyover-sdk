@@ -222,15 +222,15 @@ export interface PeginConfigurationRequest {
 }
 
 export interface PeginCreationDataDTO {
+  /** The percentage fee used to compute the call fee */
+  feePercentage: number;
   /** The fixed fee used to compute the call fee */
   fixedFee: bigint;
   /** The gas price used to compute the gas fee */
-  gasPrice: number;
-  /** The percentage fee used to compute the call fee */
-  percentageFee: bigint;
+  gasPrice: bigint;
 }
 
-export const PeginCreationDataDtoRequiredFields: string[] = ["gasPrice", "percentageFee", "fixedFee"];
+export const PeginCreationDataDtoRequiredFields: string[] = ["gasPrice", "feePercentage", "fixedFee"];
 
 export interface PeginQuoteDTO {
   /** The timestamp of the agreement */
@@ -356,17 +356,17 @@ export interface PegoutConfigurationRequest {
 }
 
 export interface PegoutCreationDataDTO {
+  /** The percentage fee used to compute the call fee */
+  feePercentage: number;
   /** The fee rate used to compute the gas fee */
   feeRate: number;
   /** The fixed fee used to compute the call fee */
   fixedFee: bigint;
   /** The gas price used to compute the gas fee */
-  gasPrice: number;
-  /** The percentage fee used to compute the call fee */
-  percentageFee: bigint;
+  gasPrice: bigint;
 }
 
-export const PegoutCreationDataDtoRequiredFields: string[] = ["gasPrice", "percentageFee", "fixedFee", "feeRate"];
+export const PegoutCreationDataDtoRequiredFields: string[] = ["gasPrice", "feePercentage", "fixedFee", "feeRate"];
 
 export interface PegoutQuoteDTO {
   agreementTimestamp: number;
