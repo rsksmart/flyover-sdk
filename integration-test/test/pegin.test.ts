@@ -1,6 +1,6 @@
 import { describe, test, beforeAll, expect } from '@jest/globals'
 import { type AcceptedQuote, Flyover, FlyoverUtils, type ValidatePeginTransactionOptions, type LiquidityProvider, type Quote } from '@rsksmart/flyover-sdk'
-import { BlockchainConnection, assertTruthy, ethers } from '@rsksmart/bridges-core-sdk'
+import { assertTruthy, ethers, BlockchainReadOnlyConnection } from '@rsksmart/bridges-core-sdk'
 import { integrationTestConfig } from '../config'
 import { fakeTokenResolver, getUtxosFromMempoolSpace } from './common/utils'
 import { Transaction, payments, networks } from 'bitcoinjs-lib'
@@ -20,10 +20,7 @@ describe('Flyover pegin process should', () => {
       captchaTokenResolver: fakeTokenResolver,
       disableChecksum: true
     })
-    const rsk = await BlockchainConnection.createUsingPassphrase(
-      integrationTestConfig.testMnemonic,
-      integrationTestConfig.nodeUrl
-    )
+    const rsk = await BlockchainReadOnlyConnection.createUsingRpc(integrationTestConfig.nodeUrl)
     await flyover.connectToRsk(rsk)
   })
 

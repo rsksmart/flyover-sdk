@@ -19,6 +19,10 @@ jobs:
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: '19.6.0'
+      - name: NPM Login
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm config set //npm.pkg.github.com/:_authToken $GITHUB_TOKEN
       - name: Install dependencies
         run: npm ci && npm run build
       - name: Validate code format
