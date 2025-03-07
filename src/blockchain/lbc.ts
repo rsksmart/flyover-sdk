@@ -110,7 +110,7 @@ export class LiquidityBridgeContract {
       callFee: detail.callFee,
       penaltyFee: detail.penaltyFee,
       contractAddress: detail.contractAddr.toLowerCase(),
-      data: detail?.data?.startsWith('0x') ? detail?.data : '0x' + detail?.data,
+      data: detail.data.startsWith('0x') ? detail.data : '0x' + detail.data,
       gasLimit: detail.gasLimit,
       nonce: detail.nonce,
       value: detail.value,
