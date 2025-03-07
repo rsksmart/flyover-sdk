@@ -1,9 +1,10 @@
 import { describe, test, beforeAll, expect } from '@jest/globals'
 import { type AcceptedQuote, Flyover, FlyoverUtils, type ValidatePeginTransactionOptions, type LiquidityProvider, type Quote } from '@rsksmart/flyover-sdk'
-import { BlockchainConnection, assertTruthy } from '@rsksmart/bridges-core-sdk'
+import { BlockchainConnection, assertTruthy, ethers } from '@rsksmart/bridges-core-sdk'
 import { integrationTestConfig } from '../config'
 import { fakeTokenResolver, getUtxosFromMempoolSpace } from './common/utils'
 import { Transaction, payments, networks } from 'bitcoinjs-lib'
+import { TEST_CONTRACT_ABI } from './common/constants'
 
 describe('Flyover pegin process should', () => {
   let flyover: Flyover
@@ -179,5 +180,41 @@ describe('Flyover pegin process should', () => {
       btcTx: tx.toHex()
     }, options)
     expect(result).toBe('')
+  })
+
+  test('get a smart contract interaction quote', async () => {
+    const smartContractData = new ethers.utils.Interface(TEST_CONTRACT_ABI)
+      .encodeFunctionData('save', [integrationTestConfig.rskAddress])
+    flyover.useLiquidityProvider(provider)
+    const prefixedQuote = await flyover.getQuotes({
+      callEoaOrContractAddress: integrationTestConfig.testContractAddress,
+      callContractArguments: smartContractData,
+      valueToTransfer: integrationTestConfig.peginAmount,
+      rskRefundAddress: integrationTestConfig.rskAddress
+    }).then(result => result[0])
+
+    const notPrefixedQuote = await flyover.getQuotes({
+      callEoaOrContractAddress: integrationTestConfig.testContractAddress,
+      callContractArguments: smartContractData.slice(2),
+      valueToTransfer: integrationTestConfig.peginAmount,
+      rskRefundAddress: integrationTestConfig.rskAddress
+    }).then(result => result[0])
+
+    expect(prefixedQuote).not.toBeUndefined()
+    expect(notPrefixedQuote).not.toBeUndefined()
+    expect(prefixedQuote?.quote.contractAddr).toBe(integrationTestConfig.testContractAddress)
+    expect(notPrefixedQuote?.quote.contractAddr).toBe(integrationTestConfig.testContractAddress)
+    expect(prefixedQuote?.quote.data).toBe(smartContractData.slice(2))
+    expect(notPrefixedQuote?.quote.data).toBe(smartContractData.slice(2))
+
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
+    const acceptedPrefixed = await flyover.acceptQuote(prefixedQuote!)
+    const acceptedNotPrefixed = await flyover.acceptQuote(notPrefixedQuote!)
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
+    expect(acceptedPrefixed.bitcoinDepositAddressHash).not.toBeUndefined()
+    expect(acceptedNotPrefixed.bitcoinDepositAddressHash).not.toBeUndefined()
+
+    console.info('Prefixed quote payment address:', acceptedPrefixed.bitcoinDepositAddressHash)
+    console.info('Not prefixed quote payment address:', acceptedNotPrefixed.bitcoinDepositAddressHash)
   })
 })

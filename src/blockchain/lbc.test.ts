@@ -95,7 +95,7 @@ const peginQuoteMock: PeginQuote = {
     callFee: BigInt(1000000000000000),
     penaltyFee: BigInt(1000000),
     contractAddr: '0x79568c2989232dCa1840087D73d403602364c0D4',
-    data: '',
+    data: '0x1a1b1c',
     gasLimit: 46000,
     nonce: BigInt('7591081102472764799'),
     value: BigInt(600000000000000000),
@@ -132,7 +132,7 @@ const parsedPeginQuoteMock: Quotes.PeginQuoteStruct = {
   callFee: BigInt(1000000000000000),
   penaltyFee: 1000000,
   contractAddress: '0x79568c2989232dCa1840087D73d403602364c0D4',
-  data: '0x',
+  data: '0x1a1b1c',
   gasLimit: 46000,
   nonce: BigInt('7591081102472764799'),
   value: BigInt(600000000000000000),
@@ -514,5 +514,26 @@ describe('LiquidityBridgeContract class should', () => {
 
     expect(contractMock.productFeePercentage).toBeCalledTimes(1)
     expect(result).toEqual(2)
+  })
+
+  test('normalize 0x prefix when parsing pegin quote', async () => {
+    const contractMock = {
+      hashQuote: jest.fn().mockReturnValue(Promise.resolve([0x01, 0x05, 0x07]))
+    }
+    jest.spyOn(ethers.utils, 'hexlify').mockImplementation((arg) => {
+      const { utils } = jest.requireActual<typeof ethers>('ethers')
+      return utils.hexlify(arg)
+    })
+    const contractClassMock = jest.mocked(ethers.Contract)
+    contractClassMock.mockImplementation(() => contractMock as any)
+    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+    const lbc = new LiquidityBridgeContract(connectionMock, config)
+    const prefixedMock = peginQuoteMock
+    const notPrefixedMock = structuredClone(peginQuoteMock)
+    notPrefixedMock.quote.data = notPrefixedMock.quote.data.slice(2)
+    await expect(lbc.hashPeginQuote(prefixedMock)).resolves.not.toThrow()
+    await expect(lbc.hashPeginQuote(notPrefixedMock)).resolves.not.toThrow()
+    expect(serializer.stringify(contractMock.hashQuote.mock.calls[0]?.[0])).toBe(serializer.stringify(parsedPeginQuoteMock))
+    expect(serializer.stringify(contractMock.hashQuote.mock.calls[1]?.[0])).toBe(serializer.stringify(parsedPeginQuoteMock))
   })
 })
