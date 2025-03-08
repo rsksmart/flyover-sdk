@@ -28,3 +28,7 @@ export {
 } from './api'
 
 export { FlyoverUtils } from './sdk/flyoverUtils'
+
+export { type IsQuotePaidResponse } from './utils/interfaces'
+
+export { FlyoverErrors } from './constants/errors'

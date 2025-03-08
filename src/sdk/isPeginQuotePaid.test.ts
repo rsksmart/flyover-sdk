@@ -1,5 +1,5 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
-import { isQuotePaid } from './isQuotePaid'
+import { isPeginQuotePaid } from './isPeginQuotePaid'
 import { getPeginStatus } from './getPeginStatus'
 import { type HttpClient, type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider } from '../api'
@@ -14,14 +14,14 @@ const FAKE_QUOTE_HASH = '8ea2608fbeac552d2a5ea9254f2abe6bac37d845c41af7c27041d31
 const FAKE_CALL_FOR_USER_TX_HASH = '0x3ba2b1337bda32785d38c53274ddeac570911c69aed5ee7ed74e7b14fd5d87a6'
 
 const parsedFirstLog =
-  {
-    name: 'BalanceIncrease',
-    signature: 'BalanceIncrease(address,uint256)',
-    topic: '0x42cfb81a915ac5a674852db250bf722637bee705a267633b68cab3a2dde06f53',
-    args: {
-      dest: '0x9D93929A9099be4355fC2389FbF253982F9dF47c'
-    }
+{
+  name: 'BalanceIncrease',
+  signature: 'BalanceIncrease(address,uint256)',
+  topic: '0x42cfb81a915ac5a674852db250bf722637bee705a267633b68cab3a2dde06f53',
+  args: {
+    dest: '0x9D93929A9099be4355fC2389FbF253982F9dF47c'
   }
+}
 
 const parsedSecondLog = {
   name: 'BalanceDecrease',
@@ -222,12 +222,11 @@ describe('isQuotePaid function should', () => {
   test('return isPaid true when quote is paid', async () => {
     mockedGetPeginStatus.mockResolvedValue(mockPeginStatusWithTxHash)
 
-    const result = await isQuotePaid(
+    const result = await isPeginQuotePaid(
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt,
-      'pegin'
+      mockConnectionWithReceipt
     )
 
     expect(result.isPaid).toBe(true)
@@ -249,12 +248,11 @@ describe('isQuotePaid function should', () => {
       return 0 as any
     } as typeof global.setTimeout
 
-    const result = await isQuotePaid(
+    const result = await isPeginQuotePaid(
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt,
-      'pegin'
+      mockConnectionWithReceipt
     )
 
     // Restore original function
@@ -267,12 +265,11 @@ describe('isQuotePaid function should', () => {
   test('return isPaid false when pegin status does not have callForUserTxHash', async () => {
     mockedGetPeginStatus.mockResolvedValue(mockPeginStatusWithoutTxHash)
 
-    const result = await isQuotePaid(
+    const result = await isPeginQuotePaid(
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt,
-      'pegin'
+      mockConnectionWithReceipt
     )
 
     expect(result.isPaid).toBe(false)
@@ -282,12 +279,11 @@ describe('isQuotePaid function should', () => {
   test('return isPaid false when transaction receipt is not found', async () => {
     mockedGetPeginStatus.mockResolvedValue(mockPeginStatusWithTxHash)
 
-    const result = await isQuotePaid(
+    const result = await isPeginQuotePaid(
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithoutReceipt,
-      'pegin'
+      mockConnectionWithoutReceipt
     )
 
     expect(result.isPaid).toBe(false)
@@ -298,12 +294,11 @@ describe('isQuotePaid function should', () => {
     mockedGetPeginStatus.mockResolvedValue(mockPeginStatusWithTxHash)
     parsedThirdLog.name = undefined as unknown as string
 
-    const result = await isQuotePaid(
+    const result = await isPeginQuotePaid(
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt,
-      'pegin'
+      mockConnectionWithReceipt
     )
 
     expect(result.isPaid).toBe(false)
@@ -316,12 +311,11 @@ describe('isQuotePaid function should', () => {
     mockedGetPeginStatus.mockResolvedValue(mockPeginStatusWithTxHash)
     parsedThirdLog.args.quoteHash = 'different-hash'
 
-    const result = await isQuotePaid(
+    const result = await isPeginQuotePaid(
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt,
-      'pegin'
+      mockConnectionWithReceipt
     )
 
     expect(result.isPaid).toBe(false)
@@ -333,12 +327,11 @@ describe('isQuotePaid function should', () => {
   test('handle 0x prefix in quote hash correctly', async () => {
     mockedGetPeginStatus.mockResolvedValue(mockPeginStatusWithTxHash)
 
-    const result = await isQuotePaid(
+    const result = await isPeginQuotePaid(
       mockClient,
       providerMock,
       '0x' + FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt,
-      'pegin'
+      mockConnectionWithReceipt
     )
 
     expect(result.isPaid).toBe(true)
@@ -346,12 +339,11 @@ describe('isQuotePaid function should', () => {
 
     parsedThirdLog.args.quoteHash = '0x' + FAKE_QUOTE_HASH
 
-    const result2 = await isQuotePaid(
+    const result2 = await isPeginQuotePaid(
       mockClient,
       providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt,
-      'pegin'
+      mockConnectionWithReceipt
     )
 
     expect(result2.isPaid).toBe(true)

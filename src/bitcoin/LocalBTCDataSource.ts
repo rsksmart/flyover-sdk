@@ -1,8 +1,4 @@
-import { type IBitcoinDataSource } from './IBitcoinDataSource'
-import { exec } from 'child_process'
-import { promisify } from 'util'
-
-const execAsync = promisify(exec)
+import { type BitcoinDataSource } from './BitcoinDataSource'
 
 interface BitcoinClientConfig {
   rpcport: number
@@ -11,89 +7,53 @@ interface BitcoinClientConfig {
   rpcconnect: string
 }
 
-interface TransactionOutput {
-  value: number
-  n: number
-  scriptPubKey: {
-    asm: string
-    desc: string
-    hex: string
-    type: string
-    address?: string
+type RpcCaller = (method: string, ...args: any[]) => Promise<any>
+
+function getBitcoinRpcCaller (config: BitcoinClientConfig, debug = false): RpcCaller {
+  const url = `http://${config.rpcconnect}:${config.rpcport}`
+  const headers = new Headers()
+  headers.append('content-type', 'application/json')
+  const token = Buffer.from(`${config.rpcuser}:${config.rpcpassword}`).toString('base64')
+  headers.append('Authorization', 'Basic ' + token)
+
+  return async function (method: string, ...args: any[]): Promise<any> {
+    const body = JSON.stringify({
+      jsonrpc: '1.0',
+      method: method.toLowerCase(),
+      params: typeof args[0] === 'object' && !Array.isArray(args[0]) ? args[0] : args
+    })
+    const requestOptions = { method: 'POST', headers, body }
+    if (debug) {
+      console.log(body)
+    }
+    return fetch(url, requestOptions)
+      .then(async response => response.json())
+      .then(response => {
+        if (response.error) {
+          throw response.error
+        }
+        return response.result
+      })
   }
 }
 
-interface BitcoinTransaction {
-  txid: string
-  hash: string
-  version: number
-  size: number
-  vsize: number
-  weight: number
-  locktime: number
-  vin: Array<{
-    txid: string
-    vout: number
-    scriptSig: {
-      asm: string
-      hex: string
-    }
-    sequence: number
-  }>
-  vout: TransactionOutput[]
-  hex: string
-  blockhash?: string
-  confirmations?: number
-  time?: number
-  blocktime?: number
-}
-
-export class LocalBTCDataSource implements IBitcoinDataSource {
+export class LocalBTCDataSource implements BitcoinDataSource {
   private readonly config: BitcoinClientConfig
+  private readonly rpcCaller: RpcCaller
 
   constructor (config: BitcoinClientConfig) {
     this.config = config
+    this.rpcCaller = getBitcoinRpcCaller(this.config)
   }
 
-  private buildCommand (method: string, params: string[] = []): string {
-    const baseCommand = 'bitcoin-cli'
-    const config = `-rpcport=${this.config.rpcport} -rpcuser=${this.config.rpcuser} -rpcpassword=${this.config.rpcpassword} -rpcconnect=${this.config.rpcconnect}`
-    const paramsStr = params.length > 0 ? ` ${params.join(' ')}` : ''
-    return `${baseCommand} ${config} ${method}${paramsStr}`
-  }
-
-  private async getTransaction (txHash: string): Promise<BitcoinTransaction> {
+  async getTransactionAsHex (txHash: string): Promise<string> {
     try {
-      const command = this.buildCommand('getrawtransaction', [txHash, 'true'])
-      const { stdout } = await execAsync(command)
-      const rawTx = JSON.parse(stdout)
-      return rawTx
+      const rawTx = await this.rpcCaller('getrawtransaction', txHash, true)
+
+      return rawTx.hex
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       throw new Error(`Failed to get transaction: ${errorMessage}`)
-    }
-  }
-
-  async hasOpReturnOutput (txHash: string, quoteHash: string): Promise<boolean> {
-    try {
-      const txData = await this.getTransaction(txHash)
-
-      // Find any output that is an OP_RETURN (value is 0 and script starts with 6a)
-      return txData.vout.some((output: TransactionOutput) => {
-        const isOpReturn = output.value === 0 &&
-                          output.scriptPubKey.hex.startsWith('6a') &&
-                          output.scriptPubKey.asm.startsWith('OP_RETURN')
-
-        // Check if the quoteHash is at the end of the entire scriptPubKey
-        if (isOpReturn) {
-          const normalizedQuoteHash = quoteHash.replace('0x', '')
-          return output.scriptPubKey.hex.endsWith(normalizedQuoteHash)
-        }
-        return false
-      })
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      throw new Error(`Failed to check OP_RETURN output: ${errorMessage}`)
     }
   }
 }

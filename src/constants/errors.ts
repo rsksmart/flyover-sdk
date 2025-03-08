@@ -1,6 +1,6 @@
 import { deepFreeze } from '@rsksmart/bridges-core-sdk'
 
-export interface FlyoverError {
+export interface FlyoverSDKError {
   code: string
   description: string
   detail?: string

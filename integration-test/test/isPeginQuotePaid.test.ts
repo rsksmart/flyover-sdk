@@ -1,14 +1,14 @@
 import { describe, test, expect, beforeAll } from '@jest/globals'
-import { assertTruthy, BlockchainConnection } from '@rsksmart/bridges-core-sdk'
+import { assertTruthy, BlockchainConnection, type Network } from '@rsksmart/bridges-core-sdk'
 import type { AcceptedQuote, PeginQuoteRequest, Quote } from '../../src/api'
 import { integrationTestConfig } from '../config'
 import { fakeTokenResolver } from './common/utils'
 import { Flyover } from '../../src/sdk/flyover'
-import type { IsQuotePaidResponse } from '../../src/sdk/isQuotePaid'
+import type { IsQuotePaidResponse } from '../../src/utils/interfaces'
 
 /**
- * This test verifies that the isQuotePaid function returns true if the quote is paid.
- * It does so by getting a quote and then checking in a loop if the quote is paid (by the user and the LPS).
+ * This test verifies that the isQuotePaid function returns true if a pegin quote is paid.
+ * It does so by getting a pegin quote and then checking in a loop if the quote is paid (by the user and the LPS).
  * As prerequisite, the test assumes there is a provider running in the background and also the minimum amount of
  * BTC blocks are mined.
  */
@@ -20,7 +20,7 @@ describe('isQuotePaid function should', () => {
 
   beforeAll(async () => {
     flyover = new Flyover({
-      network: integrationTestConfig.network,
+      network: integrationTestConfig.network as Network,
       allowInsecureConnections: true,
       captchaTokenResolver: fakeTokenResolver,
       disableChecksum: true
@@ -34,8 +34,8 @@ describe('isQuotePaid function should', () => {
     await flyover.connectToRsk(rskConnection)
   })
 
-  test('return true if the quote is paid', async () => {
-    const RETRY_INTERVAL = 10000
+  test('return true if a pegin quote is paid', async () => {
+    const RETRY_INTERVAL = 10000 // Every 10 seconds
 
     // Get provider
     const providers = await flyover.getLiquidityProviders()
@@ -71,7 +71,7 @@ describe('isQuotePaid function should', () => {
     // Wait for quote to be paid
     let response: IsQuotePaidResponse = { isPaid: false }
     while (!response.isPaid) {
-      response = await flyover.isQuotePaid(quote.quoteHash)
+      response = await flyover.isQuotePaid(quote.quoteHash, 'pegin')
       console.info(`Response: ${JSON.stringify(response)}`)
 
       if (!response.isPaid) {

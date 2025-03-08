@@ -33,8 +33,10 @@ import { FlyoverNetworks, type FlyoverSupportedNetworks } from '../constants/net
 import { getAvailableLiquidity } from './getAvailableLiquidity'
 import { RskBridge } from '../blockchain/bridge'
 import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
-import { type IsQuotePaidResponse, isQuotePaid, type TypeOfOperation } from './isQuotePaid'
-
+import { isPeginQuotePaid } from './isPeginQuotePaid'
+import { isPegoutQuotePaid } from './isPegoutQuotePaid'
+import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
+import { type IsQuotePaidResponse } from '../utils/interfaces'
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
   private liquidityProvider?: LiquidityProvider
@@ -48,9 +50,11 @@ export class Flyover implements Bridge {
    * Create a Flyover client instance.
    *
    * @param { FlyoverConfig } config Object that holds the connection configuration
+   * @param { BitcoinDataSource } bitcoinDataSource Optional Bitcoin data source
    */
   constructor (
-    private readonly config: FlyoverConfig
+    private readonly config: FlyoverConfig,
+    private bitcoinDataSource?: BitcoinDataSource
   ) {
     config.allowInsecureConnections ??= false
     config.disableChecksum ??= false
@@ -256,6 +260,23 @@ export class Flyover implements Bridge {
   }
 
   /**
+   * Connects Flyover to Bitcoin network. It is useful if connetion wasn't provided on initial configuration
+   *
+   * @param { BitcoinDataSource } bitcoinDataSource object representing connection to the network
+   */
+  async connectToBitcoin (bitcoinDataSource: BitcoinDataSource): Promise<void> {
+    this.bitcoinDataSource = bitcoinDataSource
+  }
+
+  /**
+   * Checks if Flyover object has an active connection with the Bitcoin network
+   * @returns boolean
+   */
+  async isConnectedToBitcoin (): Promise<boolean> {
+    return this.bitcoinDataSource !== undefined
+  }
+
+  /**
    * Executes the depositPegout function of Liquidity Bridge Contract. For executing this method is required to have an active
    * connection to RSK network. It can be provided on initial configuration or using {@link Flyover.connectToRsk}
    *
@@ -406,15 +427,29 @@ export class Flyover implements Bridge {
    *
    * @returns { IsQuotePaidResponse }
    */
-  async isQuotePaid (quoteHash: string, typeOfOperation: TypeOfOperation): Promise<IsQuotePaidResponse> {
+  async isQuotePaid (quoteHash: string, typeOfOperation: 'pegin' | 'pegout'): Promise<IsQuotePaidResponse> {
     this.checkLiquidityProvider()
 
-    if (!await this.isConnected()) {
-      throw new Error('Before calling isQuotePaid, you need to connect to RSK using Flyover.connectToRsk')
+    if (typeOfOperation === 'pegin') {
+      // Check connection to RSK
+      if (!await this.isConnected()) {
+        throw new Error('Before calling isQuotePaid for pegin quotes, you need to connect to RSK using Flyover.connectToRsk')
+      }
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return isPeginQuotePaid(this.httpClient, this.liquidityProvider!, quoteHash, this.config.rskConnection!)
+    } else if (typeOfOperation === 'pegout') {
+      // Check connection to Bitcoin
+      if (!await this.isConnectedToBitcoin()) {
+        throw new Error('Before calling isQuotePaid for pegout quotes, you need to connect to Bitcoin using Flyover.connectToBitcoin')
+      }
+      if (!this.config.network) {
+        throw new Error('Network is required for pegout quotes')
+      }
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return isPegoutQuotePaid(this.httpClient, this.liquidityProvider!, quoteHash, this.bitcoinDataSource!)
+    } else {
+      throw new Error('Invalid type of operation')
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return isQuotePaid(this.httpClient, this.liquidityProvider!, quoteHash, this.config.rskConnection!, typeOfOperation, this.config.network)
   }
 
   /**
