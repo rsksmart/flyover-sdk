@@ -37,6 +37,7 @@ import { isPeginQuotePaid } from './isPeginQuotePaid'
 import { isPegoutQuotePaid } from './isPegoutQuotePaid'
 import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
 import { type IsQuotePaidResponse } from '../utils/interfaces'
+import crypto from 'crypto'
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
   private liquidityProvider?: LiquidityProvider
@@ -450,6 +451,26 @@ export class Flyover implements Bridge {
     } else {
       throw new Error('Invalid type of operation')
     }
+  }
+
+  async isPeginQuoteRefundable (_quote: Quote, _providerSignature: string, _btcTransactionHash: string): Promise<boolean> {
+    return true
+  }
+
+  async isPegoutQuoteRefundable (_quoteHash: string): Promise<boolean> {
+    return true
+  }
+
+  async refundPeginQuote (_quote: Quote, _providerSignature: string, _userBtcTransactionHash: string): Promise<string> {
+    const randomBytes = crypto.randomBytes(32)
+
+    return '0x' + randomBytes.toString('hex')
+  }
+
+  async refundPegoutQuote (_quote: PegoutQuote): Promise<string> {
+    const randomBytes = crypto.randomBytes(32)
+
+    return '0x' + randomBytes.toString('hex')
   }
 
   /**

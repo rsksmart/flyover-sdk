@@ -14,7 +14,6 @@ const mockedGetPegoutStatus = getPegoutStatus as jest.Mock
 jest.mock('bitcoinjs-lib', () => ({
   Transaction: {
     fromHex: jest.fn().mockImplementation(() => {
-      console.log('mockTxJsLib', mockTxJsLib)
       return mockTxJsLib
     })
   }
