@@ -8,8 +8,8 @@ import type { IsQuotePaidResponse } from '../../src/utils/interfaces'
 import { FlyoverUtils } from '../../src/sdk/flyoverUtils'
 
 /**
- * This test verifies that the isQuotePaid function returns true if a pegin quote is paid.
- * It does so by getting a pegin quote and then checking in a loop if the quote is paid (by the user and the LPS).
+ * This test verifies that the isQuotePaid function returns true if a pegout quote is paid.
+ * It does so by getting a pegout quote and then checking in a loop if the quote is paid (by the user and the LPS).
  * As prerequisite, the test assumes there is a provider running in the background and also the minimum amount of
  * BTC blocks are mined.
  */

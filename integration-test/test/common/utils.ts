@@ -46,6 +46,12 @@ export async function getUtxosFromMempoolSpace (url: string, address: string): P
     })))
 }
 
+/**
+ * Returns a BitcoinDataSource instance based on the network.
+ *
+ * @param network - The network to use (regtest, mainnet, testnet)
+ * @returns A BitcoinDataSource instance.
+ */
 export function getBitcoinDataSource (network: string): BitcoinDataSource {
   const normalizedNetwork = network.toLowerCase()
   if (normalizedNetwork === 'regtest') {

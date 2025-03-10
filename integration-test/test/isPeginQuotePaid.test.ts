@@ -9,6 +9,7 @@ import type { IsQuotePaidResponse } from '../../src/utils/interfaces'
 /**
  * This test verifies that the isQuotePaid function returns true if a pegin quote is paid.
  * It does so by getting a pegin quote and then checking in a loop if the quote is paid (by the user and the LPS).
+ * The BTC payment should be done outside this test and the test will show in the console the information for the payment.
  * As prerequisite, the test assumes there is a provider running in the background and also the minimum amount of
  * BTC blocks are mined.
  */
