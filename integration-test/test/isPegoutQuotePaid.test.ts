@@ -1,11 +1,9 @@
 import { describe, test, expect, beforeAll } from '@jest/globals'
 import { assertTruthy, BlockchainConnection, type Network } from '@rsksmart/bridges-core-sdk'
-import type { AcceptedPegoutQuote, PegoutQuote, PegoutQuoteRequest } from '../../src/api'
+import type { AcceptedPegoutQuote, PegoutQuote, PegoutQuoteRequest, IsQuotePaidResponse } from '@rsksmart/flyover-sdk'
 import { integrationTestConfig } from '../config'
 import { fakeTokenResolver, getBitcoinDataSource } from './common/utils'
-import { Flyover } from '../../src/sdk/flyover'
-import type { IsQuotePaidResponse } from '../../src/utils/interfaces'
-import { FlyoverUtils } from '../../src/sdk/flyoverUtils'
+import { Flyover, FlyoverUtils } from '@rsksmart/flyover-sdk'
 
 /**
  * This test verifies that the isQuotePaid function returns true if a pegout quote is paid.
@@ -56,9 +54,7 @@ describe('isQuotePaid function should', () => {
       to: integrationTestConfig.btcAddress,
       valueToTransfer: integrationTestConfig.pegoutAmount
     }
-    console.info(`Pegout quote request: ${JSON.stringify(request, (_, value) =>
-      typeof value === 'bigint' ? value.toString() : value
-    )}`)
+
     quotes = await flyover.getPegoutQuotes(request)
     console.info(`Pegout quotes: ${JSON.stringify(quotes, (_, value) =>
       typeof value === 'bigint' ? value.toString() : value
@@ -77,6 +73,7 @@ describe('isQuotePaid function should', () => {
     expect(acceptedQuote.signature).not.toBeUndefined()
     expect(acceptedQuote.lbcAddress).not.toBeUndefined()
 
+    // Pay the BTC transaction as an user
     const txHash = await flyover.depositPegout(quote, acceptedQuote.signature, FlyoverUtils.getQuoteTotal(quote))
     expect([null, undefined, '']).not.toContain(txHash)
     console.info(`Deposit pegout tx hash: ${txHash}`)

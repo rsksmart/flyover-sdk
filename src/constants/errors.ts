@@ -30,9 +30,9 @@ export const FlyoverErrors = deepFreeze({
     code: 'FLYOVER-SDK-0005',
     description: 'Pegout status does not have a pegOutTxHash'
   },
-  QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_A_VALID_OP_RETURN_OUTPUT: {
+  LPS_BTC_TRANSACTION_IS_NOT_VALID: {
     code: 'FLYOVER-SDK-0006',
-    description: 'Pegout bitcoin transaction does not have a valid OP_RETURN output'
+    description: 'The Bitcoin transaction reported by the Liquidity Provider is not valid'
   },
   NETWORK_NOT_SPECIFIED_FOR_PEG_OUT_QUOTE: {
     code: 'FLYOVER-SDK-0007',

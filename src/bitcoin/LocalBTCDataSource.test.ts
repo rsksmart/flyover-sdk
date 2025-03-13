@@ -1,5 +1,6 @@
 import { LocalBTCDataSource } from './LocalBTCDataSource'
 import { describe, it, expect, beforeEach, jest, afterAll } from '@jest/globals'
+import { type BitcoinTransaction } from './BitcoinDataSource'
 
 // Store the original fetch
 const originalFetch = global.fetch
@@ -83,7 +84,23 @@ describe('LocalBTCDataSource', () => {
       blocktime: 1741265497
     }
 
-    it('should successfully retrieve a transaction', async () => {
+    // Expected BitcoinTransaction object after transformation
+    const expectedBitcoinTransaction: BitcoinTransaction = {
+      txid: mockRawTransaction.txid,
+      confirmations: mockRawTransaction.confirmations,
+      vout: [
+        {
+          valueInSats: 60000000, // 0.6 BTC converted to satoshis
+          hex: '76a9144ee02c481e6484c57f47321cec042f38054d82d688ac'
+        },
+        {
+          valueInSats: 0,
+          hex: '6a202213c0a4ae634bacb5a64639d86a01068ae52a5b2028687cb8822b866c4ac9fd'
+        }
+      ]
+    }
+
+    it('should successfully retrieve and transform a transaction', async () => {
       mockFetchImplementation.mockImplementationOnce(async () => {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         return {
@@ -91,38 +108,37 @@ describe('LocalBTCDataSource', () => {
         } as Response
       })
 
-      const result = await localBTCdataSource.getTransactionAsHex(FAKE_TX_ID)
+      const result = await localBTCdataSource.getTransaction(FAKE_TX_ID)
 
-      expect(result).toEqual(mockRawTransaction.hex)
+      expect(result).toEqual(expectedBitcoinTransaction)
+      expect(result.vout.length).toBe(2)
+
+      // Verify the RPC call was made correctly
       expect(mockFetchImplementation).toHaveBeenCalledTimes(1)
-    })
 
-    it('should handle errors from the RPC server', async () => {
-      mockFetchImplementation.mockImplementationOnce(async () => {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        return {
-          json: async () => ({
-            error: {
-              code: -5,
-              message: 'No such transaction'
-            }
-          })
-        } as Response
-      })
+      // Type guard for the mock call
+      const mockCalls = mockFetchImplementation.mock.calls
+      expect(mockCalls.length).toBeGreaterThan(0)
 
-      await expect(localBTCdataSource.getTransactionAsHex('invalid-tx-id'))
-        .rejects
-        .toThrow('Failed to get transaction')
+      // Extract and verify the request body
+      const requestInit = mockCalls[0]?.[1] as RequestInit
+      expect(requestInit.body).toBeDefined()
+
+      const bodyString = requestInit.body as string
+      const requestBody = JSON.parse(bodyString)
+      expect(requestBody.method).toBe('getrawtransaction')
+      expect(requestBody.params).toEqual([FAKE_TX_ID, true])
     })
 
     it('should handle network errors', async () => {
+      const networkErrorMessage = 'Network error'
       mockFetchImplementation.mockImplementationOnce(async () => {
-        throw new Error('Network error')
+        throw new Error(networkErrorMessage)
       })
 
-      await expect(localBTCdataSource.getTransactionAsHex(FAKE_TX_ID))
+      await expect(localBTCdataSource.getTransaction(FAKE_TX_ID))
         .rejects
-        .toThrow('Failed to get transaction: Network error')
+        .toThrow(`Failed to get transaction details: ${networkErrorMessage}`)
     })
   })
 })

@@ -2,13 +2,22 @@ import { getPegoutStatus } from './getPegoutStatus'
 import { type HttpClient } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type PegoutQuoteStatus } from '../api'
 import { FlyoverErrors } from '../constants/errors'
-import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
+import { type BitcoinDataSource, MIN_BTC_CONFIRMATIONS } from '../bitcoin/BitcoinDataSource'
 import { type IsQuotePaidResponse } from '../utils/interfaces'
-import { Transaction } from 'bitcoinjs-lib'
 
 const MAX_RETRIES = 3
 const RETRY_DELAY = 3000 // 3 seconds
 
+/**
+ * Checks if a pegout quote has been paid by verifying the transaction reported in the pegout status
+ * and the OP_RETURN output.
+ *
+ * @param httpClient - The HTTP client to use for the request.
+ * @param provider - The liquidity provider related to the quote
+ * @param quoteHash - The hash of the quote to check if it has been paid.
+ * @param bitcoinDataSource - A Bitcoin data source to check the lps payment transaction.
+ * @returns A promise that resolves to the isPegoutQuotePaid response.
+ */
 export async function isPegoutQuotePaid (
   httpClient: HttpClient,
   provider: LiquidityProvider,
@@ -38,11 +47,16 @@ export async function isPegoutQuotePaid (
     }
   }
 
-  // Check if the transaction has a valid OP_RETURN output with the quote hash
-  if (!await hasOpReturnOutput(pegoutStatus.status.lpBtcTxHash, quoteHash, bitcoinDataSource)) {
+  // Check if the transaction reported in the pegout status is valid
+  const isValid = await isBtcTransactionValid(pegoutStatus, quoteHash, bitcoinDataSource)
+
+  if (!isValid.isValid) {
     return {
       isPaid: false,
-      error: FlyoverErrors.QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_A_VALID_OP_RETURN_OUTPUT
+      error: {
+        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
+        detail: isValid.errorMessage
+      }
     }
   }
 
@@ -71,29 +85,63 @@ async function getPegoutStatusWithRetries (
   return getPegoutStatus(httpClient, provider, quoteHash)
 }
 
-async function hasOpReturnOutput (txHash: string, quoteHash: string, bitcoinDataSource: BitcoinDataSource): Promise<boolean> {
+async function isBtcTransactionValid (
+  pegoutStatus: PegoutQuoteStatus,
+  quoteHash: string,
+  bitcoinDataSource: BitcoinDataSource
+): Promise<{ isValid: boolean, errorMessage?: string }> {
   try {
-    const bitcoinTxHex = await bitcoinDataSource.getTransactionAsHex(txHash)
-    const bitcoinTx = Transaction.fromHex(bitcoinTxHex)
+    if (!bitcoinDataSource) {
+      return { isValid: false, errorMessage: 'Flyover is not connected to Bitcoin' }
+    }
 
-    // Find any output that is an OP_RETURN (value is 0 and script starts with 6a)
-    return bitcoinTx.outs.some(output => {
-      const isOpReturn = output.value === 0 && output.script.length > 0 && output.script[0] === 0x6a
+    const bitcoinTx = await bitcoinDataSource.getTransaction(pegoutStatus.status.lpBtcTxHash)
 
-      // Check if it has the quote hash in the OP_RETURN output
-      if (isOpReturn) {
-        const scriptHex = output.script.toString('hex')
-        const normalizedQuoteHash = quoteHash.replace('0x', '')
-        // Check if the script ends with the quote hash
-        // The OP_RETURN script format is: 6a + length byte + data
-        // We need to check if the data part ends with the quote hash
-        return scriptHex.endsWith(normalizedQuoteHash)
-      }
+    // Check if the transaction has enough confirmations
+    if (!isTransactionConfirmed(bitcoinTx.isConfirmed, bitcoinTx.confirmations)) {
+      return { isValid: false, errorMessage: 'Transaction is not confirmed' }
+    }
 
-      return false
-    })
+    if (bitcoinTx.vout.length < 2) {
+      return { isValid: false, errorMessage: 'Transaction does not have enough outputs' }
+    }
+
+    // Validate that the amount is correct
+    // The first output is the payment of the quote value
+    const btcValueInSats = bitcoinTx.vout[0]?.valueInSats ?? 0
+
+    // Then convert satoshis to wei (multiply by 10^10)
+    const satoshisToWeiConversionFactor = BigInt(10) ** BigInt(10)
+    const btcValueInWei = BigInt(btcValueInSats) * satoshisToWeiConversionFactor
+
+    if (btcValueInWei < pegoutStatus.detail.value) {
+      return { isValid: false, errorMessage: 'Transaction value is less than the quote value' }
+    }
+
+    // Validate that the OP_RETURN output is correct
+    // The second output is the OP_RETURN output with the quote hash
+    const opReturnCandidate = bitcoinTx.vout[1]
+
+    if (!opReturnCandidate) {
+      return { isValid: false, errorMessage: 'Transaction does not have a valid OP_RETURN output' }
+    }
+
+    const isValid = opReturnCandidate.valueInSats === 0 && opReturnCandidate.hex === `6a20${quoteHash}`
+
+    if (!isValid) {
+      return { isValid: false, errorMessage: 'Transaction does not have a valid OP_RETURN output' }
+    }
+
+    return { isValid }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    throw new Error(`Failed to check OP_RETURN output: ${errorMessage}`)
+    return { isValid: false, errorMessage: `Failed to check OP_RETURN output: ${error}` }
   }
+}
+
+function isTransactionConfirmed (isConfirmed: boolean | undefined, confirmations: number | undefined): boolean {
+  if (isConfirmed) {
+    return true
+  }
+
+  return (confirmations ?? 0) >= MIN_BTC_CONFIRMATIONS
 }

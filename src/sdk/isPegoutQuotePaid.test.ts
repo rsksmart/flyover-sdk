@@ -1,42 +1,17 @@
+import { getPegoutStatus } from './getPegoutStatus'
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
 import { isPegoutQuotePaid } from './isPegoutQuotePaid'
-import { getPegoutStatus } from './getPegoutStatus'
 import { type HttpClient } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider } from '../api'
-import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
+import { type BitcoinDataSource, type BitcoinTransaction, type BitcoinTransactionOutput } from '../bitcoin/BitcoinDataSource'
 import { FlyoverErrors } from '../constants/errors'
-import { type Transaction } from 'bitcoinjs-lib'
-import { type Output } from 'bitcoinjs-lib/src/transaction'
-
-jest.mock('./getPegoutStatus')
-const mockedGetPegoutStatus = getPegoutStatus as jest.Mock
-
-jest.mock('bitcoinjs-lib', () => ({
-  Transaction: {
-    fromHex: jest.fn().mockImplementation(() => {
-      return mockTxJsLib
-    })
-  }
-}))
-
-// Success case of the Transaction.fromHex() mock for the FAKE_QUOTE_HASH
-const mockTxJsLib = {
-  version: 2,
-  locktime: 0,
-  outs: [
-    { value: 60000000, script: Buffer.from([118, 169, 20, 78, 224, 44, 72, 30, 100, 132, 197, 127, 71, 50, 28, 236, 4, 47, 56, 5, 77, 130, 214, 136, 172]) },
-    { value: 0, script: Buffer.from([106, 32, 115, 63, 150, 198, 123, 198, 212, 8, 110, 215, 16, 113, 76, 54, 207, 109, 49, 181, 38, 183, 206, 179, 33, 213, 106, 197, 46, 114, 30, 142, 151, 255]) },
-    { value: 459939475, script: Buffer.from([118, 169, 20, 221, 182, 119, 243, 100, 152, 247, 164, 144, 26, 116, 232, 130, 223, 104, 253, 0, 207, 71, 53, 136, 172]) },
-    {
-      value: 459939475,
-      script: Buffer.from([118, 169, 20, 221, 182, 119, 243, 100, 152, 247, 164, 144, 26, 116, 232, 130, 223, 104, 253, 0, 207, 71, 53, 136, 172])
-    }
-  ]
-} as unknown as Transaction
 
 const FAKE_QUOTE_HASH = '733f96c67bc6d4086ed710714c36cf6d31b526b7ceb321d56ac52e721e8e97ff'
 const FAKE_LP_BTC_TX_HASH = '81d20ff8f2f961ce88aeceeb2d859287bcd6ebba2ef532e7d083100a52faad87'
-const FAKE_TX_HEX = '0200000001480669043873ea93dfeb4817799bfb92088d344c77c1324fc84db65d0832f7da020000006a47304402205805cba42242416e3ba8ccda109dd2ca7b54fdfd9a493478b98212d66a778f6402204a8e4b34185fc1eabfec2507c2d0c1844a50269ee4d415e7db7e341f0a554fdd01210232858a5faa413101831afe7a880da9a8ac4de6bd5e25b4358d762ba450b03c22fdffffff0300879303000000001976a9144ee02c481e6484c57f47321cec042f38054d82d688ac0000000000000000226a20733f96c67bc6d4086ed710714c36cf6d31b526b7ceb321d56ac52e721e8e97ff931e6a1b000000001976a914ddb677f36498f7a4901a74e882df68fd00cf473588ac00000000'
+const QUOTE_VALUE_IN_SATS = 60_000_000
+
+jest.mock('./getPegoutStatus')
+const mockedGetPegoutStatus = getPegoutStatus as jest.Mock
 
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 const mockClient: HttpClient = {
@@ -45,6 +20,7 @@ const mockClient: HttpClient = {
   }
 } as unknown as HttpClient
 
+// Create mock provider
 const providerMock: LiquidityProvider = {
   id: 1,
   provider: '0x9D93929A9099be4355fC2389FbF253982F9dF47c',
@@ -104,30 +80,53 @@ const mockPegoutStatusWithTxHash = {
   }
 }
 
-const mockBitcoinDataSource: BitcoinDataSource = {
-  getTransactionAsHex: jest.fn().mockImplementation(async () => Promise.resolve(FAKE_TX_HEX))
-} as unknown as BitcoinDataSource
+const mockBitcoinTransaction: BitcoinTransaction = {
+  txid: FAKE_LP_BTC_TX_HASH,
+  confirmations: 3,
+  vout: [
+    {
+      valueInSats: QUOTE_VALUE_IN_SATS,
+      hex: '76a9144ee02c481e6484c57f47321cec042f38054d82d688ac'
+    },
+    {
+      valueInSats: 0,
+      hex: `6a20${FAKE_QUOTE_HASH}`
+    },
+    {
+      valueInSats: 4039892400,
+      hex: '76a914ddb677f36498f7a4901a74e882df68fd00cf473588ac'
+    }
+  ]
+}
+
+const mockBitcoinDataSource: BitcoinDataSource = jest.mocked({
+  getTransaction: jest.fn().mockImplementation(async () => Promise.resolve(mockBitcoinTransaction))
+} as BitcoinDataSource)
 
 describe('isPegoutQuotePaid function', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockedGetPegoutStatus.mockImplementation(async () => Promise.resolve(mockPegoutStatusWithTxHash))
   })
 
-  test('should return isPaid true when quote is paid', async () => {
-    mockedGetPegoutStatus.mockImplementation(async () => Promise.resolve(mockPegoutStatusWithTxHash))
-
-    const result = await isPegoutQuotePaid(
-      mockClient,
-      providerMock,
-      FAKE_QUOTE_HASH,
-      mockBitcoinDataSource
-    )
-
+  test('should return true if the quote is paid', async () => {
+    // BY NUMBER OF CONFIRMATIONS
+    jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () => Promise.resolve(mockBitcoinTransaction))
+    let result = await isPegoutQuotePaid(mockClient, providerMock, FAKE_QUOTE_HASH, mockBitcoinDataSource)
     expect(result.isPaid).toBe(true)
-    expect(result.error).toBeUndefined()
+    expect(result.error).not.toBeDefined()
 
-    expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
-    expect(mockBitcoinDataSource.getTransactionAsHex).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
+    // BY ISCONFIRMED TRUE
+    jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () => Promise.resolve(
+      {
+        ...mockBitcoinTransaction,
+        isConfirmed: true,
+        confirmations: undefined
+      }
+    ))
+    result = await isPegoutQuotePaid(mockClient, providerMock, FAKE_QUOTE_HASH, mockBitcoinDataSource)
+    expect(result.isPaid).toBe(true)
+    expect(result.error).not.toBeDefined()
   })
 
   test('should return isPaid false when LPS does not return quote status', async () => {
@@ -189,89 +188,261 @@ describe('isPegoutQuotePaid function', () => {
     expect(result.isPaid).toBe(false)
     expect(result.error).toBe(FlyoverErrors.QUOTE_STATUS_DOES_NOT_HAVE_A_PEGOUT_TX_HASH)
     expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
-    expect(mockBitcoinDataSource.getTransactionAsHex).not.toHaveBeenCalled()
+    expect(mockBitcoinDataSource.getTransaction).not.toHaveBeenCalled()
   })
 
-  test('should return isPaid false when transaction does not have a valid OP_RETURN output', async () => {
-    // Save a reference to the original outs array
-    const originalOuts = [...mockTxJsLib.outs]
+  describe('isBtcTransactionValid validation cases', () => {
+    test('should return isPaid false when bitcoinDataSource is not defined', async () => {
+      const result = await isPegoutQuotePaid(
+        mockClient,
+        providerMock,
+        FAKE_QUOTE_HASH,
+        undefined as unknown as BitcoinDataSource
+      )
 
-    // Remove the OP_RETURN output (the one with value 0, which is at index 1)
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    mockTxJsLib.outs = [mockTxJsLib.outs[0]!, mockTxJsLib.outs[2]!]
+      expect(result.isPaid).toBe(false)
+      expect(result.error).toStrictEqual({
+        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
+        detail: 'Flyover is not connected to Bitcoin'
+      })
+    })
 
-    mockedGetPegoutStatus.mockImplementation(async () => Promise.resolve(mockPegoutStatusWithTxHash))
+    test('should return isPaid false when transaction is not confirmed', async () => {
+      // BY INSUFICIENT CONFIRMATIONS
+      let unconfirmedTransaction: BitcoinTransaction = {
+        ...mockBitcoinTransaction,
+        confirmations: 0,
+        isConfirmed: undefined
+      }
 
-    const result = await isPegoutQuotePaid(
-      mockClient,
-      providerMock,
-      FAKE_QUOTE_HASH,
-      mockBitcoinDataSource
-    )
+      jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () =>
+        Promise.resolve(unconfirmedTransaction)
+      )
 
-    expect(result.isPaid).toBe(false)
-    expect(result.error).toBe(FlyoverErrors.QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_A_VALID_OP_RETURN_OUTPUT)
+      const result = await isPegoutQuotePaid(
+        mockClient,
+        providerMock,
+        FAKE_QUOTE_HASH,
+        mockBitcoinDataSource
+      )
 
-    expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
-    expect(mockBitcoinDataSource.getTransactionAsHex).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
+      expect(result.isPaid).toBe(false)
+      expect(result.error).toStrictEqual({
+        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
+        detail: 'Transaction is not confirmed'
+      })
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
 
-    // Restore the original outs array
-    mockTxJsLib.outs = originalOuts
-  })
+      // BY ISCONFIRMED FALSE
+      unconfirmedTransaction = {
+        ...mockBitcoinTransaction,
+        isConfirmed: false,
+        confirmations: undefined
+      }
 
-  test('should return isPaid false when transaction has OP_RETURN but with wrong hash', async () => {
-    // Save a reference to the original outs array
-    const originalOuts = [...mockTxJsLib.outs]
+      const result2 = await isPegoutQuotePaid(
+        mockClient,
+        providerMock,
+        FAKE_QUOTE_HASH,
+        mockBitcoinDataSource
+      )
 
-    // Create a modified version with a different hash in the OP_RETURN output
-    const differentHashOutput = {
-      value: 0,
-      script: Buffer.from([
-        106, 32, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-        100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-        100, 100, 100, 100, 100, 100, 100, 100, 100, 100
-      ])
-    } as Output
+      expect(result2.isPaid).toBe(false)
+      expect(result2.error).toStrictEqual({
+        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
+        detail: 'Transaction is not confirmed'
+      })
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
+    })
 
-    // Replace the OP_RETURN output with our modified one
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    mockTxJsLib.outs = [mockTxJsLib.outs[0]!, differentHashOutput, mockTxJsLib.outs[2]!]
+    test('should return isPaid false when transaction does not have enough outputs', async () => {
+      // Create a transaction with insufficient outputs
+      const insufficientOutputsTransaction: BitcoinTransaction = {
+        ...mockBitcoinTransaction,
+        vout: [
+          {
+            valueInSats: 60000000,
+            hex: '76a9144ee02c481e6484c57f47321cec042f38054d82d688ac'
+          }
+        ]
+      }
 
-    mockedGetPegoutStatus.mockImplementation(async () => Promise.resolve(mockPegoutStatusWithTxHash))
+      jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () =>
+        Promise.resolve(insufficientOutputsTransaction)
+      )
 
-    const result = await isPegoutQuotePaid(
-      mockClient,
-      providerMock,
-      FAKE_QUOTE_HASH,
-      mockBitcoinDataSource
-    )
+      const result = await isPegoutQuotePaid(
+        mockClient,
+        providerMock,
+        FAKE_QUOTE_HASH,
+        mockBitcoinDataSource
+      )
 
-    expect(result.isPaid).toBe(false)
-    expect(result.error).toBe(FlyoverErrors.QUOTE_STATUS_TRANSACTION_DOES_NOT_HAVE_A_VALID_OP_RETURN_OUTPUT)
-    expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
-    expect(mockBitcoinDataSource.getTransactionAsHex).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
+      expect(result.isPaid).toBe(false)
+      expect(result.error).toStrictEqual({
+        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
+        detail: 'Transaction does not have enough outputs'
+      })
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
+    })
 
-    // Restore the original outs array
-    mockTxJsLib.outs = originalOuts
-  })
+    test('should return isPaid false when transaction value is less than quote value', async () => {
+      // Create a transaction with insufficient value
+      const insufficientValueTransaction: BitcoinTransaction = {
+        ...mockBitcoinTransaction,
+        vout: [
+          {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            ...mockBitcoinTransaction.vout[0]!,
+            valueInSats: QUOTE_VALUE_IN_SATS - 1 // One satoshi less than required
+          },
+          mockBitcoinTransaction.vout[1] as BitcoinTransactionOutput,
+          mockBitcoinTransaction.vout[2] as BitcoinTransactionOutput
+        ]
+      }
 
-  test('should throw error when getTransactionAsHex fails', async () => {
-    mockedGetPegoutStatus.mockImplementation(async () => Promise.resolve(mockPegoutStatusWithTxHash))
+      jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () =>
+        Promise.resolve(insufficientValueTransaction)
+      )
 
-    // Create a mock for bitcoinDataSource that fails with an error
-    const errorMessage = 'Failed to get transaction hex'
-    const mockBitcoinDataSourceWithError = {
-      getTransactionAsHex: jest.fn().mockImplementation(async () => Promise.reject(new Error(errorMessage)))
-    }
+      // Execute
+      const result = await isPegoutQuotePaid(
+        mockClient,
+        providerMock,
+        FAKE_QUOTE_HASH,
+        mockBitcoinDataSource
+      )
 
-    await expect(isPegoutQuotePaid(
-      mockClient,
-      providerMock,
-      FAKE_QUOTE_HASH,
-      mockBitcoinDataSourceWithError as BitcoinDataSource
-    )).rejects.toThrow(`Failed to check OP_RETURN output: ${errorMessage}`)
+      // Verify
+      expect(result.isPaid).toBe(false)
+      expect(result.error).toStrictEqual({
+        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
+        detail: 'Transaction value is less than the quote value'
+      })
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
+    })
 
-    expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
-    expect(mockBitcoinDataSourceWithError.getTransactionAsHex).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
+    test('should return isPaid false when second output (OP_RETURN candidate) does not exist', async () => {
+      // Create a transaction with enough outputs but missing the second output
+      const missingOpReturnTransaction: BitcoinTransaction = {
+        ...mockBitcoinTransaction,
+        vout: [mockBitcoinTransaction.vout[0] as BitcoinTransactionOutput,
+          mockBitcoinTransaction.vout[2] as BitcoinTransactionOutput]
+      }
+
+      jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () =>
+        Promise.resolve(missingOpReturnTransaction)
+      )
+
+      const result = await isPegoutQuotePaid(
+        mockClient,
+        providerMock,
+        FAKE_QUOTE_HASH,
+        mockBitcoinDataSource
+      )
+
+      expect(result.isPaid).toBe(false)
+      expect(result.error).toStrictEqual({
+        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
+        detail: 'Transaction does not have a valid OP_RETURN output'
+      })
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
+    })
+
+    test('should return isPaid false when second output is not a valid OP_RETURN', async () => {
+      // Create a transaction with invalid OP_RETURN
+      const invalidOpReturnTransaction: BitcoinTransaction = {
+        ...mockBitcoinTransaction,
+        vout: [
+          mockBitcoinTransaction.vout[0] as BitcoinTransactionOutput,
+          {
+            ...mockBitcoinTransaction.vout[1] as BitcoinTransactionOutput,
+            valueInSats: 1000 // Should be 0
+          },
+          mockBitcoinTransaction.vout[2] as BitcoinTransactionOutput
+        ]
+      }
+
+      jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () =>
+        Promise.resolve(invalidOpReturnTransaction)
+      )
+
+      const result = await isPegoutQuotePaid(
+        mockClient,
+        providerMock,
+        FAKE_QUOTE_HASH,
+        mockBitcoinDataSource
+      )
+
+      expect(result.isPaid).toBe(false)
+      expect(result.error).toStrictEqual({
+        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
+        detail: 'Transaction does not have a valid OP_RETURN output'
+      })
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
+    })
+
+    test('should return isPaid false when OP_RETURN does not contain the quote hash', async () => {
+      // Create a transaction with wrong quote hash in OP_RETURN
+      const wrongQuoteHashTransaction: BitcoinTransaction = {
+        ...mockBitcoinTransaction,
+        vout: [
+          mockBitcoinTransaction.vout[0] as BitcoinTransactionOutput,
+          {
+            ...mockBitcoinTransaction.vout[1] as BitcoinTransactionOutput,
+            hex: '6a20ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+          },
+          mockBitcoinTransaction.vout[2] as BitcoinTransactionOutput
+        ]
+      }
+
+      jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () =>
+        Promise.resolve(wrongQuoteHashTransaction)
+      )
+
+      const result = await isPegoutQuotePaid(
+        mockClient,
+        providerMock,
+        FAKE_QUOTE_HASH,
+        mockBitcoinDataSource
+      )
+
+      expect(result.isPaid).toBe(false)
+      expect(result.error).toStrictEqual({
+        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
+        detail: 'Transaction does not have a valid OP_RETURN output'
+      })
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
+    })
+
+    test('should return isPaid false when getTransaction throws an error', async () => {
+      // Mock getTransaction to throw an error
+      const errorMessage = 'Failed to fetch transaction'
+      jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () => {
+        throw new Error(errorMessage)
+      })
+
+      const result = await isPegoutQuotePaid(
+        mockClient,
+        providerMock,
+        FAKE_QUOTE_HASH,
+        mockBitcoinDataSource
+      )
+
+      expect(result.isPaid).toBe(false)
+      expect(result.error).toStrictEqual({
+        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
+        detail: `Failed to check OP_RETURN output: Error: ${errorMessage}`
+      })
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
+    })
   })
 })

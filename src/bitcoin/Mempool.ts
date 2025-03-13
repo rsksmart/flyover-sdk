@@ -1,4 +1,4 @@
-import type { BitcoinDataSource } from './BitcoinDataSource'
+import type { BitcoinDataSource, BitcoinTransaction } from './BitcoinDataSource'
 import { MempoolBaseUrls } from '../constants/mempool'
 
 export class Mempool implements BitcoinDataSource {
@@ -8,8 +8,8 @@ export class Mempool implements BitcoinDataSource {
     this.baseUrl = network === 'mainnet' ? MempoolBaseUrls.Mainnet : MempoolBaseUrls.Testnet
   }
 
-  async getTransactionAsHex (txHash: string): Promise<string> {
-    const url = `${this.baseUrl}/tx/${txHash}/hex`
+  async getTransaction (txHash: string): Promise<BitcoinTransaction> {
+    const url = `${this.baseUrl}/tx/${txHash}`
 
     const response = await fetch(url)
 
@@ -17,13 +17,15 @@ export class Mempool implements BitcoinDataSource {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const hexData = await response.text()
-    console.log('hexData', hexData)
+    const transaction = await response.json()
 
-    if (hexData) {
-      return hexData
+    return {
+      txid: transaction.txid,
+      isConfirmed: transaction.status.confirmed, // For Mempool, the transaction is confirmed with just one confirmation
+      vout: transaction.vout.map((output: any) => ({
+        valueInSats: output.value, // Already in satoshis
+        hex: output.scriptpubkey
+      }))
     }
-
-    throw new Error('Transaction not found')
   }
 }

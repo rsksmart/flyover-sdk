@@ -265,7 +265,7 @@ export class Flyover implements Bridge {
    *
    * @param { BitcoinDataSource } bitcoinDataSource object representing connection to the network
    */
-  async connectToBitcoin (bitcoinDataSource: BitcoinDataSource): Promise<void> {
+  connectToBitcoin (bitcoinDataSource: BitcoinDataSource): void {
     this.bitcoinDataSource = bitcoinDataSource
   }
 
@@ -273,7 +273,7 @@ export class Flyover implements Bridge {
    * Checks if Flyover object has an active connection with the Bitcoin network
    * @returns boolean
    */
-  async isConnectedToBitcoin (): Promise<boolean> {
+  isConnectedToBitcoin (): boolean {
     return this.bitcoinDataSource !== undefined
   }
 
@@ -424,7 +424,7 @@ export class Flyover implements Bridge {
    * This function requires that the LPS associated with this quote has been previously selected using the {@link Flyover.useLiquidityProvider} method.
    *
    * @param { string } quoteHash the has of the quote
-   * @param { TypeOfOperation } typeOfOperation the type of operation (pegin or pegout)
+   * @param { 'pegin' | 'pegout' } typeOfOperation the type of operation (pegin or pegout)
    *
    * @returns { IsQuotePaidResponse }
    */
@@ -440,11 +440,8 @@ export class Flyover implements Bridge {
       return isPeginQuotePaid(this.httpClient, this.liquidityProvider!, quoteHash, this.config.rskConnection!)
     } else if (typeOfOperation === 'pegout') {
       // Check connection to Bitcoin
-      if (!await this.isConnectedToBitcoin()) {
+      if (!this.isConnectedToBitcoin()) {
         throw new Error('Before calling isQuotePaid for pegout quotes, you need to connect to Bitcoin using Flyover.connectToBitcoin')
-      }
-      if (!this.config.network) {
-        throw new Error('Network is required for pegout quotes')
       }
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return isPegoutQuotePaid(this.httpClient, this.liquidityProvider!, quoteHash, this.bitcoinDataSource!)

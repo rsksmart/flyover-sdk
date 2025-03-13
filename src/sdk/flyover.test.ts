@@ -10,7 +10,7 @@ import { type Quote, type PeginQuoteRequest, type LiquidityProvider, type Pegout
 import { LiquidityBridgeContract } from '../blockchain/lbc'
 import { refundPegout } from './refundPegout'
 import { registerPegin, type RegisterPeginParams } from './registerPegin'
-import { type Network, type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
+import { type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
 import { FlyoverError } from '../client/httpClient'
 import { supportsConversion } from './supportsConversion'
 import { getMetadata } from './getMetadata'
@@ -690,7 +690,7 @@ describe('Flyover object should', () => {
 
       test('invoke correctly isPegoutQuotePaid external function', async () => {
         flyover.useLiquidityProvider(providerMock)
-        await flyover.connectToBitcoin(bitcoinDataSourceMock)
+        flyover.connectToBitcoin(bitcoinDataSourceMock)
 
         const result = await flyover.isQuotePaid('testQuoteHash', 'pegout')
 
@@ -714,7 +714,7 @@ describe('Flyover object should', () => {
 
       test('return isPaid true when quote is paid', async () => {
         flyover.useLiquidityProvider(providerMock)
-        await flyover.connectToBitcoin(bitcoinDataSourceMock)
+        flyover.connectToBitcoin(bitcoinDataSourceMock)
         ; (isPegoutQuotePaid as jest.Mock).mockImplementation(async () => Promise.resolve({ isPaid: true }))
 
         const result = await flyover.isQuotePaid('testQuoteHash', 'pegout')
@@ -724,7 +724,7 @@ describe('Flyover object should', () => {
 
       test('return isPaid false when quote is not paid', async () => {
         flyover.useLiquidityProvider(providerMock)
-        await flyover.connectToBitcoin(bitcoinDataSourceMock)
+        flyover.connectToBitcoin(bitcoinDataSourceMock)
         ; (isPegoutQuotePaid as jest.Mock).mockImplementation(async () => Promise.resolve({ isPaid: false }))
 
         const result = await flyover.isQuotePaid('testQuoteHash', 'pegout')
@@ -734,29 +734,13 @@ describe('Flyover object should', () => {
 
       test('handle errors from isPegoutQuotePaid function', async () => {
         flyover.useLiquidityProvider(providerMock)
-        await flyover.connectToBitcoin(bitcoinDataSourceMock)
+        flyover.connectToBitcoin(bitcoinDataSourceMock)
         const errorMessage = 'Failed to check quote payment status'
           ; (isPegoutQuotePaid as jest.Mock).mockImplementation(async () => Promise.reject(new Error(errorMessage)))
 
         await expect(flyover.isQuotePaid('testQuoteHash', 'pegout'))
           .rejects
           .toThrow(errorMessage)
-      })
-
-      test('fail when network is not specified for pegout quotes', async () => {
-        // Create a new Flyover instance with an undefined network
-        flyover = new Flyover({
-          network: undefined as unknown as Network,
-          allowInsecureConnections: true,
-          captchaTokenResolver: async () => Promise.resolve('')
-        })
-
-        flyover.useLiquidityProvider(providerMock)
-        await flyover.connectToBitcoin(bitcoinDataSourceMock)
-
-        await expect(flyover.isQuotePaid('testQuoteHash', 'pegout'))
-          .rejects
-          .toThrow('Network is required for pegout quotes')
       })
 
       test('fail when invalid type of operation is provided', async () => {

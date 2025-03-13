@@ -1,4 +1,4 @@
-import { type BitcoinDataSource } from './BitcoinDataSource'
+import { type BitcoinDataSource, type BitcoinTransaction } from './BitcoinDataSource'
 
 interface BitcoinClientConfig {
   rpcport: number
@@ -9,7 +9,7 @@ interface BitcoinClientConfig {
 
 type RpcCaller = (method: string, ...args: any[]) => Promise<any>
 
-function getBitcoinRpcCaller (config: BitcoinClientConfig, debug = false): RpcCaller {
+function getBitcoinRpcCaller (config: BitcoinClientConfig): RpcCaller {
   const url = `http://${config.rpcconnect}:${config.rpcport}`
   const headers = new Headers()
   headers.append('content-type', 'application/json')
@@ -23,9 +23,6 @@ function getBitcoinRpcCaller (config: BitcoinClientConfig, debug = false): RpcCa
       params: typeof args[0] === 'object' && !Array.isArray(args[0]) ? args[0] : args
     })
     const requestOptions = { method: 'POST', headers, body }
-    if (debug) {
-      console.log(body)
-    }
     return fetch(url, requestOptions)
       .then(async response => response.json())
       .then(response => {
@@ -46,14 +43,27 @@ export class LocalBTCDataSource implements BitcoinDataSource {
     this.rpcCaller = getBitcoinRpcCaller(this.config)
   }
 
-  async getTransactionAsHex (txHash: string): Promise<string> {
+  /**
+   * Gets detailed information about a Bitcoin transaction, including confirmation status
+   * @param txHash The transaction hash to query
+   * @returns A promise that resolves to a BitcoinTransaction object
+   */
+  async getTransaction (txHash: string): Promise<BitcoinTransaction> {
     try {
-      const rawTx = await this.rpcCaller('getrawtransaction', txHash, true)
+      // The second parameter 'true' tells Bitcoin Core to return the full decoded transaction
+      const transaction = await this.rpcCaller('getrawtransaction', txHash, true)
 
-      return rawTx.hex
+      return {
+        txid: transaction.txid,
+        confirmations: transaction.confirmations,
+        vout: transaction.vout.map((output: any) => ({
+          valueInSats: output.value * 100_000_000, // Convert BTC to satoshis
+          hex: output.scriptPubKey.hex
+        }))
+      }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      throw new Error(`Failed to get transaction: ${errorMessage}`)
+      throw new Error(`Failed to get transaction details: ${errorMessage}`)
     }
   }
 }
