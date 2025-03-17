@@ -1,4 +1,4 @@
-import { type BitcoinDataSource, type BitcoinTransaction } from './BitcoinDataSource'
+import { type BitcoinDataSource, type BitcoinTransaction, MIN_BTC_CONFIRMATIONS } from './BitcoinDataSource'
 
 interface BitcoinClientConfig {
   rpcport: number
@@ -55,7 +55,7 @@ export class LocalBTCDataSource implements BitcoinDataSource {
 
       return {
         txid: transaction.txid,
-        confirmations: transaction.confirmations,
+        isConfirmed: transaction.confirmations >= MIN_BTC_CONFIRMATIONS,
         vout: transaction.vout.map((output: any) => ({
           valueInSats: output.value * 100_000_000, // Convert BTC to satoshis
           hex: output.scriptPubKey.hex

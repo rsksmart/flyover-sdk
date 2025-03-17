@@ -82,7 +82,7 @@ const mockPegoutStatusWithTxHash = {
 
 const mockBitcoinTransaction: BitcoinTransaction = {
   txid: FAKE_LP_BTC_TX_HASH,
-  confirmations: 3,
+  isConfirmed: true,
   vout: [
     {
       valueInSats: QUOTE_VALUE_IN_SATS,
@@ -110,21 +110,9 @@ describe('isPegoutQuotePaid function', () => {
   })
 
   test('should return true if the quote is paid', async () => {
-    // BY NUMBER OF CONFIRMATIONS
     jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () => Promise.resolve(mockBitcoinTransaction))
-    let result = await isPegoutQuotePaid(mockClient, providerMock, FAKE_QUOTE_HASH, mockBitcoinDataSource)
-    expect(result.isPaid).toBe(true)
-    expect(result.error).not.toBeDefined()
 
-    // BY ISCONFIRMED TRUE
-    jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () => Promise.resolve(
-      {
-        ...mockBitcoinTransaction,
-        isConfirmed: true,
-        confirmations: undefined
-      }
-    ))
-    result = await isPegoutQuotePaid(mockClient, providerMock, FAKE_QUOTE_HASH, mockBitcoinDataSource)
+    const result = await isPegoutQuotePaid(mockClient, providerMock, FAKE_QUOTE_HASH, mockBitcoinDataSource)
     expect(result.isPaid).toBe(true)
     expect(result.error).not.toBeDefined()
   })
@@ -208,38 +196,13 @@ describe('isPegoutQuotePaid function', () => {
     })
 
     test('should return isPaid false when transaction is not confirmed', async () => {
-      // BY INSUFICIENT CONFIRMATIONS
-      let unconfirmedTransaction: BitcoinTransaction = {
+      const unconfirmedTransaction = {
         ...mockBitcoinTransaction,
-        confirmations: 0,
-        isConfirmed: undefined
+        isConfirmed: false
       }
-
       jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () =>
         Promise.resolve(unconfirmedTransaction)
       )
-
-      const result = await isPegoutQuotePaid(
-        mockClient,
-        providerMock,
-        FAKE_QUOTE_HASH,
-        mockBitcoinDataSource
-      )
-
-      expect(result.isPaid).toBe(false)
-      expect(result.error).toStrictEqual({
-        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
-        detail: 'Transaction is not confirmed'
-      })
-      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
-      expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
-
-      // BY ISCONFIRMED FALSE
-      unconfirmedTransaction = {
-        ...mockBitcoinTransaction,
-        isConfirmed: false,
-        confirmations: undefined
-      }
 
       const result2 = await isPegoutQuotePaid(
         mockClient,

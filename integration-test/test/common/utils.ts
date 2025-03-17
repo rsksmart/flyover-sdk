@@ -1,5 +1,4 @@
-import { type BitcoinDataSource } from '@rsksmart/flyover-sdk'
-import { LocalBTCDataSource, Mempool } from '@rsksmart/flyover-sdk'
+import { type BitcoinDataSource, LocalBTCDataSource, Mempool } from '@rsksmart/flyover-sdk'
 
 /**
  * This fake token resolver can be used to mock the captcha token resolver function.

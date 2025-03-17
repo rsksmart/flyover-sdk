@@ -22,7 +22,7 @@ export class Mempool implements BitcoinDataSource {
     return {
       txid: transaction.txid,
       isConfirmed: transaction.status.confirmed, // For Mempool, the transaction is confirmed with just one confirmation
-      vout: transaction.vout.map((output: any) => ({
+      vout: transaction.vout.map((output: { value: number, scriptpubkey: string }) => ({
         valueInSats: output.value, // Already in satoshis
         hex: output.scriptpubkey
       }))

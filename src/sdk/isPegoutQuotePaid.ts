@@ -2,7 +2,7 @@ import { getPegoutStatus } from './getPegoutStatus'
 import { type HttpClient } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type PegoutQuoteStatus } from '../api'
 import { FlyoverErrors } from '../constants/errors'
-import { type BitcoinDataSource, MIN_BTC_CONFIRMATIONS } from '../bitcoin/BitcoinDataSource'
+import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
 import { type IsQuotePaidResponse } from '../utils/interfaces'
 
 const MAX_RETRIES = 3
@@ -98,7 +98,7 @@ async function isBtcTransactionValid (
     const bitcoinTx = await bitcoinDataSource.getTransaction(pegoutStatus.status.lpBtcTxHash)
 
     // Check if the transaction has enough confirmations
-    if (!isTransactionConfirmed(bitcoinTx.isConfirmed, bitcoinTx.confirmations)) {
+    if (!bitcoinTx.isConfirmed) {
       return { isValid: false, errorMessage: 'Transaction is not confirmed' }
     }
 
@@ -136,12 +136,4 @@ async function isBtcTransactionValid (
   } catch (error) {
     return { isValid: false, errorMessage: `Failed to check OP_RETURN output: ${error}` }
   }
-}
-
-function isTransactionConfirmed (isConfirmed: boolean | undefined, confirmations: number | undefined): boolean {
-  if (isConfirmed) {
-    return true
-  }
-
-  return (confirmations ?? 0) >= MIN_BTC_CONFIRMATIONS
 }

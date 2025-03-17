@@ -7,8 +7,7 @@ export interface BitcoinTransactionOutput {
 
 export interface BitcoinTransaction {
   txid: string
-  confirmations?: number
-  isConfirmed?: boolean
+  isConfirmed: boolean
   vout: BitcoinTransactionOutput[]
 }
 

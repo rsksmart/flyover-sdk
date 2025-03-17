@@ -87,7 +87,7 @@ describe('LocalBTCDataSource', () => {
     // Expected BitcoinTransaction object after transformation
     const expectedBitcoinTransaction: BitcoinTransaction = {
       txid: mockRawTransaction.txid,
-      confirmations: mockRawTransaction.confirmations,
+      isConfirmed: true,
       vout: [
         {
           valueInSats: 60000000, // 0.6 BTC converted to satoshis
