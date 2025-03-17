@@ -3,16 +3,16 @@ import abi from './lbc-abi'
 import { FlyoverNetworks, type FlyoverSupportedNetworks } from '../constants/networks'
 import { type PegoutQuoteDetail, type PegoutQuote, type Quote as PeginQuote, type QuoteDetail as PeginQuoteDetail, type LiquidityProviderBase } from '../api'
 import { type QuotesV2 as Quotes, type LiquidityBridgeContractV2 as LBC } from './bindings/Lbc'
-import { decodeBtcAddress, executeContractFunction, executeContractView, type FlyoverConfig, isRskAddress, type Network, type BlockchainConnection, type TxResult } from '@rsksmart/bridges-core-sdk'
+import { decodeBtcAddress, executeContractFunction, executeContractView, type FlyoverConfig, isRskAddress, type Network, type Connection, type TxResult } from '@rsksmart/bridges-core-sdk'
 export class LiquidityBridgeContract {
   private readonly liquidityBridgeContract: Contract
 
-  constructor (rskConnection: BlockchainConnection, config: FlyoverConfig) {
+  constructor (rskConnection: Connection, config: FlyoverConfig) {
     const address = getLbcAddress(config.network, config.customLbcAddress)
     if (address === undefined || !isRskAddress(address)) {
       throw new Error('invalid address')
     }
-    const lbc = new Contract(address, abi, rskConnection.signer)
+    const lbc = new Contract(address, abi, rskConnection.getAbstraction())
     this.liquidityBridgeContract = lbc
   }
 
