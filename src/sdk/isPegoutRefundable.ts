@@ -1,4 +1,4 @@
-import { type Connection, assertTruthy } from '@rsksmart/bridges-core-sdk'
+import { type Connection, assertTruthy, type BridgeError } from '@rsksmart/bridges-core-sdk'
 import { type PegoutQuote, type PegoutQuoteDetail } from '../api/index'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
 import { FlyoverErrors } from '../constants/errors'
@@ -30,9 +30,15 @@ export async function isPegoutRefundable (
     return { isRefundable: false, error: FlyoverErrors.PEG_OUT_REFUND_NOT_EXPIRED_BY_BLOCKS }
   }
 
-  const refundWillSucceed = await verifyRefundExecution(lbc, quote)
-  if (!refundWillSucceed) {
-    return { isRefundable: false, error: FlyoverErrors.PEG_OUT_REFUND_FAILED }
+  const refundError = await verifyRefundExecution(lbc, quote)
+  if (refundError !== null) {
+    return {
+      isRefundable: false,
+      error: {
+        ...FlyoverErrors.PEG_OUT_REFUND_FAILED,
+        detail: refundError.details.error.error.message
+      }
+    }
   }
   return { isRefundable: true }
 }
@@ -47,11 +53,11 @@ async function isExpiredByBlocks (rsk: Connection, quote: PegoutQuoteDetail): Pr
   return quote.expireBlocks < currentBlock
 }
 
-async function verifyRefundExecution (lbc: LiquidityBridgeContract, quote: PegoutQuote): Promise<boolean> {
+async function verifyRefundExecution (lbc: LiquidityBridgeContract, quote: PegoutQuote): Promise<BridgeError | null> {
   try {
     await lbc.refundPegout(quote, 'staticCall')
-    return true
+    return null
   } catch (error) {
-    return false
+    return error as BridgeError
   }
 }

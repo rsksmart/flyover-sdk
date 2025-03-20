@@ -1,5 +1,5 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
-import { type Connection } from '@rsksmart/bridges-core-sdk'
+import { BridgeError, type Connection } from '@rsksmart/bridges-core-sdk'
 import { type PegoutQuote } from '../api'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
 import { FlyoverErrors } from '../constants/errors'
@@ -120,10 +120,21 @@ describe('isPegoutRefundable function should', () => {
     lbcMock.isPegOutQuoteCompleted?.mockResolvedValue(false)
     pegoutQuoteMock.quote.expireDate = (Date.now() / 1000) - 5000
     connectionMock.getChainHeight?.mockResolvedValue(pegoutQuoteMock.quote.expireBlocks + 5)
-    lbcMock.refundPegout?.mockImplementation(() => { throw new Error('refund failed') })
+    lbcMock.refundPegout?.mockImplementation(() => {
+      const ethersError = { error: new Error('refund failed') }
+      throw new BridgeError({
+        timestamp: Date.now(),
+        recoverable: true,
+        message: 'an error',
+        details: { error: ethersError }
+      })
+    })
     const result = await isPegoutRefundable(contextMock, pegoutQuoteMock)
     expect(result.isRefundable).toBe(false)
-    expect(result.error).toBe(FlyoverErrors.PEG_OUT_REFUND_FAILED)
+    expect(result.error).toMatchObject({
+      ...FlyoverErrors.PEG_OUT_REFUND_FAILED,
+      detail: 'refund failed'
+    })
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledTimes(1)
     expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(contextMock, pegoutQuoteMock.quoteHash)
