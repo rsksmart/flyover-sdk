@@ -1,5 +1,5 @@
 import { describe, test, beforeAll, expect } from '@jest/globals'
-import { assertTruthy, BlockchainConnection } from '@rsksmart/bridges-core-sdk'
+import { assertTruthy, BlockchainConnection, BlockchainReadOnlyConnection } from '@rsksmart/bridges-core-sdk'
 import { Flyover, type PegoutQuote, type LiquidityProvider, type AcceptedPegoutQuote, FlyoverUtils } from '@rsksmart/flyover-sdk'
 import { integrationTestConfig } from '../config'
 import { EXTENDED_TIMEOUT } from './common/constants'
@@ -94,6 +94,24 @@ describe('Flyover pegout process should', () => {
 
     expect(acceptedQuote.signature).not.toBeUndefined()
     expect(acceptedQuote.lbcAddress).not.toBeUndefined()
+  })
+
+  test('fail to deposit pegout if connection is readonly', async () => {
+    const readonlyFlyover = new Flyover({
+      network: integrationTestConfig.network,
+      allowInsecureConnections: true,
+      captchaTokenResolver: fakeTokenResolver,
+      disableChecksum: true,
+      rskConnection: await BlockchainReadOnlyConnection.createUsingRpc(integrationTestConfig.nodeUrl)
+    })
+    const amount = FlyoverUtils.getQuoteTotal(selectedQuote)
+    expect.assertions(2)
+    try {
+      await readonlyFlyover.depositPegout(selectedQuote, acceptedQuote.signature, amount)
+    } catch (e: any) {
+      expect(e.message).toBe('error executing function depositPegout')
+      expect(e.details.error).toContain('sending a transaction requires a signer')
+    }
   })
 
   test('deposit amount to lbc for accepted quote', async () => {

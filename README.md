@@ -57,8 +57,7 @@ However we advice to only use `Mainnet` or `Testnet` for integration purposes as
 - **disableChecksum**: this parameter tells the FlyoverSDK whether to disable the RSK checksum validation for the RSK addresses involved in the PegIn and PegOut operations or not. It is false by default.
 
 ## Connect to RSK
-If you need to connect to RSK to execute some operation then you need to create an RSKConnection and provide it to
-Flyover object
+If you need to connect to RSK to execute some operation then you need to create a Connection object and provide it to the Flyover object
 ```javascript
     const rsk = await BlockchainConnection.createUsingStandard(window.ethereum)
     const flyover = new Flyover({ rskConnection: rsk, network: 'Regtest' })
@@ -77,7 +76,7 @@ Also you can provide your own regtest LBC address if you want to connect to a lo
         customLbcAddress: '0x1eD614cd3443EFd9c70F04b6d777aed947A4b0c4'
     })
 ```
-There are 3 ways to create an RSK connection, you can check them in RSKConnection class documentation
+There are two types of connection; the [BlockchainConnection](https://github.com/rsksmart/bridges-core-sdk/blob/main/docs/classes/BlockchainConnection.md) and the [BlockchainReadOnlyConnection](https://github.com/rsksmart/bridges-core-sdk/blob/main/docs/classes/BlockchainReadOnlyConnection.md). The difference between them is that with the `BlockchainReadOnlyConnection` you wont be able to sign and broadcast transactions. For the alternatives to create the connection objects you can refer to the documentation of each one of the classes.
 
 ### Flyover utils
 FlyoverSDK exports an object with a collection of util functions that the client application might use during the integration with the SDK. You can see the list of the utility functions [here](./docs/modules.md#flyoverutils) and also when importing the `FlyoverUtils` object from the SDK package every function has a JsDoc explaining its usage.

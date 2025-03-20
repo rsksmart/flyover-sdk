@@ -22,7 +22,7 @@ import { registerPegin, type RegisterPeginParams } from './registerPegin'
 import {
   type CaptchaTokenResolver, type FlyoverConfig,
   getHttpClient, type HttpClient, isBtcAddress, isRskAddress, isSecureUrl,
-  type Network, type BlockchainConnection, type Bridge, type BridgeMetadata
+  type Network, type Connection, type Bridge, type BridgeMetadata
 } from '@rsksmart/bridges-core-sdk'
 import { FlyoverError } from '../client/httpClient'
 import { getMetadata } from './getMetadata'
@@ -249,12 +249,12 @@ export class Flyover implements Bridge {
   }
 
   /**
-   * Connects Flyover to RSK network. It is useful if connetion wasn't provided on initial configuration
+   * Connects Flyover to RSK network. It is useful if connection wasn't provided on initial configuration
    *
-   * @param { BlockchainConnection } rskConnection object representing connection to the network
+   * @param { Connection } rskConnection object representing connection to the network
    * @throws { Error } If Flyover already has a connection to the network
    */
-  async connectToRsk (rskConnection: BlockchainConnection): Promise<void> {
+  async connectToRsk (rskConnection: Connection): Promise<void> {
     if (this.config.rskConnection !== undefined) {
       throw new Error('already connected to Rsk network')
     }
@@ -328,10 +328,11 @@ export class Flyover implements Bridge {
   }
 
   /**
-   * Disconnects from RSK network, removing BlockchainConnection object from Flyover and also current LiquidityProvider
+   * Disconnects from RSK network, removing Connection object from Flyover and also current LiquidityProvider
    */
   disconnectFromRsk (): void {
     this.liquidityBridgeContract = undefined
+    this.rskBridge = undefined
     this.config.rskConnection = undefined
     this.liquidityProvider = undefined
   }
