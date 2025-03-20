@@ -5,6 +5,7 @@ import { type HttpClient } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider } from '../api'
 import { type BitcoinDataSource, type BitcoinTransaction, type BitcoinTransactionOutput } from '../bitcoin/BitcoinDataSource'
 import { FlyoverErrors } from '../constants/errors'
+import { type FlyoverSDKContext } from '../utils/interfaces'
 
 const FAKE_QUOTE_HASH = '733f96c67bc6d4086ed710714c36cf6d31b526b7ceb321d56ac52e721e8e97ff'
 const FAKE_LP_BTC_TX_HASH = '81d20ff8f2f961ce88aeceeb2d859287bcd6ebba2ef532e7d083100a52faad87'
@@ -103,6 +104,12 @@ const mockBitcoinDataSource: BitcoinDataSource = jest.mocked({
   getTransaction: jest.fn().mockImplementation(async () => Promise.resolve(mockBitcoinTransaction))
 } as BitcoinDataSource)
 
+const contextMock: FlyoverSDKContext = {
+  btcConnection: mockBitcoinDataSource,
+  provider: providerMock,
+  httpClient: mockClient
+} as FlyoverSDKContext
+
 describe('isPegoutQuotePaid function', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -112,7 +119,7 @@ describe('isPegoutQuotePaid function', () => {
   test('should return true if the quote is paid', async () => {
     jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () => Promise.resolve(mockBitcoinTransaction))
 
-    const result = await isPegoutQuotePaid(mockClient, providerMock, FAKE_QUOTE_HASH, mockBitcoinDataSource)
+    const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
     expect(result.isPaid).toBe(true)
     expect(result.error).not.toBeDefined()
   })
@@ -130,12 +137,7 @@ describe('isPegoutQuotePaid function', () => {
       return 0 as any
     } as typeof global.setTimeout
 
-    const result = await isPegoutQuotePaid(
-      mockClient,
-      providerMock,
-      FAKE_QUOTE_HASH,
-      mockBitcoinDataSource
-    )
+    const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
 
     expect(result.isPaid).toBe(false)
     expect(result.error).toStrictEqual({
@@ -166,12 +168,7 @@ describe('isPegoutQuotePaid function', () => {
     // Mock getPegoutStatus to return a status without lpBtcTxHash
     mockedGetPegoutStatus.mockImplementation(async () => Promise.resolve(mockPegoutStatusWithoutTxHash))
 
-    const result = await isPegoutQuotePaid(
-      mockClient,
-      providerMock,
-      FAKE_QUOTE_HASH,
-      mockBitcoinDataSource
-    )
+    const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
 
     expect(result.isPaid).toBe(false)
     expect(result.error).toBe(FlyoverErrors.QUOTE_STATUS_DOES_NOT_HAVE_A_PEGOUT_TX_HASH)
@@ -181,12 +178,9 @@ describe('isPegoutQuotePaid function', () => {
 
   describe('isBtcTransactionValid validation cases', () => {
     test('should return isPaid false when bitcoinDataSource is not defined', async () => {
-      const result = await isPegoutQuotePaid(
-        mockClient,
-        providerMock,
-        FAKE_QUOTE_HASH,
-        undefined as unknown as BitcoinDataSource
-      )
+      const context = { ...contextMock }
+      context.btcConnection = undefined
+      const result = await isPegoutQuotePaid(context, FAKE_QUOTE_HASH)
 
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
@@ -204,12 +198,7 @@ describe('isPegoutQuotePaid function', () => {
         Promise.resolve(unconfirmedTransaction)
       )
 
-      const result2 = await isPegoutQuotePaid(
-        mockClient,
-        providerMock,
-        FAKE_QUOTE_HASH,
-        mockBitcoinDataSource
-      )
+      const result2 = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
 
       expect(result2.isPaid).toBe(false)
       expect(result2.error).toStrictEqual({
@@ -236,12 +225,7 @@ describe('isPegoutQuotePaid function', () => {
         Promise.resolve(insufficientOutputsTransaction)
       )
 
-      const result = await isPegoutQuotePaid(
-        mockClient,
-        providerMock,
-        FAKE_QUOTE_HASH,
-        mockBitcoinDataSource
-      )
+      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
 
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
@@ -272,12 +256,7 @@ describe('isPegoutQuotePaid function', () => {
       )
 
       // Execute
-      const result = await isPegoutQuotePaid(
-        mockClient,
-        providerMock,
-        FAKE_QUOTE_HASH,
-        mockBitcoinDataSource
-      )
+      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
 
       // Verify
       expect(result.isPaid).toBe(false)
@@ -301,12 +280,7 @@ describe('isPegoutQuotePaid function', () => {
         Promise.resolve(missingOpReturnTransaction)
       )
 
-      const result = await isPegoutQuotePaid(
-        mockClient,
-        providerMock,
-        FAKE_QUOTE_HASH,
-        mockBitcoinDataSource
-      )
+      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
 
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
@@ -335,12 +309,7 @@ describe('isPegoutQuotePaid function', () => {
         Promise.resolve(invalidOpReturnTransaction)
       )
 
-      const result = await isPegoutQuotePaid(
-        mockClient,
-        providerMock,
-        FAKE_QUOTE_HASH,
-        mockBitcoinDataSource
-      )
+      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
 
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
@@ -369,12 +338,7 @@ describe('isPegoutQuotePaid function', () => {
         Promise.resolve(wrongQuoteHashTransaction)
       )
 
-      const result = await isPegoutQuotePaid(
-        mockClient,
-        providerMock,
-        FAKE_QUOTE_HASH,
-        mockBitcoinDataSource
-      )
+      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
 
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
@@ -392,12 +356,7 @@ describe('isPegoutQuotePaid function', () => {
         throw new Error(errorMessage)
       })
 
-      const result = await isPegoutQuotePaid(
-        mockClient,
-        providerMock,
-        FAKE_QUOTE_HASH,
-        mockBitcoinDataSource
-      )
+      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
 
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({

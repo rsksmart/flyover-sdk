@@ -3,7 +3,7 @@ import { type HttpClient } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type PegoutQuoteStatus } from '../api'
 import { FlyoverErrors } from '../constants/errors'
 import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
-import { type IsQuotePaidResponse } from '../utils/interfaces'
+import { type FlyoverSDKContext, type IsQuotePaidResponse } from '../utils/interfaces'
 
 const MAX_RETRIES = 3
 const RETRY_DELAY = 3000 // 3 seconds
@@ -19,11 +19,10 @@ const RETRY_DELAY = 3000 // 3 seconds
  * @returns A promise that resolves to the isPegoutQuotePaid response.
  */
 export async function isPegoutQuotePaid (
-  httpClient: HttpClient,
-  provider: LiquidityProvider,
-  quoteHash: string,
-  bitcoinDataSource: BitcoinDataSource
+  context: FlyoverSDKContext,
+  quoteHash: string
 ): Promise<IsQuotePaidResponse> {
+  const { httpClient, provider, btcConnection: bitcoinDataSource } = context
   let pegoutStatus: PegoutQuoteStatus
 
   // Get the pegout status from the Liquidity Provider
@@ -88,7 +87,7 @@ async function getPegoutStatusWithRetries (
 async function isBtcTransactionValid (
   pegoutStatus: PegoutQuoteStatus,
   quoteHash: string,
-  bitcoinDataSource: BitcoinDataSource
+  bitcoinDataSource: BitcoinDataSource | undefined
 ): Promise<{ isValid: boolean, errorMessage?: string }> {
   try {
     if (!bitcoinDataSource) {

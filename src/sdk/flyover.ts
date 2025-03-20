@@ -36,8 +36,9 @@ import { validatePeginTransaction, type ValidatePeginTransactionOptions, type Va
 import { isPeginQuotePaid } from './isPeginQuotePaid'
 import { isPegoutQuotePaid } from './isPegoutQuotePaid'
 import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
-import { type IsQuotePaidResponse } from '../utils/interfaces'
+import { type FlyoverSDKContext, type IsQuoteRefundableResponse, type IsQuotePaidResponse } from '../utils/interfaces'
 import crypto from 'crypto'
+import { isPegoutRefundable } from './isPegoutRefundable'
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
   private liquidityProvider?: LiquidityProvider
@@ -443,8 +444,7 @@ export class Flyover implements Bridge {
       if (!this.isConnectedToBitcoin()) {
         throw new Error('Before calling isQuotePaid for pegout quotes, you need to connect to Bitcoin using Flyover.connectToBitcoin')
       }
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return isPegoutQuotePaid(this.httpClient, this.liquidityProvider!, quoteHash, this.bitcoinDataSource!)
+      return isPegoutQuotePaid(this.getFlyoverContext(), quoteHash)
     } else {
       throw new Error('Invalid type of operation')
     }
@@ -454,8 +454,10 @@ export class Flyover implements Bridge {
     return true
   }
 
-  async isPegoutQuoteRefundable (_quoteHash: string): Promise<boolean> {
-    return true
+  async isPegoutRefundable (quote: PegoutQuote): Promise<IsQuoteRefundableResponse> {
+    this.checkLiquidityProvider()
+    this.checkLbc()
+    return isPegoutRefundable(this.getFlyoverContext(), quote)
   }
 
   async refundPeginQuote (_quote: Quote, _providerSignature: string, _userBtcTransactionHash: string): Promise<string> {
@@ -528,13 +530,20 @@ export class Flyover implements Bridge {
     this.checkLbc()
     this.checkLiquidityProvider()
     this.ensureRskBridge()
+    return validatePeginTransaction(this.getFlyoverContext(), params, options)
+  }
+
+  private getFlyoverContext (): FlyoverSDKContext {
     /* eslint-disable @typescript-eslint/no-non-null-assertion */
-    return validatePeginTransaction({
+    return {
       config: this.config,
       bridge: this.rskBridge!,
       lbc: this.liquidityBridgeContract!,
-      provider: this.liquidityProvider!
-    }, params, options)
+      provider: this.liquidityProvider!,
+      httpClient: this.httpClient,
+      rskConnection: this.config.rskConnection!,
+      btcConnection: this.bitcoinDataSource
+    }
     /* eslint-enable @typescript-eslint/no-non-null-assertion */
   }
 }

@@ -1,5 +1,5 @@
 import { getPeginStatus } from './getPeginStatus'
-import { type HttpClient, type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
+import { type HttpClient, type Connection } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type PeginQuoteStatus } from '../api'
 import { FlyoverErrors } from '../constants/errors'
 import { parseLBCLogs } from '../blockchain/parsing'
@@ -13,7 +13,7 @@ export async function isPeginQuotePaid (
   httpClient: HttpClient,
   provider: LiquidityProvider,
   quoteHash: string,
-  rskConnection: BlockchainConnection
+  rskConnection: Connection
 ): Promise<IsQuotePaidResponse> {
   let peginStatus: PeginQuoteStatus
 

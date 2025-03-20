@@ -37,5 +37,25 @@ export const FlyoverErrors = deepFreeze({
   NETWORK_NOT_SPECIFIED_FOR_PEG_OUT_QUOTE: {
     code: 'FLYOVER-SDK-0007',
     description: 'Network not specified for pegout quote'
+  },
+  PEG_OUT_REFUND_NOT_EXPIRED_BY_BLOCKS: {
+    code: 'FLYOVER-SDK-0008',
+    description: 'Pegout quote not expired by blocks. Not applicable for refund yet.'
+  },
+  PEG_OUT_REFUND_NOT_EXPIRED_BY_DATE: {
+    code: 'FLYOVER-SDK-0009',
+    description: 'Pegout quote not expired by date. Not applicable for refund yet.'
+  },
+  PEG_OUT_REFUND_ALREADY_PAID: {
+    code: 'FLYOVER-SDK-0010',
+    description: 'Pegout quote was already paid, so is not applicable for refund.'
+  },
+  PEG_OUT_REFUND_ALREADY_COMPLETED: {
+    code: 'FLYOVER-SDK-0011',
+    description: 'Pegout quote was already completed, so is not applicable for refund.'
+  },
+  PEG_OUT_REFUND_FAILED: {
+    code: 'FLYOVER-SDK-0012',
+    description: 'Simulated refund failed'
   }
 } as const)

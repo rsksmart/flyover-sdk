@@ -1,4 +1,4 @@
-import { describe, test, jest, expect, beforeAll } from '@jest/globals'
+import { describe, test, jest, expect, beforeAll, beforeEach } from '@jest/globals'
 import * as ethers from 'ethers'
 import { type Quote as PeginQuote, type PegoutQuote } from '../api'
 import { FlyoverNetworks } from '../constants/networks'
@@ -18,6 +18,7 @@ const signerMock = jest.mocked({})
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const connectionMock = jest.mocked({
   getChainHeight: async () => Promise.resolve(1),
+  getAbstraction: function () { return this.signer },
   get signer () {
     return signerMock
   }
@@ -253,8 +254,8 @@ describe('LiquidityBridgeContract class should', () => {
     })
   })
 
-  test('execute refundUserPegOut correctly', async () => {
-    const receiptMock = { status: 1, hash: '0x9fafb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' }
+  describe('execute refundPegout', () => {
+    const receiptMock = { status: 1, transactionHash: '0x9fafb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' }
     const contractMock = {
       refundUserPegOut: jest.fn().mockImplementation(async () => {
         return Promise.resolve(
@@ -262,30 +263,88 @@ describe('LiquidityBridgeContract class should', () => {
             wait: async () => Promise.resolve(receiptMock)
           }
         )
-      })
+      }),
+      callStatic: {
+        refundUserPegOut: jest.fn()
+      }
     }
 
-    const contractClassMock = jest.mocked(ethers.Contract)
-    contractClassMock.mockImplementation(() => contractMock as any)
-
-    jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
-      const { utils } = jest.requireActual<typeof ethers>('ethers')
-      return utils.arrayify(arg)
-    })
-
-    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
-    const lbc = new LiquidityBridgeContract(connectionMock, config)
-
-    await lbc.refundPegout(pegoutQuoteMock)
-
-    const encodeQuoteHash = [
+    const encodeQuoteHash = new Uint8Array([
       199, 59, 97, 99, 99, 239, 116, 1,
       122, 8, 92, 96, 172, 185, 109, 232,
       139, 87, 38, 135, 8, 208, 110, 214,
       165, 210, 31, 191, 95, 8, 182, 155
-    ]
-    expect(contractMock.refundUserPegOut).toBeCalledTimes(1)
-    expect(Array.from(contractMock.refundUserPegOut.mock.calls.at(0)?.at(0) as any)).toEqual(encodeQuoteHash)
+    ])
+
+    beforeEach(() => {
+      contractMock.refundUserPegOut.mockClear()
+      contractMock.callStatic.refundUserPegOut.mockClear()
+    })
+
+    test('generate a transaction by default', async () => {
+      const contractClassMock = jest.mocked(ethers.Contract)
+      contractClassMock.mockImplementation(() => contractMock as any)
+
+      jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
+        const { utils } = jest.requireActual<typeof ethers>('ethers')
+        return utils.arrayify(arg)
+      })
+
+      const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+      const lbc = new LiquidityBridgeContract(connectionMock, config)
+      const result = await lbc.refundPegout(pegoutQuoteMock)
+
+      expect(result?.txHash).toEqual(receiptMock.transactionHash)
+      expect(result?.successful).toBe(true)
+      expect(contractMock.refundUserPegOut).toBeCalledTimes(1)
+      expect(contractMock.refundUserPegOut).toHaveBeenCalledWith(encodeQuoteHash)
+      expect(contractMock.callStatic.refundUserPegOut).not.toBeCalled()
+    })
+
+    test('generate transaction if operation type if transaction', async () => {
+      const contractClassMock = jest.mocked(ethers.Contract)
+      contractClassMock.mockImplementation(() => contractMock as any)
+
+      jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
+        const { utils } = jest.requireActual<typeof ethers>('ethers')
+        return utils.arrayify(arg)
+      })
+
+      const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+      const lbc = new LiquidityBridgeContract(connectionMock, config)
+      const result = await lbc.refundPegout(pegoutQuoteMock, 'transaction')
+
+      expect(result?.txHash).toEqual(receiptMock.transactionHash)
+      expect(result?.successful).toBe(true)
+      expect(contractMock.refundUserPegOut).toBeCalledTimes(1)
+      expect(contractMock.refundUserPegOut).toHaveBeenCalledWith(encodeQuoteHash)
+      expect(contractMock.callStatic.refundUserPegOut).not.toBeCalled()
+    })
+
+    test("don't generate a transaction if operation type if callStatic", async () => {
+      const contractClassMock = jest.mocked(ethers.Contract)
+      contractClassMock.mockImplementation(() => contractMock as any)
+
+      jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
+        const { utils } = jest.requireActual<typeof ethers>('ethers')
+        return utils.arrayify(arg)
+      })
+
+      const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+      const lbc = new LiquidityBridgeContract(connectionMock, config)
+      const result = await lbc.refundPegout(pegoutQuoteMock, 'staticCall')
+
+      expect(result).toBeNull()
+      expect(contractMock.callStatic.refundUserPegOut).toBeCalledTimes(1)
+      expect(contractMock.callStatic.refundUserPegOut).toHaveBeenCalledWith(encodeQuoteHash)
+      expect(contractMock.refundUserPegOut).not.toBeCalled()
+    })
+
+    test('fail if operation type is not supported', async () => {
+      const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+      const lbc = new LiquidityBridgeContract(connectionMock, config)
+      await expect(lbc.refundPegout(pegoutQuoteMock, 'otherOperation' as any)).rejects.toThrow('Unsupported operation type')
+    })
   })
 
   test('throw FlyoverError on refundUserPegOut error', async () => {
@@ -514,5 +573,23 @@ describe('LiquidityBridgeContract class should', () => {
 
     expect(contractMock.productFeePercentage).toBeCalledTimes(1)
     expect(result).toEqual(2)
+  })
+
+  test('execute isPegOutQuoteCompleted correctly', async () => {
+    const contractMock = {
+      isPegOutQuoteCompleted: jest.fn().mockReturnValue(Promise.resolve(true))
+    }
+
+    const contractClassMock = jest.mocked(ethers.Contract)
+    contractClassMock.mockImplementation(() => contractMock as any)
+
+    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+    const lbc = new LiquidityBridgeContract(connectionMock, config)
+
+    const result = await lbc.isPegOutQuoteCompleted('87a797a48cba94ee585ee2c0d7d6f4cce4dd12f77192a4d0bc562938d6fb62b1')
+
+    expect(contractMock.isPegOutQuoteCompleted).toBeCalledTimes(1)
+    expect(contractMock.isPegOutQuoteCompleted).toBeCalledWith(new Uint8Array([0x87, 0xa7, 0x97, 0xa4, 0x8c, 0xba, 0x94, 0xee, 0x58, 0x5e, 0xe2, 0xc0, 0xd7, 0xd6, 0xf4, 0xcc, 0xe4, 0xdd, 0x12, 0xf7, 0x71, 0x92, 0xa4, 0xd0, 0xbc, 0x56, 0x29, 0x38, 0xd6, 0xfb, 0x62, 0xb1]))
+    expect(result).toBe(true)
   })
 })

@@ -29,7 +29,7 @@ export {
 
 export { FlyoverUtils } from './sdk/flyoverUtils'
 
-export { type IsQuotePaidResponse } from './utils/interfaces'
+export { type IsQuotePaidResponse, type IsQuoteRefundableResponse } from './utils/interfaces'
 
 export { FlyoverErrors } from './constants/errors'
 
