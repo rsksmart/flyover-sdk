@@ -27,7 +27,7 @@ Contract data
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:294](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L294)
+[src/api/bindings/data-contracts.ts:294](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L294)
 
 ___
 
@@ -45,7 +45,7 @@ Contract address or EOA address
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:299](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L299)
+[src/api/bindings/data-contracts.ts:299](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L299)
 
 ___
 
@@ -63,7 +63,7 @@ User RSK refund address
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:304](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L304)
+[src/api/bindings/data-contracts.ts:304](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L304)
 
 ___
 
@@ -81,4 +81,4 @@ Value to send in the call
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:309](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L309)
+[src/api/bindings/data-contracts.ts:309](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L309)
