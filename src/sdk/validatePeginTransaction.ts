@@ -47,8 +47,8 @@ export async function validatePeginTransaction (
   try {
     const btcRaw = params.btcTx.startsWith('0x') ? params.btcTx.slice(2) : params.btcTx
     parsedTx = Transaction.fromHex(btcRaw)
-  } catch (error: any) {
-    return throwIfEnabled('Invalid transaction: ' + error.message, options)
+  } catch (error: unknown) {
+    return throwIfEnabled('Invalid transaction: ' + (error as Error).message, options)
   }
 
   const amountError = await validatePaidAmount(context, params, parsedTx)
@@ -96,8 +96,8 @@ async function validatePaidAmount (
     address.fromOutputScript(output.script, getNetworkForConfig(config)),
     output.value
   ])
-    .filter(([address, _value]) => address === params.acceptInfo.bitcoinDepositAddressHash)
-    .reduce((sum, [_payment, value]) => sum + BigInt(value), BigInt(0))
+    .filter(([address]) => address === params.acceptInfo.bitcoinDepositAddressHash)
+    .reduce((sum, [, value]) => sum + BigInt(value), BigInt(0))
 
   const totalWei = totalSats * BigInt(10 ** 10)
   const expectedValue = FlyoverUtils.getQuoteTotal(params.quoteInfo)

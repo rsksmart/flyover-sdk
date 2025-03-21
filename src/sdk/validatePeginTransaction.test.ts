@@ -212,7 +212,6 @@ function getLbcMock (validAddressResult: boolean): Partial<LiquidityBridgeContra
 
 describe('validatePeginTransaction function should', () => {
   test('validate that the quote has the correct value in a signed transaction', async () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = {
       config: { network: 'Mainnet', captchaTokenResolver: async () => Promise.resolve('') },
       lbc: getLbcMock(true),
@@ -237,7 +236,7 @@ describe('validatePeginTransaction function should', () => {
     }
   })
   test('validate expiration time on signed transaction', async () => {
-    const context = {} as FlyoverSDKContext // eslint-disable-line @typescript-eslint/consistent-type-assertions
+    const context = {} as FlyoverSDKContext
     const result = await validatePeginTransaction(context, mainnetSignedInvalidAmountParams, { throwError: false })
     const expectedError = 'The quote some-hash was expired at 1727302299.'
     expect.assertions(4)
@@ -251,7 +250,6 @@ describe('validatePeginTransaction function should', () => {
     }
   })
   test('validate the deposit address in a signed transaction', async () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = {
       lbc: getLbcMock(false),
       provider: { apiBaseUrl: 'http://url.com' }
@@ -275,7 +273,6 @@ describe('validatePeginTransaction function should', () => {
     }
   })
   test('validate that all the UTXOs are above the minimum in a signed transaction', async () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = {
       config: { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') },
       lbc: getLbcMock(true),
@@ -302,7 +299,6 @@ describe('validatePeginTransaction function should', () => {
     }
   })
   test('fail on invalid raw transaction', async () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = {
       config: { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') },
       lbc: getLbcMock(true),
@@ -329,7 +325,6 @@ describe('validatePeginTransaction function should', () => {
     }
   })
   test('validate that the quote has the correct value in a unsigned transaction', async () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = {
       config: { network: 'Testnet', captchaTokenResolver: async () => Promise.resolve('') },
       lbc: getLbcMock(true),
@@ -354,7 +349,7 @@ describe('validatePeginTransaction function should', () => {
     }
   })
   test('validate expiration time on unsigned transaction', async () => {
-    const context = {} as FlyoverSDKContext // eslint-disable-line @typescript-eslint/consistent-type-assertions
+    const context = {} as FlyoverSDKContext
     const result = await validatePeginTransaction(context, regtestUnsignedInvalidAmountParams, { throwError: false })
     const expectedError = 'The quote 65f1199e7a1f46469339d94d64d0c8fd933811313230f032b8198c0afead1645 was expired at 1731068407.'
     expect.assertions(4)
@@ -368,7 +363,6 @@ describe('validatePeginTransaction function should', () => {
     }
   })
   test('validate the deposit address in a unsigned transaction', async () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = {
       lbc: getLbcMock(false),
       provider: { apiBaseUrl: 'http://url.com' }
@@ -392,7 +386,6 @@ describe('validatePeginTransaction function should', () => {
     }
   })
   test('validate that all the UTXOs are above the minimum in a unsigned transaction', async () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = {
       config: { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') },
       lbc: getLbcMock(true),
@@ -419,7 +412,6 @@ describe('validatePeginTransaction function should', () => {
     }
   })
   test('accept a valid transaction', async () => {
-    /* eslint-disable @typescript-eslint/consistent-type-assertions */
     const context = {
       config: { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') },
       lbc: getLbcMock(true),
@@ -428,7 +420,6 @@ describe('validatePeginTransaction function should', () => {
         getMinimumLockTxValue: jest.fn<any>().mockImplementation(async () => Promise.resolve(BigInt(50000000)))
       } as Partial<RskBridge>
     } as FlyoverSDKContext
-    /* eslint-enable @typescript-eslint/consistent-type-assertions */
 
     const now = Date.now() / 1000
 

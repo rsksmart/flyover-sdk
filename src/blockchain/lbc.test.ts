@@ -15,7 +15,6 @@ const serializer = JSONbig({ useNativeBigInt: true })
 jest.mock('ethers')
 
 const signerMock = jest.mocked({})
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const connectionMock = jest.mocked({
   getChainHeight: async () => Promise.resolve(1),
   getAbstraction: function () { return this.signer },

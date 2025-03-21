@@ -30,7 +30,6 @@ const quoteMock: PegoutQuote = {
 }
 const successfulResultMock = { successful: true, txHash: '0x9fafb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' }
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const lbcMock = jest.mocked({
   refundPegout: async (_quote: PegoutQuote, _signature: string) => Promise.resolve(successfulResultMock)
 } as LiquidityBridgeContract, { shallow: true })

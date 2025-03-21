@@ -4,7 +4,7 @@ const { TestEnvironment } = require('jest-environment-node')
 class FailFastEnvironment extends TestEnvironment {
     failedTest = false
 
-    handleTestEvent(event, state) {
+    handleTestEvent(event) {
         if (event.name === 'hook_failure' || event.name === 'test_fn_failure') {
             this.failedTest = true
         } else if (this.failedTest && event.name === 'test_start') {

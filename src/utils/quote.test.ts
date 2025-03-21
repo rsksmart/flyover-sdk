@@ -8,10 +8,8 @@ describe('getQuoteTotal function should', () => {
     expect(() => { getQuoteTotal(undefined as any) }).toThrow('empty quote')
   })
   test('fail if quote detail is empty', () => {
-    /* eslint-disable @typescript-eslint/consistent-type-assertions */
     expect(() => { getQuoteTotal({} as Quote) }).toThrow('empty quote detail')
     expect(() => { getQuoteTotal({} as PegoutQuote) }).toThrow('empty quote detail')
-    /* eslint-enable @typescript-eslint/consistent-type-assertions */
   })
   test('sum properly quote value', () => {
     const peginQuote: Quote = {
@@ -83,15 +81,13 @@ describe('isPeginStillPayable function should', () => {
     expect(() => { isPeginStillPayable(undefined as any) }).toThrow('empty quote')
   })
   test('fail if quote detail is empty', () => {
-    /* eslint-disable @typescript-eslint/consistent-type-assertions */
     expect(() => { isPeginStillPayable({ quote: {}, quoteHash: 'hash 1' } as Quote) }).toThrow('Validation failed for object with following missing properties: agreementTimestamp, timeForDeposit')
     expect(() => { isPeginStillPayable({ quote: { timeForDeposit: 10 }, quoteHash: 'hash 1' } as Quote) }).toThrow('Validation failed for object with following missing properties: agreementTimestamp')
     expect(() => { isPeginStillPayable({ quote: { agreementTimestamp: 50 }, quoteHash: 'hash 1' } as Quote) }).toThrow('Validation failed for object with following missing properties: timeForDeposit')
-    /* eslint-enable @typescript-eslint/consistent-type-assertions */
   })
   test('return true if quote is still payable', () => {
     const now = Date.now() / 1000
-    const testCases: Array<{ result: boolean, quote: Partial<QuoteDetail> }> = [
+    const testCases: { result: boolean, quote: Partial<QuoteDetail> }[] = [
       {
         result: false,
         quote: {
@@ -130,7 +126,7 @@ describe('isPeginStillPayable function should', () => {
 
 describe('satsToWei function should', () => {
   test('convert sats to wei', () => {
-    const cases: Array<[string, string]> = [
+    const cases: [string, string][] = [
       ['0', '0'],
       ['1', '10000000000'],
       ['100000000', '1000000000000000000'],

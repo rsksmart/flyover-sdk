@@ -40,7 +40,6 @@ jest.mock('./validatePeginTransaction')
 const mockedGetQuote = getQuote as jest.Mock<typeof getQuote>
 const mockedGetPegoutQuote = getPegoutQuote as jest.Mock<typeof getPegoutQuote>
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const connectionMock = jest.mocked({
   getChainHeight: async () => Promise.resolve(1),
   getAbstraction: () => {
@@ -342,7 +341,6 @@ describe('Flyover object should', () => {
   })
 
   test('throw error when trying to connect with an existing connection', async () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const otherConenction = jest.mocked({} as BlockchainConnection)
 
     const connected = new Flyover({

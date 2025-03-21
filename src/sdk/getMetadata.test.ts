@@ -80,7 +80,7 @@ const peginQuoteMock: Quote = {
   quoteHash: 'any hash'
 }
 
-const lbcMock = { // eslint-disable-line @typescript-eslint/consistent-type-assertions
+const lbcMock = {
   getProductFeePercentage: async () => Promise.resolve(2)
 } as LiquidityBridgeContract
 
