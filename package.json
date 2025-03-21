@@ -57,7 +57,7 @@
         "rollup-plugin-dts": "^6.1.0",
         "rollup-plugin-typescript2": "^0.35.0",
         "swagger-typescript-api": "^13.0.23",
-        "ts-jest": "^29.0.5",
+        "ts-jest": "^29.2.6",
         "typechain": "^8.1.1",
         "typedoc": "^0.28.1",
         "typedoc-plugin-markdown": "^3.15.3",
