@@ -19,8 +19,9 @@ import { getPegoutStatus } from './getPegoutStatus'
 import { getAvailableLiquidity } from './getAvailableLiquidity'
 import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
 import { RskBridge } from '../blockchain/bridge'
-import { isQuotePaid } from './isQuotePaid'
-
+import { isPeginQuotePaid } from './isPeginQuotePaid'
+import { isPegoutQuotePaid } from './isPegoutQuotePaid'
+import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
 jest.mock('ethers')
 
 jest.mock('./getProviders')
@@ -37,13 +38,14 @@ jest.mock('./getPeginStatus')
 jest.mock('./getPegoutStatus')
 jest.mock('./getAvailableLiquidity')
 jest.mock('./validatePeginTransaction')
-jest.mock('./isQuotePaid')
+jest.mock('./isPeginQuotePaid')
+jest.mock('./isPegoutQuotePaid')
 
 const mockedGetQuote = getQuote as jest.Mock<typeof getQuote>
 const mockedGetPegoutQuote = getPegoutQuote as jest.Mock<typeof getPegoutQuote>
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-const connectionMock = jest.mocked({
+const rskConnectionMock = jest.mocked({
   getChainHeight: async () => Promise.resolve(1),
   getAbstraction: () => {
     return jest.mocked({})
@@ -156,17 +158,18 @@ mockedGetPegoutQuote.mockImplementation(async () => Promise.resolve([pegoutQuote
 
 describe('Flyover object should', () => {
   let flyover: Flyover
+  const FAKE_NETWORK = 'Regtest'
 
   beforeEach(() => {
     flyover = new Flyover({
-      network: 'Regtest',
+      network: FAKE_NETWORK,
       allowInsecureConnections: true,
       captchaTokenResolver: async () => Promise.resolve('')
     })
   })
 
   test('fail to get quotes if liquidity provider has not been selected', async () => {
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await expect(flyover.getQuotes({
       callEoaOrContractAddress: '0xa2193A393aa0c94A4d52893496F02B56C61c36A1',
       callContractArguments: '',
@@ -176,7 +179,7 @@ describe('Flyover object should', () => {
   })
 
   test('fail to get pegout quotes if liquidity provider has not been selected', async () => {
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await expect(flyover.getPegoutQuotes({
       to: 'mxqk28jvEtvjxRN8k7W9hFEJfWz5VcUgHW',
       valueToTransfer: BigInt(500000000000000000),
@@ -198,7 +201,7 @@ describe('Flyover object should', () => {
   })
 
   test('invoke correctly getProviders', async () => {
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.getLiquidityProviders()
     expect(getProviders).toBeCalledTimes(1)
   })
@@ -209,21 +212,21 @@ describe('Flyover object should', () => {
 
   test('invoke correctly getQuotes', async () => {
     flyover.useLiquidityProvider(providerMock)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.getQuotes(quoteRequestMock)
     expect(getQuote).toBeCalledTimes(1)
   })
 
   test('invoke correctly getPegoutQuotes', async () => {
     flyover.useLiquidityProvider(providerMock)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.getPegoutQuotes(pegoutQuoteRequestMock)
     expect(getPegoutQuote).toBeCalledTimes(1)
   })
 
   test('invoke correctly acceptQuote', async () => {
     flyover.useLiquidityProvider(providerMock)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.acceptQuote(quoteMock)
     expect(acceptQuote).toBeCalledTimes(1)
   })
@@ -271,7 +274,7 @@ describe('Flyover object should', () => {
     const provider = { ...providerMock }
     provider.apiBaseUrl = 'http://localhost:1234'
     flyover.useLiquidityProvider(provider)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await expect(flyover.getQuotes(quoteRequestMock)).rejects
       .toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
   })
@@ -281,7 +284,7 @@ describe('Flyover object should', () => {
     const provider = { ...providerMock }
     provider.apiBaseUrl = 'http://localhost:1234'
     flyover.useLiquidityProvider(provider)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await expect(flyover.getPegoutQuotes(pegoutQuoteRequestMock)).rejects
       .toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
   })
@@ -332,7 +335,7 @@ describe('Flyover object should', () => {
   test('validate correclty if its connected to network', async () => {
     const connected = new Flyover({
       network: 'Regtest',
-      rskConnection: connectionMock,
+      rskConnection: rskConnectionMock,
       captchaTokenResolver: async () => Promise.resolve('')
     })
     const notConnected = new Flyover({
@@ -353,7 +356,7 @@ describe('Flyover object should', () => {
 
     const connected = new Flyover({
       network: 'Regtest',
-      rskConnection: connectionMock,
+      rskConnection: rskConnectionMock,
       captchaTokenResolver: async () => Promise.resolve('')
     })
 
@@ -366,7 +369,7 @@ describe('Flyover object should', () => {
         config: expect.not.objectContaining({ rskConnection: expect.anything() })
       }
     ))
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     expect(flyover).toEqual(expect.objectContaining(
       {
         config: expect.objectContaining({ rskConnection: expect.anything() })
@@ -379,7 +382,7 @@ describe('Flyover object should', () => {
   })
 
   test('execute deposit pegout successfully', async () => {
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     const amount = BigInt(500)
     await flyover.depositPegout(pegoutQuoteMock, signatureMock, amount)
 
@@ -388,7 +391,7 @@ describe('Flyover object should', () => {
   })
 
   test('create LBC instance during depositPegout if not created before', async () => {
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     const amount = BigInt(500)
 
     expect(flyover).not.toHaveProperty('liquidityBridgeContract')
@@ -403,7 +406,7 @@ describe('Flyover object should', () => {
   })
 
   test('execute refund pegout successfully', async () => {
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.refundPegout(pegoutQuoteMock)
 
     expect(refundPegout).toBeCalledTimes(1)
@@ -411,7 +414,7 @@ describe('Flyover object should', () => {
   })
 
   test('create LBC instance during refundPegout if not created before', async () => {
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
 
     expect(flyover).not.toHaveProperty('liquidityBridgeContract')
 
@@ -425,7 +428,7 @@ describe('Flyover object should', () => {
   })
 
   test('execute register pegin successfully', async () => {
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.registerPegin(registerPeginParamsMock)
 
     expect(registerPegin).toBeCalledTimes(1)
@@ -433,7 +436,7 @@ describe('Flyover object should', () => {
   })
 
   test('create LBC instance during registerPegin if not created before', async () => {
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     expect(flyover).not.toHaveProperty('liquidityBridgeContract')
 
     await flyover.registerPegin(registerPeginParamsMock)
@@ -467,14 +470,14 @@ describe('Flyover object should', () => {
 
   test('invoke correctly getMetadata', async () => {
     flyover.useLiquidityProvider(providerMock)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.getMetadata()
     expect(getMetadata).toBeCalledTimes(1)
   })
 
   test('invoke delete last quotes when provider changes', async () => {
     flyover.useLiquidityProvider(providerMock)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.getQuotes(quoteRequestMock)
     await flyover.getPegoutQuotes(pegoutQuoteRequestMock)
     expect((flyover as any).lastPeginQuote).not.toBeNull()
@@ -487,14 +490,14 @@ describe('Flyover object should', () => {
 
   test('save last pegin quote', async () => {
     flyover.useLiquidityProvider(providerMock)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.getQuotes(quoteRequestMock)
     expect((flyover as any).lastPeginQuote).not.toBeNull()
   })
 
   test('save last pegout quote', async () => {
     flyover.useLiquidityProvider(providerMock)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.getPegoutQuotes(pegoutQuoteRequestMock)
     expect((flyover as any).lastPegoutQuote).not.toBeNull()
   })
@@ -502,7 +505,7 @@ describe('Flyover object should', () => {
   test('fail to get metadata if liquidity provider has not been selected', async () => {
     expect.assertions(2)
     try {
-      await flyover.connectToRsk(connectionMock)
+      await flyover.connectToRsk(rskConnectionMock)
       await flyover.getMetadata()
     } catch (e: any) {
       expect(e).toBeInstanceOf(FlyoverError)
@@ -523,7 +526,7 @@ describe('Flyover object should', () => {
 
   test('invoke correctly getPeginStatus', async () => {
     flyover.useLiquidityProvider(providerMock)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.getPeginStatus('1234')
     expect(getPeginStatus).toBeCalledTimes(1)
   })
@@ -535,14 +538,14 @@ describe('Flyover object should', () => {
     const provider = { ...providerMock }
     provider.apiBaseUrl = 'http://localhost:1234'
     flyover.useLiquidityProvider(provider)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await expect(flyover.getPeginStatus('1234')).rejects
       .toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
   })
 
   test('invoke correctly getPegoutStatus', async () => {
     flyover.useLiquidityProvider(providerMock)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.getPegoutStatus('5678')
     expect(getPegoutStatus).toBeCalledTimes(1)
   })
@@ -554,7 +557,7 @@ describe('Flyover object should', () => {
     const provider = { ...providerMock }
     provider.apiBaseUrl = 'http://localhost:1234'
     flyover.useLiquidityProvider(provider)
-    await flyover.connectToRsk(connectionMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await expect(flyover.getPegoutStatus('5678')).rejects
       .toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
   })
@@ -589,7 +592,7 @@ describe('Flyover object should', () => {
     const options: ValidatePeginTransactionOptions = { throwError: true }
     test('invoke correctly validatePeginTransaction', async () => {
       flyover.useLiquidityProvider(providerMock)
-      await flyover.connectToRsk(connectionMock)
+      await flyover.connectToRsk(rskConnectionMock)
       await flyover.validatePeginTransaction(params, options)
       expect(validatePeginTransaction).toBeCalledTimes(1)
       expect(validatePeginTransaction).toBeCalledWith(
@@ -607,19 +610,19 @@ describe('Flyover object should', () => {
       )
     })
     test('fail if LP has not been selected', async () => {
-      await flyover.connectToRsk(connectionMock)
+      await flyover.connectToRsk(rskConnectionMock)
       await expect(flyover.validatePeginTransaction(params)).rejects.toThrow('You need to select a provider to do this operation')
     })
     test('create LBC instance if not created before', async () => {
       flyover.useLiquidityProvider(providerMock)
-      await flyover.connectToRsk(connectionMock)
+      await flyover.connectToRsk(rskConnectionMock)
       expect(flyover).not.toHaveProperty('liquidityBridgeContract')
       await flyover.validatePeginTransaction(params)
       expect(flyover).not.toHaveProperty('liquidityBridgeContract', undefined)
     })
     test('create RskBridge instance if not created before', async () => {
       flyover.useLiquidityProvider(providerMock)
-      await flyover.connectToRsk(connectionMock)
+      await flyover.connectToRsk(rskConnectionMock)
       expect(flyover).not.toHaveProperty('rskBridge')
       await flyover.validatePeginTransaction(params)
       expect(flyover).not.toHaveProperty('rskBridge', undefined)
@@ -627,57 +630,130 @@ describe('Flyover object should', () => {
   })
 
   describe('isQuotePaid method should', () => {
-    test('invoke correctly isQuotePaid', async () => {
-      flyover.useLiquidityProvider(providerMock)
-      await flyover.connectToRsk(connectionMock)
-      await flyover.isQuotePaid('testQuoteHash')
-      expect(isQuotePaid).toBeCalledTimes(1)
-      expect(isQuotePaid).toBeCalledWith(
-        (flyover as any).httpClient, // httpClient
-        providerMock, // liquidityProvider
-        'testQuoteHash', // quoteHash
-        connectionMock // rskConnection
-      )
-    })
-
     test('fail if liquidity provider has not been selected', async () => {
-      await flyover.connectToRsk(connectionMock)
-      await expect(flyover.isQuotePaid('testQuoteHash'))
+      await flyover.connectToRsk(rskConnectionMock)
+      await expect(flyover.isQuotePaid('testQuoteHash', 'pegin'))
         .rejects.toThrow('You need to select a provider to do this operation')
     })
 
-    test('fail when allowInsecureConnections is false and Provider apiBaseUrl is insecure', async () => {
-      (flyover as any).config.allowInsecureConnections = false
-      const provider = { ...providerMock }
-      provider.apiBaseUrl = 'http://localhost:1234'
-      flyover.useLiquidityProvider(provider)
-      await flyover.connectToRsk(connectionMock)
-      await expect(flyover.isQuotePaid('testQuoteHash'))
-        .rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
-    })
-
-    test('fail if not connected to RSK', async () => {
-      // Create a new Flyover instance without RSK connection
-      const disconnectedFlyover = new Flyover({
-        network: 'Regtest',
-        allowInsecureConnections: true,
-        captchaTokenResolver: async () => Promise.resolve('')
+    describe('pegin quotes', () => {
+      test('invoke correctly isQuotePaid external function', async () => {
+        flyover.useLiquidityProvider(providerMock)
+        await flyover.connectToRsk(rskConnectionMock)
+        await flyover.isQuotePaid('testQuoteHash', 'pegin')
+        expect(isPeginQuotePaid).toBeCalledTimes(1)
+        expect(isPeginQuotePaid).toBeCalledWith(
+          (flyover as any).httpClient, // httpClient
+          providerMock, // liquidityProvider
+          'testQuoteHash', // quoteHash
+          rskConnectionMock // rskConnection
+        )
       })
 
-      // Set a liquidity provider
-      disconnectedFlyover.useLiquidityProvider(providerMock)
+      test('fail when allowInsecureConnections is false and Provider apiBaseUrl is insecure', async () => {
+        (flyover as any).config.allowInsecureConnections = false
+        const provider = { ...providerMock }
+        provider.apiBaseUrl = 'http://localhost:1234'
+        flyover.useLiquidityProvider(provider)
+        await flyover.connectToRsk(rskConnectionMock)
+        await expect(flyover.isQuotePaid('testQuoteHash', 'pegin'))
+          .rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
+      })
 
-      // Connect to RSK with a connection that returns undefined for chain height
-      const mockConnectionWithNoHeight = {
-        ...connectionMock,
-        getChainHeight: jest.fn().mockImplementation(async () => Promise.resolve(undefined))
-      } as unknown as BlockchainConnection
+      test('fail if not connected to RSK', async () => {
+        // Create a new Flyover instance without RSK connection
+        const disconnectedFlyover = new Flyover({
+          network: FAKE_NETWORK,
+          allowInsecureConnections: true,
+          captchaTokenResolver: async () => Promise.resolve('')
+        })
 
-      await disconnectedFlyover.connectToRsk(mockConnectionWithNoHeight)
+        // Set a liquidity provider
+        disconnectedFlyover.useLiquidityProvider(providerMock)
 
-      // Expect the method to throw an error about needing to connect to RSK
-      await expect(disconnectedFlyover.isQuotePaid('testQuoteHash'))
-        .rejects.toThrow('Before calling isQuotePaid, you need to connect to RSK using Flyover.connectToRsk')
+        // Connect to RSK with a connection that returns undefined for chain height
+        const mockConnectionWithNoHeight = {
+          ...rskConnectionMock,
+          getChainHeight: jest.fn().mockImplementation(async () => Promise.resolve(undefined))
+        } as unknown as BlockchainConnection
+
+        await disconnectedFlyover.connectToRsk(mockConnectionWithNoHeight)
+
+        // Expect the method to throw an error about needing to connect to RSK
+        await expect(disconnectedFlyover.isQuotePaid('testQuoteHash', 'pegin'))
+          .rejects.toThrow('Before calling isQuotePaid for pegin quotes, you need to connect to RSK using Flyover.connectToRsk')
+      })
+    })
+
+    describe('pegout quotes', () => {
+      const bitcoinDataSourceMock: BitcoinDataSource = { getTransactionAsHex: jest.fn() } as unknown as BitcoinDataSource
+
+      beforeEach(() => {
+        (isPegoutQuotePaid as jest.Mock).mockImplementation(async () => Promise.resolve({ isPaid: true }))
+      })
+
+      test('invoke correctly isPegoutQuotePaid external function', async () => {
+        flyover.useLiquidityProvider(providerMock)
+        flyover.connectToBitcoin(bitcoinDataSourceMock)
+
+        const result = await flyover.isQuotePaid('testQuoteHash', 'pegout')
+
+        expect(result).toEqual({ isPaid: true })
+        expect(isPegoutQuotePaid).toBeCalledTimes(1)
+        expect(isPegoutQuotePaid).toBeCalledWith(
+          (flyover as any).httpClient, // httpClient
+          providerMock, // liquidityProvider
+          'testQuoteHash', // quoteHash
+          bitcoinDataSourceMock // bitcoinDataSource
+        )
+      })
+
+      test('fail when bitcoinDataSource is not connected', async () => {
+        flyover.useLiquidityProvider(providerMock)
+
+        await expect(flyover.isQuotePaid('testQuoteHash', 'pegout'))
+          .rejects
+          .toThrow('Before calling isQuotePaid for pegout quotes, you need to connect to Bitcoin using Flyover.connectToBitcoin')
+      })
+
+      test('return isPaid true when quote is paid', async () => {
+        flyover.useLiquidityProvider(providerMock)
+        flyover.connectToBitcoin(bitcoinDataSourceMock)
+        ; (isPegoutQuotePaid as jest.Mock).mockImplementation(async () => Promise.resolve({ isPaid: true }))
+
+        const result = await flyover.isQuotePaid('testQuoteHash', 'pegout')
+
+        expect(result).toEqual({ isPaid: true })
+      })
+
+      test('return isPaid false when quote is not paid', async () => {
+        flyover.useLiquidityProvider(providerMock)
+        flyover.connectToBitcoin(bitcoinDataSourceMock)
+        ; (isPegoutQuotePaid as jest.Mock).mockImplementation(async () => Promise.resolve({ isPaid: false }))
+
+        const result = await flyover.isQuotePaid('testQuoteHash', 'pegout')
+
+        expect(result).toEqual({ isPaid: false })
+      })
+
+      test('handle errors from isPegoutQuotePaid function', async () => {
+        flyover.useLiquidityProvider(providerMock)
+        flyover.connectToBitcoin(bitcoinDataSourceMock)
+        const errorMessage = 'Failed to check quote payment status'
+          ; (isPegoutQuotePaid as jest.Mock).mockImplementation(async () => Promise.reject(new Error(errorMessage)))
+
+        await expect(flyover.isQuotePaid('testQuoteHash', 'pegout'))
+          .rejects
+          .toThrow(errorMessage)
+      })
+
+      test('fail when invalid type of operation is provided', async () => {
+        flyover.useLiquidityProvider(providerMock)
+
+        await expect(flyover.isQuotePaid('testQuoteHash', 'notPeginNotPegoutOperation' as any))
+          .rejects
+          .toThrow('Invalid type of operation')
+      })
     })
   })
 })

@@ -1,23 +1,19 @@
 import { getPeginStatus } from './getPeginStatus'
-import { type HttpClient, type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
+import { type HttpClient, type Connection } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type PeginQuoteStatus } from '../api'
-import { type FlyoverError, FlyoverErrors } from '../constants/errors'
+import { FlyoverErrors } from '../constants/errors'
 import { parseLBCLogs } from '../blockchain/parsing'
 import { type ContractReceipt } from 'ethers'
-
-export interface IsQuotePaidResponse {
-  isPaid: boolean
-  error?: FlyoverError
-}
+import { type IsQuotePaidResponse } from '../utils/interfaces'
 
 const MAX_RETRIES = 3
 const RETRY_DELAY = 3000 // 3 seconds
 
-export async function isQuotePaid (
+export async function isPeginQuotePaid (
   httpClient: HttpClient,
   provider: LiquidityProvider,
   quoteHash: string,
-  rskConnection: BlockchainConnection
+  rskConnection: Connection
 ): Promise<IsQuotePaidResponse> {
   let peginStatus: PeginQuoteStatus
 
@@ -44,7 +40,7 @@ export async function isQuotePaid (
     }
   }
 
-  // Get the transaction receipt from the blockchain
+  // Get the transaction receipt from the RSK blockchain
   let receipt: ContractReceipt | null = null
   try {
     receipt = await rskConnection.getTransactionReceipt(peginStatus.status.callForUserTxHash)
@@ -73,7 +69,7 @@ export async function isQuotePaid (
   const callForUserEvent = parsedLogs.find(log => {
     const normalizedEventQuoteHash = log?.args.quoteHash ? log?.args.quoteHash?.toLowerCase().replace('0x', '') : null
     return log?.name === 'CallForUser' &&
-      normalizedEventQuoteHash === normalizedQuoteHash
+            normalizedEventQuoteHash === normalizedQuoteHash
   })
 
   if (callForUserEvent) {

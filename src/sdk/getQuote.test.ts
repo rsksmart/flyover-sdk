@@ -52,7 +52,7 @@ const providerMock: LiquidityProvider = {
 
 const quoteRequestMock: PeginQuoteRequest = {
   callEoaOrContractAddress: '0xF5ad1A6F6BA49C507Bb24676bbF80b8ed19B694c',
-  callContractArguments: 'any arguments',
+  callContractArguments: '',
   rskRefundAddress: '0xB050eE2D61c7A5fd4f2ed193f752fBa85E18b1d4',
   valueToTransfer: BigInt('9007199254750000')
 }
@@ -135,7 +135,14 @@ describe('getQuote function should', () => {
   })
 
   test('convert response to Quote array correctly', async () => {
-    const quotes = await getQuote(configMock, mockClient, lbcMock, providerMock, quoteRequestMock)
+    const client = { ...mockClient }
+    const data = 'c1f1d1'
+    const request = { ...quoteRequestMock }
+    const dataMock = structuredClone(quoteResponseMock)
+    request.callContractArguments = data
+    dataMock.quote.data = data
+    client.post = async <T>(_url: string, _body: object) => Promise.resolve([dataMock] as T)
+    const quotes = await getQuote(configMock, client, lbcMock, providerMock, request)
     const quote = quotes[0]! // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
     expect(quotes).toBeTruthy()
@@ -245,6 +252,23 @@ describe('getQuote function should', () => {
       expect(e).toBeInstanceOf(FlyoverError)
       expect(e.message).toBe('Manipulated quote response')
     })
+    quoteResponseMock.quote = oldQuote // reset quote
+  })
+
+  test('work with prefixed and not prefixed data', async () => {
+    const oldQuote = quoteResponseMock.quote
+    const prefixedRequest = structuredClone(quoteRequestMock)
+    prefixedRequest.callContractArguments = '0x1a1b1c'
+    const notPrefixedRequest = structuredClone(quoteRequestMock)
+    notPrefixedRequest.callContractArguments = '1a1b1c'
+
+    const dataQuote = structuredClone(quoteResponseMock.quote)
+    dataQuote.data = '1a1b1c'
+    quoteResponseMock.quote = dataQuote
+
+    await expect(getQuote(configMock, mockClient, lbcMock, providerMock, prefixedRequest)).resolves.not.toThrow()
+    await expect(getQuote(configMock, mockClient, lbcMock, providerMock, notPrefixedRequest)).resolves.not.toThrow()
+
     quoteResponseMock.quote = oldQuote // reset quote
   })
 })
