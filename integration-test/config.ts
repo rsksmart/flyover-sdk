@@ -11,6 +11,7 @@ export interface IntegrationTestConfig {
   peginAmount: bigint
   pegoutAmount: bigint
   mempoolSpaceUrl: string
+  testContractAddress: string
 }
 
 function getConfig (): IntegrationTestConfig {
@@ -23,7 +24,8 @@ function getConfig (): IntegrationTestConfig {
     TEST_BTC_ADDRESS: btcAddress,
     TEST_PEGIN_AMOUNT: peginAmount,
     TEST_PEGOUT_AMOUNT: pegoutAmount,
-    TEST_MEMPOOL_SPACE_URL: mempoolSpaceUrl
+    TEST_MEMPOOL_SPACE_URL: mempoolSpaceUrl,
+    TEST_CONTRACT_ADDRESS: testContractAddress
   } = process.env
   assertTruthy(mnemonic, 'Missing test configuration: TEST_MNEMONIC')
   assertTruthy(providerId, 'Missing test configuration: TEST_PROVIDER_ID')
@@ -34,6 +36,7 @@ function getConfig (): IntegrationTestConfig {
   assertTruthy(pegoutAmount, 'Missing test configuration: TEST_PEGOUT_AMOUNT')
   assertTruthy(mempoolSpaceUrl, 'Missing test configuration: TEST_MEMPOOL_SPACE_URL')
   assertTruthy(network, 'Missing test configuration: TEST_NETWORK')
+  assertTruthy(testContractAddress, 'Missing test configuration: TEST_CONTRACT_ADDRESS')
   return {
     network: network as keyof typeof FlyoverNetworks,
     testMnemonic: mnemonic,
@@ -43,7 +46,8 @@ function getConfig (): IntegrationTestConfig {
     nodeUrl,
     rskAddress,
     btcAddress,
-    mempoolSpaceUrl
+    mempoolSpaceUrl,
+    testContractAddress
   }
 }
 

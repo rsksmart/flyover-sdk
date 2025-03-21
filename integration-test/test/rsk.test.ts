@@ -1,7 +1,7 @@
 import { describe, test, expect } from '@jest/globals'
 import { Flyover } from '@rsksmart/flyover-sdk'
 import ethProvider from 'eth-provider'
-import { BlockchainConnection } from '@rsksmart/bridges-core-sdk'
+import { BlockchainConnection, BlockchainReadOnlyConnection } from '@rsksmart/bridges-core-sdk'
 import { fakeTokenResolver } from './common/utils'
 import { integrationTestConfig } from '../config'
 import { EXTENDED_TIMEOUT } from './common/constants'
@@ -26,4 +26,11 @@ describe('Flyover Rsk connection should', () => {
     const isConnected = await flyover.isConnected()
     expect(isConnected).toBe(true)
   }, EXTENDED_TIMEOUT)
+
+  test('establish readonly connection', async () => {
+    const rsk = await BlockchainReadOnlyConnection.createUsingRpc(integrationTestConfig.nodeUrl)
+    const flyover = new Flyover({ rskConnection: rsk, network: integrationTestConfig.network, captchaTokenResolver: fakeTokenResolver })
+    const isConnected = await flyover.isConnected()
+    expect(isConnected).toBe(true)
+  })
 })

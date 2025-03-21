@@ -33,7 +33,7 @@ describe('isQuotePaid function should', () => {
     const bitcoinDataSource = getBitcoinDataSource(integrationTestConfig.network)
 
     await flyover.connectToRsk(rskConnection)
-    await flyover.connectToBitcoin(bitcoinDataSource)
+    flyover.connectToBitcoin(bitcoinDataSource)
   })
 
   test('return true if the quote is paid', async () => {

@@ -1,5 +1,5 @@
 import { describe, test, beforeAll, expect } from '@jest/globals'
-import { assertTruthy, BlockchainConnection } from '@rsksmart/bridges-core-sdk'
+import { assertTruthy, BlockchainReadOnlyConnection } from '@rsksmart/bridges-core-sdk'
 import { Flyover } from '@rsksmart/flyover-sdk'
 import { fakeTokenResolver } from './common/utils'
 import { integrationTestConfig } from '../config'
@@ -12,10 +12,7 @@ describe('Flyover SDK client should', () => {
       allowInsecureConnections: true,
       captchaTokenResolver: fakeTokenResolver
     })
-    const rsk = await BlockchainConnection.createUsingPassphrase(
-      integrationTestConfig.testMnemonic,
-      integrationTestConfig.nodeUrl
-    )
+    const rsk = await BlockchainReadOnlyConnection.createUsingRpc(integrationTestConfig.nodeUrl)
     await flyover.connectToRsk(rsk)
   })
 
