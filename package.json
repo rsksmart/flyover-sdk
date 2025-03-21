@@ -42,7 +42,7 @@
         "@rollup/plugin-commonjs": "^25.0.3",
         "@rollup/plugin-json": "^6.0.0",
         "@rollup/plugin-node-resolve": "^15.1.0",
-        "@typechain/ethers-v5": "^10.2.0",
+        "@typechain/ethers-v5": "^11.1.2",
         "@types/json-bigint": "^1.0.4",
         "@types/qrcode": "^1.5.0",
         "@typescript-eslint/eslint-plugin": "^5.52.0",
