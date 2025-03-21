@@ -22,6 +22,7 @@ import { RskBridge } from '../blockchain/bridge'
 import { isPeginQuotePaid } from './isPeginQuotePaid'
 import { isPegoutQuotePaid } from './isPegoutQuotePaid'
 import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
+import { isPegoutRefundable } from './isPegoutRefundable'
 jest.mock('ethers')
 
 jest.mock('./getProviders')
@@ -40,6 +41,7 @@ jest.mock('./getAvailableLiquidity')
 jest.mock('./validatePeginTransaction')
 jest.mock('./isPeginQuotePaid')
 jest.mock('./isPegoutQuotePaid')
+jest.mock('./isPegoutRefundable')
 
 const mockedGetQuote = getQuote as jest.Mock<typeof getQuote>
 const mockedGetPegoutQuote = getPegoutQuote as jest.Mock<typeof getPegoutQuote>
@@ -596,7 +598,7 @@ describe('Flyover object should', () => {
       await flyover.validatePeginTransaction(params, options)
       expect(validatePeginTransaction).toBeCalledTimes(1)
       expect(validatePeginTransaction).toBeCalledWith(
-        {
+        expect.objectContaining({
           config: expect.objectContaining({
             network: 'Regtest',
             allowInsecureConnections: true
@@ -604,7 +606,7 @@ describe('Flyover object should', () => {
           bridge: expect.any(RskBridge),
           lbc: expect.any(LiquidityBridgeContract),
           provider: providerMock
-        },
+        }),
         params,
         options
       )
@@ -701,10 +703,13 @@ describe('Flyover object should', () => {
         expect(result).toEqual({ isPaid: true })
         expect(isPegoutQuotePaid).toBeCalledTimes(1)
         expect(isPegoutQuotePaid).toBeCalledWith(
-          (flyover as any).httpClient, // httpClient
-          providerMock, // liquidityProvider
-          'testQuoteHash', // quoteHash
-          bitcoinDataSourceMock // bitcoinDataSource
+          expect.objectContaining({
+            config: expect.anything(),
+            provider: providerMock,
+            httpClient: (flyover as any).httpClient,
+            btcConnection: bitcoinDataSourceMock
+          }),
+          'testQuoteHash' // quoteHash
         )
       })
 
@@ -754,6 +759,44 @@ describe('Flyover object should', () => {
           .rejects
           .toThrow('Invalid type of operation')
       })
+    })
+  })
+  describe('isPegoutRefundable method should', () => {
+    test('invoke correctly isPegoutRefundable external function', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      await flyover.isPegoutRefundable(pegoutQuoteMock)
+      expect(isPegoutRefundable).toBeCalledTimes(1)
+      expect(isPegoutRefundable).toBeCalledWith(
+        expect.objectContaining({
+          config: expect.anything(),
+          lbc: expect.any(LiquidityBridgeContract),
+          provider: providerMock,
+          httpClient: expect.anything(),
+          rskConnection: rskConnectionMock
+        }),
+        pegoutQuoteMock
+      )
+    })
+    test('fail if liquidity provider has not been selected', async () => {
+      await expect(flyover.isPegoutRefundable(pegoutQuoteMock))
+        .rejects.toThrow('You need to select a provider to do this operation')
+    })
+    test('fail to get available liquidity when allowInsecureConnections is false and Provider apiBaseUrl is insecure', async () => {
+      (flyover as any).config.allowInsecureConnections = false
+      const provider = { ...providerMock }
+      provider.apiBaseUrl = 'http://localhost:1234'
+      flyover.useLiquidityProvider(provider)
+      await expect(flyover.isPegoutRefundable(pegoutQuoteMock)).rejects
+        .toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
+    })
+    test('create LBC instance during isPegoutRefundable if not created before', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      expect(flyover).not.toHaveProperty('liquidityBridgeContract')
+
+      await flyover.isPegoutRefundable(pegoutQuoteMock)
+      expect(flyover).toHaveProperty('liquidityBridgeContract')
     })
   })
 })

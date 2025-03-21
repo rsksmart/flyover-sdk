@@ -44,7 +44,6 @@ describe('isQuotePaid function should', () => {
     const provider = providers.find(p => p.id === integrationTestConfig.providerId)
     assertTruthy(provider, 'Provider not found')
     flyover.useLiquidityProvider(provider)
-    console.info(`Provider selected. Id: ${provider.id}, name: ${provider.name}`)
 
     // Get quote
     const request: PeginQuoteRequest = {
@@ -73,10 +72,9 @@ describe('isQuotePaid function should', () => {
     let response: IsQuotePaidResponse = { isPaid: false }
     while (!response.isPaid) {
       response = await flyover.isQuotePaid(quote.quoteHash, 'pegin')
-      console.info(`Response: ${JSON.stringify(response)}`)
 
       if (!response.isPaid) {
-        console.info(`Retrying in ${RETRY_INTERVAL / 1000} seconds...`)
+        console.info(`Quote not paid yet. Retrying in ${RETRY_INTERVAL / 1000} seconds...`)
         await new Promise(resolve => setTimeout(resolve, RETRY_INTERVAL))
       }
     }

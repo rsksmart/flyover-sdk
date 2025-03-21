@@ -1,4 +1,4 @@
-import { type FlyoverConfig, validateRequiredFields } from '@rsksmart/bridges-core-sdk'
+import { assertTruthy, type FlyoverConfig, validateRequiredFields } from '@rsksmart/bridges-core-sdk'
 import { type Quote, type AcceptedQuote } from '../api'
 import { Transaction, networks, address } from 'bitcoinjs-lib'
 import { quoteDetailRequiredFields, quoteRequiredFields, acceptQuoteRequiredFields } from '../api'
@@ -76,6 +76,8 @@ async function validateAddress (
   params: ValidatePeginTransactionParams
 ): Promise<string> {
   const { lbc, provider } = context
+  assertTruthy(lbc, 'Missing Liquidity Bridge Contract')
+  assertTruthy(provider, 'Missing Liquidity Provider')
   const isValidAddress = await lbc.validatePeginDepositAddress(params.quoteInfo, params.acceptInfo.bitcoinDepositAddressHash)
   if (!isValidAddress) {
     return FlyoverError.untrustedBtcAddressError({
@@ -110,6 +112,7 @@ async function validatePaidAmount (
 
 async function validateUtxos (context: FlyoverSDKContext, params: ValidatePeginTransactionParams, parsedTx: Transaction): Promise<string> {
   const { config, bridge } = context
+  assertTruthy(bridge, 'Missing RskBridge')
   const minBridgeSats = await bridge.getMinimumLockTxValue()
   const minBridgeWei = satsToWei(minBridgeSats)
   const invalidUtxos = parsedTx.outs.map<[string, number]>(output => [
