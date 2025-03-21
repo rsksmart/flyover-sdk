@@ -1,4 +1,4 @@
-import { type Connection, assertTruthy, type BridgeError } from '@rsksmart/bridges-core-sdk'
+import { type Connection, assertTruthy } from '@rsksmart/bridges-core-sdk'
 import { type PegoutQuote, type PegoutQuoteDetail } from '../api/index'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
 import { FlyoverErrors } from '../constants/errors'
@@ -10,6 +10,8 @@ export async function isPegoutRefundable (
   quote: PegoutQuote
 ): Promise<IsQuoteRefundableResponse> {
   const { lbc, rskConnection } = context
+  assertTruthy(lbc, 'Missing Liquidity Bridge Contract')
+  assertTruthy(rskConnection, 'Missing RSK connection')
   const quoteHash = await lbc.hashPegoutQuote(quote)
   const result = await isPegoutQuotePaid(context, quoteHash)
   if (result.isPaid) {
@@ -20,7 +22,7 @@ export async function isPegoutRefundable (
     return { isRefundable: false, error: FlyoverErrors.PEG_OUT_REFUND_ALREADY_COMPLETED }
   }
 
-  const expiredByDate = isExpiredByDate(quote.quote)
+  const expiredByDate = await isExpiredByDate(rskConnection, quote.quote)
   if (!expiredByDate) {
     return { isRefundable: false, error: FlyoverErrors.PEG_OUT_REFUND_NOT_EXPIRED_BY_DATE }
   }
@@ -36,15 +38,18 @@ export async function isPegoutRefundable (
       isRefundable: false,
       error: {
         ...FlyoverErrors.PEG_OUT_REFUND_FAILED,
-        detail: refundError.details.error.error.message
+        detail: refundError
       }
     }
   }
   return { isRefundable: true }
 }
 
-function isExpiredByDate (quote: PegoutQuoteDetail): boolean {
-  return quote.expireDate < (Date.now() / 1000)
+async function isExpiredByDate (rsk: Connection, quote: PegoutQuoteDetail): Promise<boolean> {
+  const provider = rsk.getUnderlyingProvider()
+  assertTruthy(provider, 'Failed to get provider')
+  const block = await provider.getBlock('latest')
+  return quote.expireDate < block.timestamp
 }
 
 async function isExpiredByBlocks (rsk: Connection, quote: PegoutQuoteDetail): Promise<boolean> {
@@ -53,11 +58,11 @@ async function isExpiredByBlocks (rsk: Connection, quote: PegoutQuoteDetail): Pr
   return quote.expireBlocks < currentBlock
 }
 
-async function verifyRefundExecution (lbc: LiquidityBridgeContract, quote: PegoutQuote): Promise<BridgeError | null> {
+async function verifyRefundExecution (lbc: LiquidityBridgeContract, quote: PegoutQuote): Promise<Error | null> {
   try {
     await lbc.refundPegout(quote, 'staticCall')
     return null
   } catch (error) {
-    return error as BridgeError
+    return error as Error
   }
 }

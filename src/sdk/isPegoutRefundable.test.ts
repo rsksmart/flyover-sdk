@@ -1,5 +1,5 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
-import { BridgeError, type Connection } from '@rsksmart/bridges-core-sdk'
+import { BridgeError, type ethers, type Connection } from '@rsksmart/bridges-core-sdk'
 import { type PegoutQuote } from '../api'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
 import { FlyoverErrors } from '../constants/errors'
@@ -38,6 +38,8 @@ describe('isPegoutRefundable function should', () => {
   let lbcMock: Partial<jest.Mocked<LiquidityBridgeContract>>
   let connectionMock: Partial<jest.Mocked<Connection>>
   let contextMock: FlyoverSDKContext
+  let providerMock: Partial<jest.Mocked<ethers.providers.Provider>>
+  let expiredBlock: ethers.providers.Block
   beforeEach(() => {
     lbcMock = {
       hashPegoutQuote: jest.fn(),
@@ -45,15 +47,21 @@ describe('isPegoutRefundable function should', () => {
       refundPegout: jest.fn()
     }
     connectionMock = {
-      getChainHeight: jest.fn()
+      getChainHeight: jest.fn(),
+      getUnderlyingProvider: jest.fn()
+    }
+    providerMock = {
+      getBlock: jest.fn()
     }
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     contextMock = {
       lbc: lbcMock as Partial<LiquidityBridgeContract>,
       rskConnection: connectionMock as Partial<Connection>
     } as FlyoverSDKContext
-    pegoutQuoteMock.quote.expireDate = (Date.now() / 1000) + 1000
     lbcMock.hashPegoutQuote?.mockResolvedValue(pegoutQuoteMock.quoteHash)
+    connectionMock.getUnderlyingProvider?.mockReturnValue(providerMock as ethers.providers.Provider)
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    expiredBlock = { timestamp: pegoutQuoteMock.quote.expireDate + 5000 } as ethers.providers.Block
   })
   test('return error if the quote is already paid', async () => {
     jest.spyOn(isPaidMod, 'isPegoutQuotePaid').mockResolvedValue({ isPaid: true })
@@ -67,6 +75,7 @@ describe('isPegoutRefundable function should', () => {
     expect(lbcMock.isPegOutQuoteCompleted).not.toHaveBeenCalled()
     expect(connectionMock.getChainHeight).not.toHaveBeenCalled()
     expect(lbcMock.refundPegout).not.toHaveBeenCalled()
+    expect(providerMock.getBlock).not.toHaveBeenCalled()
   })
   test('return error if the quote is already completed', async () => {
     jest.spyOn(isPaidMod, 'isPegoutQuotePaid').mockResolvedValue({ isPaid: false, error: FlyoverErrors.QUOTE_STATUS_TRANSACTION_NOT_FOUND })
@@ -82,10 +91,13 @@ describe('isPegoutRefundable function should', () => {
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledTimes(1)
     expect(connectionMock.getChainHeight).not.toHaveBeenCalled()
     expect(lbcMock.refundPegout).not.toHaveBeenCalled()
+    expect(providerMock.getBlock).not.toHaveBeenCalled()
   })
   test('return error if the quote is not expired by date', async () => {
     jest.spyOn(isPaidMod, 'isPegoutQuotePaid').mockResolvedValue({ isPaid: false, error: FlyoverErrors.QUOTE_STATUS_TRANSACTION_NOT_FOUND })
     lbcMock.isPegOutQuoteCompleted?.mockResolvedValue(false)
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    providerMock.getBlock?.mockResolvedValue({ timestamp: pegoutQuoteMock.quote.expireDate - 5000 } as ethers.providers.Block)
     const result = await isPegoutRefundable(contextMock, pegoutQuoteMock)
     expect(result.isRefundable).toBe(false)
     expect(result.error).toBe(FlyoverErrors.PEG_OUT_REFUND_NOT_EXPIRED_BY_DATE)
@@ -95,13 +107,15 @@ describe('isPegoutRefundable function should', () => {
     expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledTimes(1)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledTimes(1)
+    expect(providerMock.getBlock).toHaveBeenCalledWith('latest')
+    expect(providerMock.getBlock).toHaveBeenCalledTimes(1)
     expect(connectionMock.getChainHeight).not.toHaveBeenCalled()
     expect(lbcMock.refundPegout).not.toHaveBeenCalled()
   })
   test('return error if the quote is not expired by blocks', async () => {
     jest.spyOn(isPaidMod, 'isPegoutQuotePaid').mockResolvedValue({ isPaid: false, error: FlyoverErrors.QUOTE_STATUS_TRANSACTION_NOT_FOUND })
     lbcMock.isPegOutQuoteCompleted?.mockResolvedValue(false)
-    pegoutQuoteMock.quote.expireDate = (Date.now() / 1000) - 5000
+    providerMock.getBlock?.mockResolvedValue(expiredBlock)
     connectionMock.getChainHeight?.mockResolvedValue(pegoutQuoteMock.quote.expireBlocks - 1)
     const result = await isPegoutRefundable(contextMock, pegoutQuoteMock)
     expect(result.isRefundable).toBe(false)
@@ -112,28 +126,29 @@ describe('isPegoutRefundable function should', () => {
     expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledTimes(1)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledTimes(1)
+    expect(providerMock.getBlock).toHaveBeenCalledWith('latest')
+    expect(providerMock.getBlock).toHaveBeenCalledTimes(1)
     expect(connectionMock.getChainHeight).toHaveBeenCalledTimes(1)
     expect(lbcMock.refundPegout).not.toHaveBeenCalled()
   })
   test('return error if the refund simulation fails', async () => {
     jest.spyOn(isPaidMod, 'isPegoutQuotePaid').mockResolvedValue({ isPaid: false, error: FlyoverErrors.QUOTE_STATUS_TRANSACTION_NOT_FOUND })
     lbcMock.isPegOutQuoteCompleted?.mockResolvedValue(false)
-    pegoutQuoteMock.quote.expireDate = (Date.now() / 1000) - 5000
+    providerMock.getBlock?.mockResolvedValue(expiredBlock)
     connectionMock.getChainHeight?.mockResolvedValue(pegoutQuoteMock.quote.expireBlocks + 5)
-    lbcMock.refundPegout?.mockImplementation(() => {
-      const ethersError = { error: new Error('refund failed') }
-      throw new BridgeError({
-        timestamp: Date.now(),
-        recoverable: true,
-        message: 'an error',
-        details: { error: ethersError }
-      })
+    const ethersError = { error: new Error('refund failed') }
+    const bridgeError = new BridgeError({
+      timestamp: Date.now(),
+      recoverable: true,
+      message: 'an error',
+      details: { error: ethersError }
     })
+    lbcMock.refundPegout?.mockImplementation(() => { throw bridgeError })
     const result = await isPegoutRefundable(contextMock, pegoutQuoteMock)
     expect(result.isRefundable).toBe(false)
     expect(result.error).toMatchObject({
       ...FlyoverErrors.PEG_OUT_REFUND_FAILED,
-      detail: 'refund failed'
+      detail: bridgeError
     })
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledTimes(1)
@@ -144,11 +159,13 @@ describe('isPegoutRefundable function should', () => {
     expect(connectionMock.getChainHeight).toHaveBeenCalledTimes(1)
     expect(lbcMock.refundPegout).toHaveBeenCalledWith(pegoutQuoteMock, 'staticCall')
     expect(lbcMock.refundPegout).toHaveBeenCalledTimes(1)
+    expect(providerMock.getBlock).toHaveBeenCalledWith('latest')
+    expect(providerMock.getBlock).toHaveBeenCalledTimes(1)
   })
   test('return true if the quote is refundable', async () => {
     jest.spyOn(isPaidMod, 'isPegoutQuotePaid').mockResolvedValue({ isPaid: false, error: FlyoverErrors.QUOTE_STATUS_TRANSACTION_NOT_FOUND })
     lbcMock.isPegOutQuoteCompleted?.mockResolvedValue(false)
-    pegoutQuoteMock.quote.expireDate = (Date.now() / 1000) - 5000
+    providerMock.getBlock?.mockResolvedValue(expiredBlock)
     connectionMock.getChainHeight?.mockResolvedValue(pegoutQuoteMock.quote.expireBlocks + 5)
     lbcMock.refundPegout?.mockResolvedValue(null)
     const result = await isPegoutRefundable(contextMock, pegoutQuoteMock)
@@ -163,5 +180,7 @@ describe('isPegoutRefundable function should', () => {
     expect(connectionMock.getChainHeight).toHaveBeenCalledTimes(1)
     expect(lbcMock.refundPegout).toHaveBeenCalledWith(pegoutQuoteMock, 'staticCall')
     expect(lbcMock.refundPegout).toHaveBeenCalledTimes(1)
+    expect(providerMock.getBlock).toHaveBeenCalledWith('latest')
+    expect(providerMock.getBlock).toHaveBeenCalledTimes(1)
   })
 })

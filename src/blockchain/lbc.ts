@@ -46,12 +46,12 @@ export class LiquidityBridgeContract {
   /**
    * Executes the refundUserPegOut function in the LiquidityBridge contract
    * @param quote the pegout quote to refund
-   * @param operationType the type of operation to perform, 'staticCall' or 'transaction'. Default is 'transaction'
-   * @returns { TxResult | null } If operationType is 'transaction' returns the transaction result, otherwise returns null
+   * @param operationType the type of operation to perform, 'staticCall' or 'execution'. Default is 'execution'
+   * @returns { TxResult | null } If operationType is 'execution' returns the transaction result, otherwise returns null
    */
-  async refundPegout (quote: PegoutQuote, operationType: 'staticCall' | 'transaction' = 'transaction'): Promise<TxResult | null> {
+  async refundPegout (quote: PegoutQuote, operationType: 'staticCall' | 'execution' = 'execution'): Promise<TxResult | null> {
     const hashBytes = utils.arrayify('0x' + quote.quoteHash)
-    if (operationType === 'transaction') {
+    if (operationType === 'execution') {
       return executeContractFunction(this.liquidityBridgeContract, 'refundUserPegOut', hashBytes)
     } else if (operationType === 'staticCall') {
       await callContractFunction(this.liquidityBridgeContract, 'refundUserPegOut', hashBytes)

@@ -41,7 +41,7 @@ describe('FlyoverSDK refund applicability check should', () => {
     const acceptedQuote = await flyover.acceptPegoutQuote(quote)
     assertTruthy(acceptedQuote, 'Accepted quote not found')
 
-    console.debug(`Waiting before ${WAIT_SECONDS_BEFORE_PAYMENT} seconds before depositing...`)
+    console.debug(`Waiting ${WAIT_SECONDS_BEFORE_PAYMENT} seconds before depositing...`)
     await sleepSeconds(WAIT_SECONDS_BEFORE_PAYMENT)
     const txHash = await flyover.depositPegout(quote, acceptedQuote.signature, FlyoverUtils.getQuoteTotal(quote))
 

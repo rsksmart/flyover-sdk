@@ -151,6 +151,10 @@ describe('LiquidityBridgeContract class should', () => {
   let btcTxMock: any
 
   beforeAll(async () => {
+    jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
+      const { utils } = jest.requireActual<typeof ethers>('ethers')
+      return utils.arrayify(arg)
+    })
     btcTxMock = await readFile('src/blockchain/mocks/btcTxMock.json').then(buffer => JSON.parse(buffer.toString()))
     const quote = peginQuoteMock
     const signature = '07cea1bed6da0994f7ae2f0669b82a033e1b519b964b8f7620a1d65c0c40d3500a8b2eab708c7601eb1bc32de9739f4a2865f72c6b58abbdbf793c5a4e7f64641c'
@@ -200,11 +204,6 @@ describe('LiquidityBridgeContract class should', () => {
 
     const contractClassMock = jest.mocked(ethers.Contract)
     contractClassMock.mockImplementation(() => contractMock as any)
-
-    jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
-      const { utils } = jest.requireActual<typeof ethers>('ethers')
-      return utils.arrayify(arg)
-    })
     const amount = BigInt(500)
 
     const signature = '8cf4893bc89a84486e6f5c57d3d3881796f6eda5d217dfa2a6c49f4c5781d9c6'
@@ -285,11 +284,6 @@ describe('LiquidityBridgeContract class should', () => {
       const contractClassMock = jest.mocked(ethers.Contract)
       contractClassMock.mockImplementation(() => contractMock as any)
 
-      jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
-        const { utils } = jest.requireActual<typeof ethers>('ethers')
-        return utils.arrayify(arg)
-      })
-
       const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
       const lbc = new LiquidityBridgeContract(connectionMock, config)
       const result = await lbc.refundPegout(pegoutQuoteMock)
@@ -301,18 +295,13 @@ describe('LiquidityBridgeContract class should', () => {
       expect(contractMock.callStatic.refundUserPegOut).not.toBeCalled()
     })
 
-    test('generate transaction if operation type if transaction', async () => {
+    test('generate transaction if operation type is execution', async () => {
       const contractClassMock = jest.mocked(ethers.Contract)
       contractClassMock.mockImplementation(() => contractMock as any)
 
-      jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
-        const { utils } = jest.requireActual<typeof ethers>('ethers')
-        return utils.arrayify(arg)
-      })
-
       const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
       const lbc = new LiquidityBridgeContract(connectionMock, config)
-      const result = await lbc.refundPegout(pegoutQuoteMock, 'transaction')
+      const result = await lbc.refundPegout(pegoutQuoteMock, 'execution')
 
       expect(result?.txHash).toEqual(receiptMock.transactionHash)
       expect(result?.successful).toBe(true)
@@ -324,11 +313,6 @@ describe('LiquidityBridgeContract class should', () => {
     test("don't generate a transaction if operation type if callStatic", async () => {
       const contractClassMock = jest.mocked(ethers.Contract)
       contractClassMock.mockImplementation(() => contractMock as any)
-
-      jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
-        const { utils } = jest.requireActual<typeof ethers>('ethers')
-        return utils.arrayify(arg)
-      })
 
       const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
       const lbc = new LiquidityBridgeContract(connectionMock, config)
@@ -380,11 +364,6 @@ describe('LiquidityBridgeContract class should', () => {
 
     const contractClassMock = jest.mocked(ethers.Contract)
     contractClassMock.mockImplementation(() => contractMock as any)
-
-    jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
-      const { utils } = jest.requireActual<typeof ethers>('ethers')
-      return utils.arrayify(arg)
-    })
 
     const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
     const lbc = new LiquidityBridgeContract(connectionMock, config)
@@ -466,11 +445,6 @@ describe('LiquidityBridgeContract class should', () => {
 
     const contractClassMock = jest.mocked(ethers.Contract)
     contractClassMock.mockImplementation(() => contractMock as any)
-
-    jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
-      const { utils } = jest.requireActual<typeof ethers>('ethers')
-      return utils.arrayify(arg)
-    })
 
     const config: FlyoverConfig = {
       network: 'Regtest',

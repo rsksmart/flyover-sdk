@@ -3,7 +3,7 @@ import { deepFreeze } from '@rsksmart/bridges-core-sdk'
 export interface FlyoverSDKError {
   code: string
   description: string
-  detail?: string
+  detail?: Error
 }
 
 /**

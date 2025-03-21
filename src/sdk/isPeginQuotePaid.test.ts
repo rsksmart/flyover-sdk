@@ -237,8 +237,7 @@ describe('isQuotePaid function should', () => {
 
   test('return isPaid false when LPS does not return quote status', async () => {
     // Mock the implementation of getPeginStatus to always reject
-    const ERROR_DETAIL = 'API error'
-    const error = new Error(ERROR_DETAIL)
+    const error = new Error('API error')
     mockedGetPeginStatus.mockImplementation(async () => Promise.reject(error))
 
     // Mock setTimeout to execute immediately
@@ -259,7 +258,7 @@ describe('isQuotePaid function should', () => {
     global.setTimeout = originalSetTimeout
 
     expect(result.isPaid).toBe(false)
-    expect(result.error).toStrictEqual({ ...FlyoverErrors.LPS_DID_NOT_RETURN_QUOTE_STATUS, detail: ERROR_DETAIL })
+    expect(result.error).toStrictEqual({ ...FlyoverErrors.LPS_DID_NOT_RETURN_QUOTE_STATUS, detail: error })
   })
 
   test('return isPaid false when pegin status does not have callForUserTxHash', async () => {

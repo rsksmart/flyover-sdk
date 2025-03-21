@@ -1,5 +1,5 @@
 import { getPegoutStatus } from './getPegoutStatus'
-import { type HttpClient } from '@rsksmart/bridges-core-sdk'
+import { assertTruthy, type HttpClient } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type PegoutQuoteStatus } from '../api'
 import { FlyoverErrors } from '../constants/errors'
 import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
@@ -23,6 +23,7 @@ export async function isPegoutQuotePaid (
   quoteHash: string
 ): Promise<IsQuotePaidResponse> {
   const { httpClient, provider, btcConnection: bitcoinDataSource } = context
+  assertTruthy(provider, 'Missing Liquidity Provider')
   let pegoutStatus: PegoutQuoteStatus
 
   // Get the pegout status from the Liquidity Provider
@@ -33,7 +34,7 @@ export async function isPegoutQuotePaid (
       isPaid: false,
       error: {
         ...FlyoverErrors.LPS_DID_NOT_RETURN_QUOTE_STATUS,
-        detail: error instanceof Error ? error.message : 'Unknown error'
+        detail: error instanceof Error ? error : new Error('Unknown error')
       }
     }
   }
@@ -54,7 +55,7 @@ export async function isPegoutQuotePaid (
       isPaid: false,
       error: {
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
-        detail: isValid.errorMessage
+        detail: new Error(isValid.errorMessage)
       }
     }
   }

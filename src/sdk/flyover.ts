@@ -535,16 +535,14 @@ export class Flyover implements Bridge {
   }
 
   private getFlyoverContext (): FlyoverSDKContext {
-    /* eslint-disable @typescript-eslint/no-non-null-assertion */
     return {
       config: this.config,
-      bridge: this.rskBridge!,
-      lbc: this.liquidityBridgeContract!,
-      provider: this.liquidityProvider!,
+      bridge: this.rskBridge,
+      lbc: this.liquidityBridgeContract,
+      provider: this.liquidityProvider,
       httpClient: this.httpClient,
-      rskConnection: this.config.rskConnection!,
+      rskConnection: this.config.rskConnection,
       btcConnection: this.bitcoinDataSource
     }
-    /* eslint-enable @typescript-eslint/no-non-null-assertion */
   }
 }

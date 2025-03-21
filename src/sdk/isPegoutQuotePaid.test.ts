@@ -126,8 +126,7 @@ describe('isPegoutQuotePaid function', () => {
 
   test('should return isPaid false when LPS does not return quote status', async () => {
     // Mock the implementation of getPegoutStatus to always reject
-    const ERROR_DETAIL = 'API error'
-    const error = new Error(ERROR_DETAIL)
+    const error = new Error('API error')
     mockedGetPegoutStatus.mockImplementation(async () => Promise.reject(error))
 
     // Mock setTimeout to execute immediately
@@ -142,7 +141,7 @@ describe('isPegoutQuotePaid function', () => {
     expect(result.isPaid).toBe(false)
     expect(result.error).toStrictEqual({
       ...FlyoverErrors.LPS_DID_NOT_RETURN_QUOTE_STATUS,
-      detail: ERROR_DETAIL
+      detail: error
     })
 
     // Restore original function
@@ -185,7 +184,7 @@ describe('isPegoutQuotePaid function', () => {
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
-        detail: 'Flyover is not connected to Bitcoin'
+        detail: new Error('Flyover is not connected to Bitcoin')
       })
     })
 
@@ -203,7 +202,7 @@ describe('isPegoutQuotePaid function', () => {
       expect(result2.isPaid).toBe(false)
       expect(result2.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
-        detail: 'Transaction is not confirmed'
+        detail: new Error('Transaction is not confirmed')
       })
       expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
@@ -230,7 +229,7 @@ describe('isPegoutQuotePaid function', () => {
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
-        detail: 'Transaction does not have enough outputs'
+        detail: new Error('Transaction does not have enough outputs')
       })
       expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
@@ -262,7 +261,7 @@ describe('isPegoutQuotePaid function', () => {
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
-        detail: 'Transaction value is less than the quote value'
+        detail: new Error('Transaction value is less than the quote value')
       })
       expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
@@ -285,7 +284,7 @@ describe('isPegoutQuotePaid function', () => {
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
-        detail: 'Transaction does not have a valid OP_RETURN output'
+        detail: new Error('Transaction does not have a valid OP_RETURN output')
       })
       expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
@@ -314,7 +313,7 @@ describe('isPegoutQuotePaid function', () => {
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
-        detail: 'Transaction does not have a valid OP_RETURN output'
+        detail: new Error('Transaction does not have a valid OP_RETURN output')
       })
       expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
@@ -343,7 +342,7 @@ describe('isPegoutQuotePaid function', () => {
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
-        detail: 'Transaction does not have a valid OP_RETURN output'
+        detail: new Error('Transaction does not have a valid OP_RETURN output')
       })
       expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
@@ -361,7 +360,7 @@ describe('isPegoutQuotePaid function', () => {
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
-        detail: `Failed to check OP_RETURN output: Error: ${errorMessage}`
+        detail: new Error(`Failed to check OP_RETURN output: Error: ${errorMessage}`)
       })
       expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)

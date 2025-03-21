@@ -786,13 +786,13 @@ describe('Flyover object should', () => {
       await expect(flyover.isPegoutRefundable(pegoutQuoteMock)).rejects
         .toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
     })
-    test('create LBC instance during registerPegin if not created before', async () => {
+    test('create LBC instance during isPegoutRefundable if not created before', async () => {
       flyover.useLiquidityProvider(providerMock)
       await flyover.connectToRsk(rskConnectionMock)
       expect(flyover).not.toHaveProperty('liquidityBridgeContract')
 
       await flyover.isPegoutRefundable(pegoutQuoteMock)
-      expect(flyover).not.toHaveProperty('liquidityBridgeContract', undefined)
+      expect(flyover).toHaveProperty('liquidityBridgeContract')
     })
   })
 })

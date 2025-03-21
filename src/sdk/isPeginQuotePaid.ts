@@ -25,7 +25,7 @@ export async function isPeginQuotePaid (
       isPaid: false,
       error: {
         ...FlyoverErrors.LPS_DID_NOT_RETURN_QUOTE_STATUS,
-        detail: error instanceof Error ? error.message : 'Unknown error'
+        detail: error instanceof Error ? error : new Error('Unknown error')
       }
     }
   }
@@ -55,7 +55,7 @@ export async function isPeginQuotePaid (
       isPaid: false,
       error: {
         ...FlyoverErrors.QUOTE_STATUS_TRANSACTION_NOT_FOUND,
-        detail: error instanceof Error ? error.message : 'Unknown error'
+        detail: error instanceof Error ? error : new Error('Unknown error')
       }
     }
   }

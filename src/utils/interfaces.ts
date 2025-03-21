@@ -7,11 +7,11 @@ import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
 
 export interface FlyoverSDKContext {
   config: FlyoverConfig
-  lbc: LiquidityBridgeContract
-  provider: LiquidityProvider
-  bridge: RskBridge
+  lbc?: LiquidityBridgeContract
+  provider?: LiquidityProvider
+  bridge?: RskBridge
   httpClient: HttpClient
-  rskConnection: Connection
+  rskConnection?: Connection
   btcConnection?: BitcoinDataSource
 }
 
