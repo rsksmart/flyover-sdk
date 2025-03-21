@@ -15,11 +15,17 @@ export async function getMetadata (
     blocksToDeliver: liquidityProvider.pegin.requiredConfirmations,
     fees: [
       {
-        amount: liquidityProvider.pegin.fee,
+        amount: liquidityProvider.pegin.fixedFee,
         decimals: 0,
         type: 'Fixed',
-        description: 'Liquidity provider fee',
+        description: 'Liquidity provider fixed fee',
         unit: 'Wei'
+      },
+      {
+        amount: liquidityProvider.pegin.feePercentage,
+        decimals: 0,
+        type: 'Percental',
+        description: 'Liquidity provider percentage fee. It is a percentage of the pegged value.'
       }
     ]
   }
@@ -30,11 +36,17 @@ export async function getMetadata (
     blocksToDeliver: liquidityProvider.pegout.requiredConfirmations,
     fees: [
       {
-        amount: liquidityProvider.pegout.fee,
+        amount: liquidityProvider.pegout.fixedFee,
         decimals: 0,
         type: 'Fixed',
-        description: 'Liquidity provider fee',
+        description: 'Liquidity provider fixed fee',
         unit: 'Wei'
+      },
+      {
+        amount: liquidityProvider.pegout.feePercentage,
+        decimals: 0,
+        type: 'Percental',
+        description: 'Liquidity provider percentage fee. It is a percentage of the pegged value.'
       }
     ]
   }

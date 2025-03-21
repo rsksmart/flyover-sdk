@@ -41,14 +41,20 @@ describe('Flyover pegin process should', () => {
     if (provider?.providerType === 'pegin' || provider?.providerType === 'both') {
       expect(provider?.pegin).not.toBeUndefined()
       expect(provider?.pegin.fee).not.toBeUndefined()
+      expect(provider?.pegin.feePercentage).not.toBeUndefined()
+      expect(provider?.pegin.fixedFee).not.toBeUndefined()
       expect(provider?.pegin.maxTransactionValue).not.toBeUndefined()
       expect(provider?.pegin.minTransactionValue).not.toBeUndefined()
+      expect(provider?.pegin.fixedFee).toBe(provider?.pegin.fee)
     }
     if (provider?.providerType === 'pegout' || provider?.providerType === 'both') {
       expect(provider?.pegout).not.toBeUndefined()
       expect(provider?.pegout.fee).not.toBeUndefined()
+      expect(provider?.pegout.feePercentage).not.toBeUndefined()
+      expect(provider?.pegout.fixedFee).not.toBeUndefined()
       expect(provider?.pegout.maxTransactionValue).not.toBeUndefined()
       expect(provider?.pegout.minTransactionValue).not.toBeUndefined()
+      expect(provider?.pegout.fixedFee).toBe(provider?.pegout.fee)
     }
   })
 
@@ -100,10 +106,11 @@ describe('Flyover pegin process should', () => {
   test('get status of the accepted quote', async () => {
     const quoteHash = quote.quoteHash
     assertTruthy(quoteHash)
-    const { detail, status } = await flyover.getPeginStatus(quoteHash)
+    const { detail, status, creationData } = await flyover.getPeginStatus(quoteHash)
 
     expect(detail).not.toBeUndefined()
     expect(status).not.toBeUndefined()
+    expect(creationData).not.toBeUndefined()
 
     expect(detail.agreementTimestamp).not.toBeUndefined()
     expect(detail.btcRefundAddr).not.toBeUndefined()
@@ -134,6 +141,10 @@ describe('Flyover pegin process should', () => {
     expect(status.signature).not.toBeUndefined()
     expect(status.state).not.toBeUndefined()
     expect(status.userBtcTxHash).not.toBeUndefined()
+
+    expect(creationData.fixedFee).not.toBeUndefined()
+    expect(creationData.gasPrice).not.toBeUndefined()
+    expect(creationData.feePercentage).not.toBeUndefined()
   })
 
   test('validate the PegIn deposit transaction', async () => {

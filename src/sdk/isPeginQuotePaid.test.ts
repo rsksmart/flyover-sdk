@@ -4,7 +4,7 @@ import { getPeginStatus } from './getPeginStatus'
 import { type HttpClient, type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider } from '../api'
 import { FlyoverErrors } from '../constants/errors'
-import { type PeginQuoteStatusDTO, type PeginQuoteDTO, type RetainedPeginQuoteDTO } from '../api/bindings/data-contracts'
+import { type PeginQuoteStatusDTO, type PeginQuoteDTO, type RetainedPeginQuoteDTO, type PeginCreationDataDTO } from '../api/bindings/data-contracts'
 
 // Mock getPeginStatus
 jest.mock('./getPeginStatus')
@@ -90,12 +90,16 @@ const providerMock: LiquidityProvider = {
     minTransactionValue: BigInt(1),
     maxTransactionValue: BigInt(100),
     fee: BigInt(1),
+    fixedFee: BigInt(1),
+    feePercentage: 0.01,
     requiredConfirmations: 5
   },
   pegout: {
     minTransactionValue: BigInt(1),
     maxTransactionValue: BigInt(100),
     fee: BigInt(1),
+    fixedFee: BigInt(1),
+    feePercentage: 0.01,
     requiredConfirmations: 5
   }
 }
@@ -146,15 +150,23 @@ const mockPeginQuoteStatusWithoutCallForUserTxHash: RetainedPeginQuoteDTO = {
   userBtcTxHash: ''
 }
 
+const peginCreationDataMock: PeginCreationDataDTO = {
+  fixedFee: BigInt(3),
+  feePercentage: 1.25,
+  gasPrice: BigInt(1)
+}
+
 // Mock PeginQuoteStatusDTO
 const mockPeginStatusWithTxHash: PeginQuoteStatusDTO = {
   detail: mockPeginQuoteDTO,
-  status: mockPeginQuoteStatusWithCallForUserTxHash
+  status: mockPeginQuoteStatusWithCallForUserTxHash,
+  creationData: peginCreationDataMock
 }
 
 const mockPeginStatusWithoutTxHash: PeginQuoteStatusDTO = {
   detail: mockPeginQuoteDTO,
-  status: mockPeginQuoteStatusWithoutCallForUserTxHash
+  status: mockPeginQuoteStatusWithoutCallForUserTxHash,
+  creationData: peginCreationDataMock
 }
 
 // Mock transaction receipt
