@@ -6,7 +6,6 @@ import * as ethers from 'ethers'
 jest.mock('ethers')
 
 const signerMock = jest.mocked({})
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const connectionMock = jest.mocked({
   getChainHeight: async () => Promise.resolve(1),
   getAbstraction: () => {

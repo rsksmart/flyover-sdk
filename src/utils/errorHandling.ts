@@ -65,7 +65,7 @@ const errorCodes: Record<string, string> = {
   LBC063: 'Not enough value'
 }
 
-export function processError (error: any): any {
+export function processError (error: any): any { // eslint-disable-line @typescript-eslint/no-explicit-any
   if (typeof error === 'string') {
     const errorCode = error.match(/LBC\d{3}/g)?.[0]
     if (errorCode !== undefined && errorCodes[errorCode] !== undefined) {

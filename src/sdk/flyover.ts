@@ -227,8 +227,8 @@ export class Flyover implements Bridge {
     try {
       const qrCodeUrl = await toDataURL(text.toString())
       return qrCodeUrl
-    } catch (err) {
-      throw new Error('Error generating QR code')
+    } catch (err: unknown) {
+      throw new Error('Error generating QR code: ' + (err as Error).message)
     }
   }
 

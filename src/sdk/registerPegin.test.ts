@@ -40,7 +40,6 @@ const paramsMock: RegisterPeginParams = {
   height: 1
 }
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const lbcMock = jest.mocked({
   registerPegin: async (
     _quote: Quote,

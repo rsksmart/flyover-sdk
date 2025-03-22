@@ -5,13 +5,11 @@ import { type LiquidityProvider, providerRequiredFields } from '../api'
 import { getAvailableLiquidity } from './getAvailableLiquidity'
 import { FlyoverError } from '../client/httpClient'
 
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
 const mockClient: HttpClient = {
   async get<M>(_url: string) {
     return Promise.resolve({} as M)
   }
 } as HttpClient
-/* eslint-enable @typescript-eslint/consistent-type-assertions */
 
 const providerMock: LiquidityProvider = {
   id: 1,

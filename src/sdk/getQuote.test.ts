@@ -9,7 +9,7 @@ import { BTC_ZERO_ADDRESS_MAINNET } from '@rsksmart/bridges-core-sdk'
 
 const mockClient: HttpClient = {
   async get<M>(_url: string) {
-    return Promise.resolve({} as M) // eslint-disable-line @typescript-eslint/consistent-type-assertions
+    return Promise.resolve({} as M)
   },
   post: async <M>(_url: string, _body: object) => Promise.resolve([quoteResponseMock] as M),
   getCaptchaToken: async () => Promise.resolve('')
@@ -17,7 +17,7 @@ const mockClient: HttpClient = {
 
 const mockSanitizedClient: HttpClient = {
   async get<M>(_url: string) {
-    return Promise.resolve({} as M) // eslint-disable-line @typescript-eslint/consistent-type-assertions
+    return Promise.resolve({} as M)
   },
   post: async <M>(_url: string, _body: object) => Promise.resolve([quoteResponseSanitizedMock] as M),
   getCaptchaToken: async () => Promise.resolve('')
@@ -114,7 +114,7 @@ const quoteResponseSanitizedMock: Quote =
     quoteHash: 'any hash'
   }
 
-const lbcMock = { // eslint-disable-line @typescript-eslint/consistent-type-assertions
+const lbcMock = {
   hashPeginQuote: async (quote: Quote) => Promise.resolve(quote.quoteHash)
 } as LiquidityBridgeContract
 
