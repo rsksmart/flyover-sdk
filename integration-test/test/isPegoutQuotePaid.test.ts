@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeAll } from '@jest/globals'
 import { assertTruthy, BlockchainConnection, type Network } from '@rsksmart/bridges-core-sdk'
-import type { AcceptedPegoutQuote, PegoutQuote, PegoutQuoteRequest, IsQuotePaidResponse } from '@rsksmart/flyover-sdk'
 import { integrationTestConfig } from '../config'
 import { fakeTokenResolver, getBitcoinDataSource } from './common/utils'
 import { Flyover, FlyoverUtils } from '@rsksmart/flyover-sdk'
+import type { AcceptedPegoutQuote, PegoutQuote, PegoutQuoteRequest, IsQuotePaidResponse } from '@rsksmart/flyover-sdk'
 
 /**
  * This test verifies that the isQuotePaid function returns true if a pegout quote is paid.
@@ -33,7 +33,7 @@ describe('isQuotePaid function should', () => {
     const bitcoinDataSource = getBitcoinDataSource(integrationTestConfig.network)
 
     await flyover.connectToRsk(rskConnection)
-    await flyover.connectToBitcoin(bitcoinDataSource)
+    flyover.connectToBitcoin(bitcoinDataSource)
   })
 
   test('return true if the quote is paid', async () => {

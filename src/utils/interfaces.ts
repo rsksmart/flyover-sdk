@@ -15,3 +15,8 @@ export interface IsQuotePaidResponse {
   isPaid: boolean
   error?: FlyoverSDKError
 }
+
+export interface IsQuoteRefundableResponse {
+  isRefundable: boolean
+  error?: FlyoverSDKError
+}

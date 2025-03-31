@@ -22,6 +22,7 @@ export {
   type AcceptPegoutResponse as AcceptedPegoutQuote,
   type DepositEventDTO as DepositEvent,
   type PeginQuoteStatusDTO as PeginQuoteStatus,
+  type RetainedPeginQuoteDTO as PeginQuoteStatusDetail,
   type PegoutQuoteStatusDTO as PegoutQuoteStatus,
   type AvailableLiquidityDTO as AvailableLiquidity,
   PeginQuoteRequestRequiredFields as quoteRequestRequiredFields,

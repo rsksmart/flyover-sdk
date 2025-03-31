@@ -2,9 +2,8 @@ import { describe, test, expect, jest, beforeEach } from '@jest/globals'
 import { isPeginQuotePaid } from './isPeginQuotePaid'
 import { getPeginStatus } from './getPeginStatus'
 import { type HttpClient, type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
-import { type LiquidityProvider } from '../api'
+import { type PeginQuoteStatus, type LiquidityProvider, type QuoteDetail, type PeginQuoteStatusDetail } from '../api'
 import { FlyoverErrors } from '../constants/errors'
-import { type PeginQuoteStatusDTO, type PeginQuoteDTO, type RetainedPeginQuoteDTO } from '../api/bindings/data-contracts'
 
 // Mock getPeginStatus
 jest.mock('./getPeginStatus')
@@ -101,7 +100,7 @@ const providerMock: LiquidityProvider = {
 }
 
 // Create mock quote data
-const mockPeginQuoteDTO: PeginQuoteDTO = {
+const mockPeginQuoteDTO: QuoteDetail = {
   agreementTimestamp: 1234567890,
   btcRefundAddr: 'btcAddress',
   callFee: BigInt(1000),
@@ -124,7 +123,7 @@ const mockPeginQuoteDTO: PeginQuoteDTO = {
   value: BigInt(600000000000000000)
 }
 
-const mockPeginQuoteStatusWithCallForUserTxHash: RetainedPeginQuoteDTO = {
+const mockPeginQuoteStatusWithCallForUserTxHash: PeginQuoteStatusDetail = {
   callForUserTxHash: FAKE_CALL_FOR_USER_TX_HASH,
   depositAddress: 'depositAddress',
   quoteHash: FAKE_QUOTE_HASH,
@@ -135,7 +134,7 @@ const mockPeginQuoteStatusWithCallForUserTxHash: RetainedPeginQuoteDTO = {
   userBtcTxHash: ''
 }
 
-const mockPeginQuoteStatusWithoutCallForUserTxHash: RetainedPeginQuoteDTO = {
+const mockPeginQuoteStatusWithoutCallForUserTxHash: PeginQuoteStatusDetail = {
   callForUserTxHash: '',
   depositAddress: 'depositAddress',
   quoteHash: FAKE_QUOTE_HASH,
@@ -146,13 +145,13 @@ const mockPeginQuoteStatusWithoutCallForUserTxHash: RetainedPeginQuoteDTO = {
   userBtcTxHash: ''
 }
 
-// Mock PeginQuoteStatusDTO
-const mockPeginStatusWithTxHash: PeginQuoteStatusDTO = {
+// Mock PeginQuoteStatus
+const mockPeginStatusWithTxHash: PeginQuoteStatus = {
   detail: mockPeginQuoteDTO,
   status: mockPeginQuoteStatusWithCallForUserTxHash
 }
 
-const mockPeginStatusWithoutTxHash: PeginQuoteStatusDTO = {
+const mockPeginStatusWithoutTxHash: PeginQuoteStatus = {
   detail: mockPeginQuoteDTO,
   status: mockPeginQuoteStatusWithoutCallForUserTxHash
 }

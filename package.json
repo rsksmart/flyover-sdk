@@ -64,7 +64,8 @@
         "typescript": "^4.9.5"
     },
     "dependencies": {
-        "@rsksmart/bridges-core-sdk": "^0.4.1",
+        "@rsksmart/bridges-core-sdk": "^0.4.2",
+        "@rsksmart/pmt-builder": "^3.0.1",
         "bitcoinjs-lib": "^6.1.6",
         "qrcode": "^1.5.1"
     }

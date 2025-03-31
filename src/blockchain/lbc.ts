@@ -3,7 +3,10 @@ import abi from './lbc-abi'
 import { FlyoverNetworks, type FlyoverSupportedNetworks } from '../constants/networks'
 import { type PegoutQuoteDetail, type PegoutQuote, type Quote as PeginQuote, type QuoteDetail as PeginQuoteDetail, type LiquidityProviderBase } from '../api'
 import { type QuotesV2 as Quotes, type LiquidityBridgeContractV2 as LBC } from './bindings/Lbc'
-import { decodeBtcAddress, executeContractFunction, executeContractView, type FlyoverConfig, isRskAddress, type Network, type BlockchainConnection, type TxResult } from '@rsksmart/bridges-core-sdk'
+import { decodeBtcAddress, executeContractFunction, callContractFunction, executeContractView, type FlyoverConfig, isRskAddress, type Network, type BlockchainConnection, type TxResult } from '@rsksmart/bridges-core-sdk'
+import { type RegisterPeginParams } from '../sdk/registerPegin'
+import { ensureHexPrefix } from '../utils/format'
+
 export class LiquidityBridgeContract {
   private readonly liquidityBridgeContract: Contract
 
@@ -54,18 +57,26 @@ export class LiquidityBridgeContract {
   }
 
   async registerPegin (
-    quote: PeginQuote,
-    signature: string,
-    btcRawTransaction: string,
-    partialMerkleTree: string,
-    height: number
+    params: RegisterPeginParams,
+    action: 'staticCall' | 'execution' = 'execution'
   ): Promise<TxResult> {
-    const signatureBytes = utils.arrayify('0x' + signature)
-    const rawTxBytes = utils.arrayify('0x' + btcRawTransaction)
-    const pmtBytes = utils.arrayify('0x' + partialMerkleTree)
+    const { quote, signature, btcRawTransaction, partialMerkleTree, height } = params
+
+    const signatureBytes = utils.arrayify(ensureHexPrefix(signature))
+    const rawTxBytes = utils.arrayify(ensureHexPrefix(btcRawTransaction))
+    const pmtBytes = utils.arrayify(ensureHexPrefix(partialMerkleTree))
     const contractQuote = this.toContractPeginQuote(quote.quote)
-    return executeContractFunction(this.liquidityBridgeContract, 'registerPegIn',
-      contractQuote, signatureBytes, rawTxBytes, pmtBytes, height)
+
+    if (action === 'execution') {
+      return executeContractFunction(this.liquidityBridgeContract, 'registerPegIn',
+        contractQuote, signatureBytes, rawTxBytes, pmtBytes, height)
+    } else if (action === 'staticCall') {
+      return callContractFunction(this.liquidityBridgeContract, 'registerPegIn',
+        contractQuote, signatureBytes, rawTxBytes, pmtBytes, height
+      )
+    } else {
+      throw new Error('Invalid action')
+    }
   }
 
   async validatePeginDepositAddress (quote: PeginQuote, depositAddress: string): Promise<boolean> {

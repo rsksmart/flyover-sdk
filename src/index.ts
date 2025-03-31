@@ -29,10 +29,10 @@ export {
 
 export { FlyoverUtils } from './sdk/flyoverUtils'
 
-export { type IsQuotePaidResponse } from './utils/interfaces'
+export { type IsQuotePaidResponse, type IsQuoteRefundableResponse } from './utils/interfaces'
 
 export { FlyoverErrors } from './constants/errors'
 
 export { Mempool } from './bitcoin/Mempool'
-export { LocalBTCDataSource } from './bitcoin/LocalBTCDataSource'
+export { BitcoindRpcDataSource } from './bitcoin/BitcoinRpcDataSource'
 export { type BitcoinDataSource } from './bitcoin/BitcoinDataSource'

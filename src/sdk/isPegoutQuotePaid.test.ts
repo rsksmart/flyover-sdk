@@ -101,7 +101,7 @@ const mockBitcoinTransaction: BitcoinTransaction = {
 
 const mockBitcoinDataSource: BitcoinDataSource = jest.mocked({
   getTransaction: jest.fn().mockImplementation(async () => Promise.resolve(mockBitcoinTransaction))
-} as BitcoinDataSource)
+} as unknown as BitcoinDataSource)
 
 describe('isPegoutQuotePaid function', () => {
   beforeEach(() => {
