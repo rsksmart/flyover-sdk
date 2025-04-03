@@ -23,6 +23,7 @@ import { isPeginQuotePaid } from './isPeginQuotePaid'
 import { isPegoutQuotePaid } from './isPegoutQuotePaid'
 import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
 import { isPegoutRefundable } from './isPegoutRefundable'
+import { isPeginRefundable } from './isPeginRefundable'
 jest.mock('ethers')
 
 jest.mock('./getProviders')
@@ -42,6 +43,7 @@ jest.mock('./validatePeginTransaction')
 jest.mock('./isPeginQuotePaid')
 jest.mock('./isPegoutQuotePaid')
 jest.mock('./isPegoutRefundable')
+jest.mock('./isPeginRefundable')
 
 const mockedGetQuote = getQuote as jest.Mock<typeof getQuote>
 const mockedGetPegoutQuote = getPegoutQuote as jest.Mock<typeof getPegoutQuote>
@@ -797,6 +799,87 @@ describe('Flyover object should', () => {
 
       await flyover.isPegoutRefundable(pegoutQuoteMock)
       expect(flyover).toHaveProperty('liquidityBridgeContract')
+    })
+  })
+  describe('isPeginRefundable method should', () => {
+    const FAKE_BTC_TX_HASH = '675fe4d3f75d879ec1e6c123c7dd643afee60342afa8797233bce8adedac42e4'
+    const bitcoinDataSourceMock: BitcoinDataSource = {
+      getTransactionAsHex: jest.fn(),
+      getBlockFromTransaction: jest.fn()
+    } as unknown as BitcoinDataSource
+
+    beforeEach(() => {
+      (isPeginRefundable as jest.Mock).mockImplementation(async () => Promise.resolve({ isRefundable: true }))
+    })
+
+    test('fail if liquidity provider has not been selected', async () => {
+      await expect(flyover.isPeginRefundable(quoteMock, signatureMock, FAKE_BTC_TX_HASH))
+        .rejects.toThrow('You need to select a provider to do this operation')
+    })
+
+    test('invoke correctly isPeginRefundable external function', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      flyover.connectToBitcoin(bitcoinDataSourceMock)
+
+      const result = await flyover.isPeginRefundable(quoteMock, signatureMock, FAKE_BTC_TX_HASH)
+
+      expect(result).toEqual({ isRefundable: true })
+      expect(isPeginRefundable).toBeCalledTimes(1)
+      expect(isPeginRefundable).toBeCalledWith({
+        httpClient: (flyover as any).httpClient,
+        liquidityProvider: providerMock,
+        btcDataSource: bitcoinDataSourceMock,
+        rskConnection: rskConnectionMock,
+        quote: quoteMock,
+        providerSignature: signatureMock,
+        btcTransactionHash: FAKE_BTC_TX_HASH,
+        liquidityBridgeContract: (flyover as any).liquidityBridgeContract
+      })
+    })
+
+    test('fail when not connected to RSK', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      flyover.connectToBitcoin(bitcoinDataSourceMock)
+
+      jest.spyOn(flyover, 'isConnected').mockImplementation(async () => Promise.resolve(false))
+
+      await expect(flyover.isPeginRefundable(quoteMock, signatureMock, FAKE_BTC_TX_HASH))
+        .rejects.toThrow('Not connected to RSK')
+    })
+
+    test('fail when not connected to Bitcoin', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+
+      await expect(flyover.isPeginRefundable(quoteMock, signatureMock, FAKE_BTC_TX_HASH))
+        .rejects.toThrow('Before calling isPeginQuoteRefundable you need to connect to Bitcoin using Flyover.connectToBitcoin')
+    })
+
+    test('return isRefundable false when quote is not refundable', async () => {
+      const FAKE_RESPONSE = { isRefundable: false, error: { code: 123, message: 'Not refundable' } }
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      flyover.connectToBitcoin(bitcoinDataSourceMock)
+
+      ;(isPeginRefundable as jest.Mock).mockImplementation(async () => Promise.resolve(FAKE_RESPONSE))
+
+      const result = await flyover.isPeginRefundable(quoteMock, signatureMock, FAKE_BTC_TX_HASH)
+
+      expect(result).toEqual(FAKE_RESPONSE)
+    })
+
+    test('handle errors from isPeginQuoteRefundable function', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      flyover.connectToBitcoin(bitcoinDataSourceMock)
+
+      const errorMessage = 'Failed to check if quote is refundable'
+      ;(isPeginRefundable as jest.Mock).mockImplementation(async () =>
+        Promise.reject(new Error(errorMessage)))
+
+      await expect(flyover.isPeginRefundable(quoteMock, signatureMock, FAKE_BTC_TX_HASH))
+        .rejects.toThrow(errorMessage)
     })
   })
 })

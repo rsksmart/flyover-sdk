@@ -1,4 +1,4 @@
-import { type BitcoinDataSource, LocalBTCDataSource, Mempool } from '@rsksmart/flyover-sdk'
+import { type BitcoinDataSource, BitcoindRpcDataSource, Mempool } from '@rsksmart/flyover-sdk'
 
 export const sleepSeconds = async (seconds: number): Promise<void> => new Promise(resolve => setTimeout(resolve, seconds * 1000))
 
@@ -55,7 +55,7 @@ export async function getUtxosFromMempoolSpace (url: string, address: string): P
 export function getBitcoinDataSource (network: string): BitcoinDataSource {
   const normalizedNetwork = network.toLowerCase()
   if (normalizedNetwork === 'regtest') {
-    return new LocalBTCDataSource({
+    return new BitcoindRpcDataSource({
       rpcport: parseInt(process.env.TEST_BTC_RPC_PORT ?? '5555'),
       rpcuser: process.env.TEST_BTC_RPC_USER ?? 'test',
       rpcpassword: process.env.TEST_BTC_RPC_PASSWORD ?? 'test',

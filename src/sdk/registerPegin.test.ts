@@ -43,11 +43,8 @@ const paramsMock: RegisterPeginParams = {
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const lbcMock = jest.mocked({
   registerPegin: async (
-    _quote: Quote,
-    _signature: string,
-    _btcRawTransaction: string,
-    _partialMerkleTree: string,
-    _height: number
+    _params: RegisterPeginParams,
+    _action: 'staticCall' | 'execution'
   ) => Promise.resolve(successfulResultMock)
 } as LiquidityBridgeContract, { shallow: true })
 
@@ -68,7 +65,7 @@ describe('registerPegin function should', () => {
     await registerPegin(paramsMock, lbcMock)
     expect(lbcMock.registerPegin).toBeCalledTimes(1)
     const { quote, signature, btcRawTransaction, partialMerkleTree, height } = paramsMock
-    expect(lbcMock.registerPegin).lastCalledWith(quote, signature, btcRawTransaction, partialMerkleTree, height)
+    expect(lbcMock.registerPegin).lastCalledWith({ quote, signature, btcRawTransaction, partialMerkleTree, height }, 'execution')
   })
 
   test('return txHash on successful execution', async () => {

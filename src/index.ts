@@ -34,5 +34,5 @@ export { type IsQuotePaidResponse, type IsQuoteRefundableResponse } from './util
 export { FlyoverErrors } from './constants/errors'
 
 export { Mempool } from './bitcoin/Mempool'
-export { LocalBTCDataSource } from './bitcoin/LocalBTCDataSource'
+export { BitcoindRpcDataSource } from './bitcoin/BitcoinRpcDataSource'
 export { type BitcoinDataSource } from './bitcoin/BitcoinDataSource'
