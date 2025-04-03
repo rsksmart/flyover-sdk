@@ -41,12 +41,10 @@ describe('isQuotePaid function should', () => {
 
     // Get provider
     const providers = await flyover.getLiquidityProviders()
-    console.info('providers', providers)
 
     const provider = providers.find(p => p.id === integrationTestConfig.providerId)
     assertTruthy(provider, 'Provider not found')
     flyover.useLiquidityProvider(provider)
-    console.info(`Provider selected. Id: ${provider.id}, name: ${provider.name}`)
 
     // Get quote
     const request: PegoutQuoteRequest = {
@@ -56,19 +54,12 @@ describe('isQuotePaid function should', () => {
     }
 
     quotes = await flyover.getPegoutQuotes(request)
-    console.info(`Pegout quotes: ${JSON.stringify(quotes, (_, value) =>
-      typeof value === 'bigint' ? value.toString() : value
-    )}`)
-
     expect(quotes.length).toBeGreaterThan(0)
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     quote = quotes[0]!
 
     // Accept quote
     acceptedQuote = await flyover.acceptPegoutQuote(quote)
-    console.info(`Accepted quote: ${JSON.stringify(acceptedQuote, (_, value) =>
-      typeof value === 'bigint' ? value.toString() : value
-    )}`)
 
     expect(acceptedQuote.signature).not.toBeUndefined()
     expect(acceptedQuote.lbcAddress).not.toBeUndefined()
@@ -76,16 +67,14 @@ describe('isQuotePaid function should', () => {
     // Pay the BTC transaction as an user
     const txHash = await flyover.depositPegout(quote, acceptedQuote.signature, FlyoverUtils.getQuoteTotal(quote))
     expect([null, undefined, '']).not.toContain(txHash)
-    console.info(`Deposit pegout tx hash: ${txHash}`)
 
     // Wait for quote to be paid
     let response: IsQuotePaidResponse = { isPaid: false }
     while (!response.isPaid) {
       response = await flyover.isQuotePaid(quote.quoteHash, 'pegout')
-      console.info(`Response: ${JSON.stringify(response)}`)
 
       if (!response.isPaid) {
-        console.info(`Retrying in ${RETRY_INTERVAL / 1000} seconds...`)
+        console.info(`Pegout quote not paid yet. Retrying in ${RETRY_INTERVAL / 1000} seconds...`)
         await new Promise(resolve => setTimeout(resolve, RETRY_INTERVAL))
       }
     }

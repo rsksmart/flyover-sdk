@@ -1,5 +1,7 @@
 import { type BitcoinDataSource, LocalBTCDataSource, Mempool } from '@rsksmart/flyover-sdk'
 
+export const sleepSeconds = async (seconds: number): Promise<void> => new Promise(resolve => setTimeout(resolve, seconds * 1000))
+
 /**
  * This fake token resolver can be used to mock the captcha token resolver function.
  * This assumes that the keys being used are the google test keys that allow any string

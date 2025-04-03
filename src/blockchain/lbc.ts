@@ -3,7 +3,18 @@ import abi from './lbc-abi'
 import { FlyoverNetworks, type FlyoverSupportedNetworks } from '../constants/networks'
 import { type PegoutQuoteDetail, type PegoutQuote, type Quote as PeginQuote, type QuoteDetail as PeginQuoteDetail, type LiquidityProviderBase } from '../api'
 import { type QuotesV2 as Quotes, type LiquidityBridgeContractV2 as LBC } from './bindings/Lbc'
-import { decodeBtcAddress, executeContractFunction, executeContractView, type FlyoverConfig, isRskAddress, type Network, type Connection, type TxResult } from '@rsksmart/bridges-core-sdk'
+import {
+  decodeBtcAddress,
+  executeContractFunction,
+  executeContractView,
+  type FlyoverConfig,
+  isRskAddress,
+  type Network,
+  type TxResult,
+  callContractFunction,
+  type Connection
+} from '@rsksmart/bridges-core-sdk'
+
 export class LiquidityBridgeContract {
   private readonly liquidityBridgeContract: Contract
 
@@ -32,9 +43,22 @@ export class LiquidityBridgeContract {
     return executeContractFunction(this.liquidityBridgeContract, 'depositPegout', lbcPegoutQuote, signatureBytes, { value: weiAmount })
   }
 
-  async refundPegout (quote: PegoutQuote): Promise<TxResult> {
+  /**
+   * Executes the refundUserPegOut function in the LiquidityBridge contract
+   * @param quote the pegout quote to refund
+   * @param operationType the type of operation to perform, 'staticCall' or 'execution'. Default is 'execution'
+   * @returns { TxResult | null } If operationType is 'execution' returns the transaction result, otherwise returns null
+   */
+  async refundPegout (quote: PegoutQuote, operationType: 'staticCall' | 'execution' = 'execution'): Promise<TxResult | null> {
     const hashBytes = utils.arrayify('0x' + quote.quoteHash)
-    return executeContractFunction(this.liquidityBridgeContract, 'refundUserPegOut', hashBytes)
+    if (operationType === 'execution') {
+      return executeContractFunction(this.liquidityBridgeContract, 'refundUserPegOut', hashBytes)
+    } else if (operationType === 'staticCall') {
+      await callContractFunction(this.liquidityBridgeContract, 'refundUserPegOut', hashBytes)
+      return null
+    } else {
+      throw new Error('Unsupported operation type')
+    }
   }
 
   async hashPeginQuote (quote: PeginQuote): Promise<string> {
@@ -72,6 +96,11 @@ export class LiquidityBridgeContract {
     const lbcQuote = this.toContractPeginQuote(quote.quote)
     const parsedAddress = decodeBtcAddress(depositAddress, { keepChecksum: true })
     return executeContractView(this.liquidityBridgeContract, 'validatePeginDepositAddress', lbcQuote, parsedAddress)
+  }
+
+  async isPegOutQuoteCompleted (quoteHash: string): Promise<boolean> {
+    const hashBytes = utils.arrayify('0x' + quoteHash)
+    return executeContractView(this.liquidityBridgeContract, 'isPegOutQuoteCompleted', hashBytes)
   }
 
   private toContractPegoutQuote (detail: PegoutQuoteDetail): Quotes.PegOutQuoteStruct {

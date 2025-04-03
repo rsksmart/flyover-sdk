@@ -442,9 +442,9 @@ describe('validatePeginTransaction function should', () => {
 
     expect(signedResult).toBe('')
     expect(unsignedResult).toBe('')
-    expect(context.lbc.validatePeginDepositAddress).toBeCalledTimes(2)
-    expect(context.bridge.getMinimumLockTxValue).toBeCalledTimes(2)
-    expect(context.lbc.validatePeginDepositAddress).toHaveBeenNthCalledWith(1, signedParams.quoteInfo, signedParams.acceptInfo.bitcoinDepositAddressHash)
-    expect(context.lbc.validatePeginDepositAddress).toHaveBeenNthCalledWith(2, unsignedParams.quoteInfo, unsignedParams.acceptInfo.bitcoinDepositAddressHash)
+    expect(context.lbc?.validatePeginDepositAddress).toBeCalledTimes(2)
+    expect(context.bridge?.getMinimumLockTxValue).toBeCalledTimes(2)
+    expect(context.lbc?.validatePeginDepositAddress).toHaveBeenNthCalledWith(1, signedParams.quoteInfo, signedParams.acceptInfo.bitcoinDepositAddressHash)
+    expect(context.lbc?.validatePeginDepositAddress).toHaveBeenNthCalledWith(2, unsignedParams.quoteInfo, unsignedParams.acceptInfo.bitcoinDepositAddressHash)
   })
 })
