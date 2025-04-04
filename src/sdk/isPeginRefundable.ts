@@ -26,8 +26,7 @@ export async function isPeginRefundable (
   const { httpClient, liquidityProvider, quote, rskConnection, providerSignature, btcTransactionHash, liquidityBridgeContract, btcDataSource } = params
 
   // Validate the quote is not paid
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const isPaidResponse = await isPeginQuotePaid(httpClient, liquidityProvider, quote.quoteHash, rskConnection!)
+  const isPaidResponse = await isPeginQuotePaid(httpClient, liquidityProvider, quote.quoteHash, rskConnection)
 
   if (isPaidResponse.isPaid) {
     return { isRefundable: false, error: FlyoverErrors.PEG_IN_REFUND_ALREADY_PAID }
