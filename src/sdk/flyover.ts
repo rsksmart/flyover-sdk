@@ -40,6 +40,7 @@ import { type FlyoverSDKContext, type IsQuoteRefundableResponse, type IsQuotePai
 import crypto from 'crypto'
 import { isPegoutRefundable } from './isPegoutRefundable'
 import { isPeginRefundable } from './isPeginRefundable'
+import { refundPegin } from './refundPegin'
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
   private liquidityProvider?: LiquidityProvider
@@ -452,6 +453,15 @@ export class Flyover implements Bridge {
     }
   }
 
+  /**
+   * Checks if a pegin quote is refundable. This function requires that the LPS associated with this quote has been previously selected using the {@link Flyover.useLiquidityProvider} method.
+   *
+   * @param { Quote } quote the quote to check
+   * @param { string } providerSignature the signature of the provider
+   * @param { string } btcTransactionHash the hash of the user's Bitcoin transaction
+   *
+   * @returns { IsQuoteRefundableResponse }
+   */
   async isPeginRefundable (
     quote: Quote,
     providerSignature: string,
@@ -466,14 +476,10 @@ export class Flyover implements Bridge {
     // Check if the quote is refundable
     /* eslint-disable @typescript-eslint/no-non-null-assertion */
     return isPeginRefundable({
-      httpClient: this.httpClient,
-      liquidityProvider: this.liquidityProvider!,
-      btcDataSource: this.bitcoinDataSource!,
-      rskConnection: this.config.rskConnection!,
       quote,
       providerSignature,
       btcTransactionHash,
-      liquidityBridgeContract: this.liquidityBridgeContract!
+      flyoverContext: this.getFlyoverContext()
     })
     /* eslint-enable @typescript-eslint/no-non-null-assertion */
   }
@@ -484,10 +490,30 @@ export class Flyover implements Bridge {
     return isPegoutRefundable(this.getFlyoverContext(), quote)
   }
 
-  async refundPeginQuote (_quote: Quote, _providerSignature: string, _userBtcTransactionHash: string): Promise<string> {
-    const randomBytes = crypto.randomBytes(32)
+  /**
+   * Refunds a pegin quote by calling registerPegin and refundPegout functions. This function requires that the LPS associated with this quote has
+   * been previously selected using the {@link Flyover.useLiquidityProvider} method.
+   *
+   * @param { Quote } quote the quote to refund
+   * @param { string } providerSignature the signature of the provider
+   * @param { string } userBtcTransactionHash the hash of the user's Bitcoin transaction
+   *
+   * @returns { string } the transaction hash
+   */
+  async refundPegin (quote: Quote, providerSignature: string, userBtcTransactionHash: string): Promise<string> {
+    this.checkLiquidityProvider()
+    this.checkLbc()
 
-    return '0x' + randomBytes.toString('hex')
+    if (!this.isConnectedToBitcoin()) {
+      throw new Error('Before calling isPeginQuoteRefundable you need to connect to Bitcoin using Flyover.connectToBitcoin')
+    }
+
+    return refundPegin({
+      quote,
+      providerSignature,
+      userBtcTransactionHash,
+      flyoverContext: this.getFlyoverContext()
+    })
   }
 
   async refundPegoutQuote (_quote: PegoutQuote): Promise<string> {

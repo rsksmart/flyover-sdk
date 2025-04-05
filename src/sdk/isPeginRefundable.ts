@@ -1,29 +1,25 @@
-import { type Connection, type HttpClient, BridgeError } from '@rsksmart/bridges-core-sdk'
-import { type IsQuoteRefundableResponse } from '../utils/interfaces'
+import { BridgeError } from '@rsksmart/bridges-core-sdk'
+import { type FlyoverSDKContext, type IsQuoteRefundableResponse } from '../utils/interfaces'
 import { isPeginQuotePaid } from './isPeginQuotePaid'
-import { type Quote, type LiquidityProvider } from '../api'
+import { type Quote } from '../api'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
 import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
-import { Transaction } from 'bitcoinjs-lib'
 import pmtBuilder from '@rsksmart/pmt-builder'
 import { FlyoverErrors } from '../constants/errors'
-
+import { getRawTxWithoutWitnesses } from '../bitcoin/utils'
 export interface IsPeginRefundableParams {
-  httpClient: HttpClient
-  liquidityProvider: LiquidityProvider
-  btcDataSource: BitcoinDataSource
-  rskConnection: Connection
   quote: Quote
   providerSignature: string
   btcTransactionHash: string
-  liquidityBridgeContract: LiquidityBridgeContract
+  flyoverContext: FlyoverSDKContext
 }
 
 export async function isPeginRefundable (
   params: IsPeginRefundableParams
 ): Promise<IsQuoteRefundableResponse> {
   const FAILED_TO_VALIDATE_BTC_TRANSACTION_ERROR_CODE = 'LBC031'
-  const { httpClient, liquidityProvider, quote, rskConnection, providerSignature, btcTransactionHash, liquidityBridgeContract, btcDataSource } = params
+  const { quote, providerSignature, btcTransactionHash, flyoverContext } = params
+  const { httpClient, provider, rskConnection, btcConnection, lbc } = flyoverContext
 
   // Validate the quote is not paid
   const isPaidResponse = await isPeginQuotePaid(httpClient, liquidityProvider, quote.quoteHash, rskConnection)
@@ -34,14 +30,15 @@ export async function isPeginRefundable (
 
   // Execute a static call to registerPegin()
   try {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
     await executeStaticCallToRegisterPegin(
-      btcDataSource,
+      btcConnection!,
       quote,
       providerSignature,
       btcTransactionHash,
-      liquidityBridgeContract
+      lbc!
     )
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
   } catch (error) {
     if (error instanceof BridgeError) {
       if (error.details.error.message.includes(FAILED_TO_VALIDATE_BTC_TRANSACTION_ERROR_CODE)) {
@@ -89,15 +86,4 @@ async function executeStaticCallToRegisterPegin (
     partialMerkleTree: partialMarkleTree.hex,
     height: block.height
   }, 'staticCall')
-}
-
-async function getRawTxWithoutWitnesses (btcTransactionHash: string, btcDataSource: BitcoinDataSource): Promise<string> {
-  const btcHexTransaction = await btcDataSource.getTransactionAsHex(btcTransactionHash)
-
-  const bitcoinJsTx = Transaction.fromHex(btcHexTransaction)
-  bitcoinJsTx.ins.forEach(input => {
-    input.witness = []
-  })
-
-  return bitcoinJsTx.toHex()
 }
