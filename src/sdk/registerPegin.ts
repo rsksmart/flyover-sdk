@@ -21,7 +21,7 @@ export async function registerPegin (params: RegisterPeginParams, lbc: Liquidity
   validateRequiredFields(params.quote, ...quoteRequiredFields)
   validateRequiredFields(params.quote.quote, ...quoteDetailRequiredFields)
   const { quote, signature, btcRawTransaction, partialMerkleTree, height } = params
-  const result = await lbc.registerPegin(quote, signature, btcRawTransaction, partialMerkleTree, height)
+  const result = await lbc.registerPegin({ quote, signature, btcRawTransaction, partialMerkleTree, height }, 'execution')
   throwErrorIfFailedTx(result, "register pegin transaction didn't complete successfully")
   return result.txHash
 }

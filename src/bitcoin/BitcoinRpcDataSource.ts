@@ -1,4 +1,4 @@
-import { type BitcoinDataSource, type BitcoinTransaction, MIN_BTC_CONFIRMATIONS } from './BitcoinDataSource'
+import { type BitcoinDataSource, type BitcoinTransaction, MIN_BTC_CONFIRMATIONS, type Block } from './BitcoinDataSource'
 
 interface BitcoinClientConfig {
   rpcport: number
@@ -34,7 +34,7 @@ function getBitcoinRpcCaller (config: BitcoinClientConfig): RpcCaller {
   }
 }
 
-export class LocalBTCDataSource implements BitcoinDataSource {
+export class BitcoindRpcDataSource implements BitcoinDataSource {
   private readonly config: BitcoinClientConfig
   private readonly rpcCaller: RpcCaller
 
@@ -53,17 +53,53 @@ export class LocalBTCDataSource implements BitcoinDataSource {
       // The second parameter 'true' tells Bitcoin Core to return the full decoded transaction
       const transaction = await this.rpcCaller('getrawtransaction', txHash, true)
 
+      const btcBlock = await this.rpcCaller('getblock', transaction.blockhash)
       return {
         txid: transaction.txid,
         isConfirmed: transaction.confirmations >= MIN_BTC_CONFIRMATIONS,
         vout: transaction.vout.map((output: any) => ({
           valueInSats: output.value * 100_000_000, // Convert BTC to satoshis
           hex: output.scriptPubKey.hex
-        }))
+        })),
+        blockHash: transaction.blockhash,
+        blockHeight: btcBlock.height
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      const errorMessage = (error as any).message ? (error as any).message : 'Unknown error'
       throw new Error(`Failed to get transaction details: ${errorMessage}`)
+    }
+  }
+
+  async getTransactionAsHex (txHash: string): Promise<string> {
+    try {
+      const rawTx = await this.rpcCaller('getrawtransaction', txHash, true)
+
+      return rawTx.hex
+    } catch (error: unknown) {
+      const errorMessage = (error as any).message ? (error as any).message : 'Unknown error'
+      throw new Error(`Failed to get transaction: ${errorMessage}`)
+    }
+  }
+
+  async getBlockFromTransaction (txHash: string): Promise<Block> {
+    try {
+      const transaction = await this.getTransaction(txHash)
+
+      if (!transaction.blockHash || !transaction.blockHeight) {
+        throw new Error('Transaction has not been confirmed')
+      }
+
+      const btcBlock = await this.rpcCaller('getblock', transaction.blockHash)
+      const transactionHashes = btcBlock.tx
+
+      return {
+        hash: transaction.blockHash,
+        height: transaction.blockHeight,
+        transactionHashes
+      }
+    } catch (error: unknown) {
+      const errorMessage = (error as any).message ? (error as any).message : 'Unknown error'
+      throw new Error(`Failed to get block from transaction: ${errorMessage}`)
     }
   }
 }

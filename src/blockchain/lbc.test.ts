@@ -146,6 +146,8 @@ const parsedPeginQuoteMock: Quotes.PeginQuoteStruct = {
   gasFee: BigInt(600000000000000)
 }
 
+const FAKE_ERROR_MESSAGE = 'some error'
+
 describe('LiquidityBridgeContract class should', () => {
   let registerPeginParams: RegisterPeginParams
   let btcTxMock: any
@@ -350,25 +352,20 @@ describe('LiquidityBridgeContract class should', () => {
     })
   })
 
-  test('execute registerPegin correctly', async () => {
-    const receiptMock = { status: 1, hash: '0x9fafb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' }
+  describe('registerPegin', () => {
+    const FAKE_RECEIPT = { status: 1, hash: '0x9fafb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' }
     const contractMock = {
       registerPegIn: jest.fn().mockImplementation(async () => {
         return Promise.resolve(
           {
-            wait: async () => Promise.resolve(receiptMock)
+            wait: async () => Promise.resolve(FAKE_RECEIPT)
           }
         )
-      })
+      }),
+      callStatic: {
+        registerPegIn: jest.fn().mockImplementation(async () => Promise.resolve(FAKE_RECEIPT))
+      }
     }
-
-    const contractClassMock = jest.mocked(ethers.Contract)
-    contractClassMock.mockImplementation(() => contractMock as any)
-
-    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
-    const lbc = new LiquidityBridgeContract(connectionMock, config)
-    const { quote, signature, btcRawTransaction, partialMerkleTree, height } = registerPeginParams
-    await lbc.registerPegin(quote, signature, btcRawTransaction, partialMerkleTree, height)
 
     const encodedSignature = [
       7, 206, 161, 190, 214, 218, 9, 148,
@@ -399,18 +396,162 @@ describe('LiquidityBridgeContract class should', () => {
     normalizedQuote.rskRefundAddress = (normalizedQuote.rskRefundAddress as string).toLowerCase()
     normalizedQuote.contractAddress = (normalizedQuote.contractAddress as string).toLowerCase()
     normalizedQuote.liquidityProviderRskAddress = (normalizedQuote.liquidityProviderRskAddress as string).toLowerCase()
-    expect(contractMock.registerPegIn).toBeCalledTimes(1)
-    expect(serializer.stringify(contractMock.registerPegIn.mock.calls.at(0)?.at(0))).toEqual(serializer.stringify(normalizedQuote))
-    expect(Array.from(contractMock.registerPegIn.mock.calls.at(0)?.at(1) as any)).toEqual(encodedSignature)
-    expect(Array.from(contractMock.registerPegIn.mock.calls.at(0)?.at(2) as any)).toEqual(btcTxMock.encodedRawTx)
-    expect(Array.from(contractMock.registerPegIn.mock.calls.at(0)?.at(3) as any)).toEqual(encodedPmt)
-    expect(contractMock.registerPegIn.mock.calls.at(0)?.at(4)).toEqual(501)
+
+    test('execute registerPegin when no action is provided', async () => {
+      const contractClassMock = jest.mocked(ethers.Contract)
+      contractClassMock.mockImplementation(() => contractMock as any)
+
+      const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+      const lbc = new LiquidityBridgeContract(connectionMock, config)
+      await lbc.registerPegin(
+        registerPeginParams
+      )
+      expect(contractMock.registerPegIn).toBeCalledTimes(1)
+      expect(contractMock.callStatic.registerPegIn).not.toHaveBeenCalled()
+      expect(serializer.stringify(contractMock.registerPegIn.mock.calls.at(0)?.at(0))).toEqual(serializer.stringify(normalizedQuote))
+      expect(Array.from(contractMock.registerPegIn.mock.calls.at(0)?.at(1) as any)).toEqual(encodedSignature)
+      expect(Array.from(contractMock.registerPegIn.mock.calls.at(0)?.at(2) as any)).toEqual(btcTxMock.encodedRawTx)
+      expect(Array.from(contractMock.registerPegIn.mock.calls.at(0)?.at(3) as any)).toEqual(encodedPmt)
+      expect(contractMock.registerPegIn.mock.calls.at(0)?.at(4)).toEqual(registerPeginParams.height)
+    })
+
+    test('execute registerPegin when action is execution', async () => {
+      const contractClassMock = jest.mocked(ethers.Contract)
+      contractClassMock.mockImplementation(() => contractMock as any)
+
+      const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+      const lbc = new LiquidityBridgeContract(connectionMock, config)
+      await lbc.registerPegin(
+        registerPeginParams,
+        'execution'
+      )
+      expect(contractMock.registerPegIn).toBeCalledTimes(1)
+      expect(contractMock.callStatic.registerPegIn).not.toHaveBeenCalled()
+      expect(serializer.stringify(contractMock.registerPegIn.mock.calls.at(0)?.at(0))).toEqual(serializer.stringify(normalizedQuote))
+      expect(Array.from(contractMock.registerPegIn.mock.calls.at(0)?.at(1) as any)).toEqual(encodedSignature)
+      expect(Array.from(contractMock.registerPegIn.mock.calls.at(0)?.at(2) as any)).toEqual(btcTxMock.encodedRawTx)
+      expect(Array.from(contractMock.registerPegIn.mock.calls.at(0)?.at(3) as any)).toEqual(encodedPmt)
+      expect(contractMock.registerPegIn.mock.calls.at(0)?.at(4)).toEqual(registerPeginParams.height)
+    })
+
+    test('make a static call to registerPegin correctly', async () => {
+      const contractClassMock = jest.mocked(ethers.Contract)
+      contractClassMock.mockImplementation(() => contractMock as any)
+
+      const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+      const liquidityBridgeContract = new LiquidityBridgeContract(connectionMock, config)
+
+      const result = await liquidityBridgeContract.registerPegin(registerPeginParams, 'staticCall')
+
+      expect(contractMock.callStatic.registerPegIn).toHaveBeenCalledTimes(1)
+      expect(contractMock.registerPegIn).not.toHaveBeenCalled()
+      expect(serializer.stringify(contractMock.callStatic.registerPegIn.mock.calls.at(0)?.at(0))).toEqual(serializer.stringify(normalizedQuote))
+      expect(Array.from(contractMock.callStatic.registerPegIn.mock.calls.at(0)?.at(1) as any)).toEqual(encodedSignature)
+      expect(Array.from(contractMock.callStatic.registerPegIn.mock.calls.at(0)?.at(2) as any)).toEqual(btcTxMock.encodedRawTx)
+      expect(Array.from(contractMock.callStatic.registerPegIn.mock.calls.at(0)?.at(3) as any)).toEqual(encodedPmt)
+      expect(contractMock.callStatic.registerPegIn.mock.calls.at(0)?.at(4)).toEqual(registerPeginParams.height)
+      expect(result).toEqual(FAKE_RECEIPT)
+    })
+
+    test('throw error on invalid action', async () => {
+      const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+      const lbc = new LiquidityBridgeContract(connectionMock, config)
+      await expect(lbc.registerPegin(registerPeginParams, 'invalidAction' as any)).rejects.toThrow('Invalid action')
+    })
+
+    test('throw FlyoverError on registerPegin execution error', async () => {
+      contractMock.registerPegIn = jest.fn().mockImplementation(async () => {
+        throw new Error(FAKE_ERROR_MESSAGE)
+      })
+
+      const contractClassMock = jest.mocked(ethers.Contract)
+      contractClassMock.mockImplementation(() => contractMock as any)
+
+      const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+      const lbc = new LiquidityBridgeContract(connectionMock, config)
+      expect.assertions(3)
+      await lbc.registerPegin(registerPeginParams, 'execution').catch(e => {
+        expect(e).toBeInstanceOf(BridgeError)
+        expect(e.message).toBe('error executing function registerPegIn')
+        expect(e.details.error).toBe(FAKE_ERROR_MESSAGE)
+      })
+    })
+
+    test('throw FlyoverError on registerPegin static call error', async () => {
+      contractMock.callStatic.registerPegIn = jest.fn().mockImplementation(async () => {
+        throw new Error(FAKE_ERROR_MESSAGE)
+      })
+      const contractClassMock = jest.mocked(ethers.Contract)
+      contractClassMock.mockImplementation(() => contractMock as any)
+
+      const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+      const liquidityBridgeContract = new LiquidityBridgeContract(connectionMock, config)
+      expect.assertions(3)
+      await liquidityBridgeContract.registerPegin(registerPeginParams, 'staticCall').catch(e => {
+        expect(e).toBeInstanceOf(BridgeError)
+        expect(e.message).toBe('error during static call to function registerPegIn')
+        expect(e.details.error.message).toBe(FAKE_ERROR_MESSAGE)
+      })
+    })
   })
 
-  test('throw FlyoverError on registerPegin error', async () => {
+  test('throw error on invalid address', () => {
+    const customAddress = 'asdasdasvnwl'
+    const regtestConfig: FlyoverConfig = {
+      network: 'Regtest',
+      customLbcAddress: customAddress,
+      captchaTokenResolver: async () => Promise.resolve('')
+    }
+    expect(() => new LiquidityBridgeContract(connectionMock, regtestConfig)).toThrow('invalid address')
+  })
+
+  test('execute validatePeginDepositAddress correctly', async () => {
     const contractMock = {
-      registerPegIn: jest.fn().mockImplementation(async () => {
-        throw new Error('some error')
+      validatePeginDepositAddress: jest.fn().mockImplementation(async () => {
+        return Promise.resolve(true)
+      })
+    }
+
+    const contractClassMock = jest.mocked(ethers.Contract)
+    contractClassMock.mockImplementation(() => contractMock as any)
+
+    jest.spyOn(ethers.utils, 'arrayify').mockImplementation((arg) => {
+      const { utils } = jest.requireActual<typeof ethers>('ethers')
+      return utils.arrayify(arg)
+    })
+
+    const config: FlyoverConfig = {
+      network: 'Regtest',
+      captchaTokenResolver: async () => Promise.resolve('')
+    }
+    const lbc = new LiquidityBridgeContract(connectionMock, config)
+    jest.spyOn(ethers.utils.base58, 'decode').mockImplementation((arg) => {
+      const { utils } = jest.requireActual<typeof ethers>('ethers')
+      return utils.base58.decode(arg)
+    })
+
+    await lbc.validatePeginDepositAddress(peginQuoteMock, '2NB9Rp6DxS4WXefGoyNLa5rQWkcQtUM1FmF')
+
+    const decodedAddress = [
+      196, 196, 89, 163, 131, 210, 22, 251, 195,
+      243, 191, 43, 188, 17, 192, 94, 140, 234,
+      13, 179, 0, 100, 171, 220, 94
+    ]
+
+    const normalizedQuote = parsedPeginQuoteMock
+    normalizedQuote.lbcAddress = (normalizedQuote.lbcAddress as string).toLowerCase()
+    normalizedQuote.rskRefundAddress = (normalizedQuote.rskRefundAddress as string).toLowerCase()
+    normalizedQuote.contractAddress = (normalizedQuote.contractAddress as string).toLowerCase()
+    normalizedQuote.liquidityProviderRskAddress = (normalizedQuote.liquidityProviderRskAddress as string).toLowerCase()
+    expect(contractMock.validatePeginDepositAddress).toBeCalledTimes(1)
+    expect(serializer.stringify(contractMock.validatePeginDepositAddress.mock.calls.at(0)?.at(0))).toEqual(serializer.stringify(normalizedQuote))
+    expect(Array.from(contractMock.validatePeginDepositAddress.mock.calls.at(0)?.at(1) as any)).toEqual(decodedAddress)
+  })
+
+  test('throw FlyoverError on validatePeginDepositAddress error', async () => {
+    const contractMock = {
+      validatePeginDepositAddress: jest.fn().mockImplementation(async () => {
+        throw new Error(FAKE_ERROR_MESSAGE)
       })
     }
     const contractClassMock = jest.mocked(ethers.Contract)
@@ -418,11 +559,10 @@ describe('LiquidityBridgeContract class should', () => {
 
     const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
     const lbc = new LiquidityBridgeContract(connectionMock, config)
-    const { quote, signature, btcRawTransaction, partialMerkleTree, height } = registerPeginParams
     expect.assertions(2)
-    await lbc.registerPegin(quote, signature, btcRawTransaction, partialMerkleTree, height).catch(e => {
+    await lbc.validatePeginDepositAddress(peginQuoteMock, '2NB9Rp6DxS4WXefGoyNLa5rQWkcQtUM1FmF').catch(e => {
       expect(e).toBeInstanceOf(BridgeError)
-      expect(e.message).toBe('error executing function registerPegIn')
+      expect(e.message).toBe('error executing view validatePeginDepositAddress')
     })
   })
 

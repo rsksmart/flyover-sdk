@@ -39,6 +39,7 @@ import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
 import { type FlyoverSDKContext, type IsQuoteRefundableResponse, type IsQuotePaidResponse } from '../utils/interfaces'
 import crypto from 'crypto'
 import { isPegoutRefundable } from './isPegoutRefundable'
+import { isPeginRefundable } from './isPeginRefundable'
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
   private liquidityProvider?: LiquidityProvider
@@ -451,8 +452,30 @@ export class Flyover implements Bridge {
     }
   }
 
-  async isPeginQuoteRefundable (_quote: Quote, _providerSignature: string, _btcTransactionHash: string): Promise<boolean> {
-    return true
+  async isPeginRefundable (
+    quote: Quote,
+    providerSignature: string,
+    btcTransactionHash: string
+  ): Promise<IsQuoteRefundableResponse> {
+    this.checkLiquidityProvider()
+    this.checkLbc() // Connection to RSK is also checked here
+    if (!this.isConnectedToBitcoin()) {
+      throw new Error('Before calling isPeginQuoteRefundable you need to connect to Bitcoin using Flyover.connectToBitcoin')
+    }
+
+    // Check if the quote is refundable
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
+    return isPeginRefundable({
+      httpClient: this.httpClient,
+      liquidityProvider: this.liquidityProvider!,
+      btcDataSource: this.bitcoinDataSource!,
+      rskConnection: this.config.rskConnection!,
+      quote,
+      providerSignature,
+      btcTransactionHash,
+      liquidityBridgeContract: this.liquidityBridgeContract!
+    })
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
   }
 
   async isPegoutRefundable (quote: PegoutQuote): Promise<IsQuoteRefundableResponse> {
