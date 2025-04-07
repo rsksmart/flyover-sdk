@@ -18,7 +18,6 @@ import { depositPegout } from './depositPegout'
 import { refundPegout } from './refundPegout'
 import { getUserQuotes } from './getUserQuotes'
 import { processError } from '../utils/errorHandling'
-import { registerPegin, type RegisterPeginParams } from './registerPegin'
 import {
   type CaptchaTokenResolver, type FlyoverConfig,
   getHttpClient, type HttpClient, isBtcAddress, isRskAddress, isSecureUrl,
@@ -40,7 +39,7 @@ import { type FlyoverSDKContext, type IsQuoteRefundableResponse, type IsQuotePai
 import crypto from 'crypto'
 import { isPegoutRefundable } from './isPegoutRefundable'
 import { isPeginRefundable } from './isPeginRefundable'
-import { refundPegin } from './refundPegin'
+import { registerPegin } from './registerPegin'
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
   private liquidityProvider?: LiquidityProvider
@@ -315,21 +314,6 @@ export class Flyover implements Bridge {
   }
 
   /**
-   * Registers a peg-in transaction with the bridge and pays to the involved parties
-   * @param { RegisterPeginParams } params Object with all parameters required by the contract
-   *
-   * @throws { Error } If not connected to RSK
-   * @throws { FlyoverError } If there was an error during transaction execution
-   *
-   * @returns string the transaction hash
-   */
-  async registerPegin (params: RegisterPeginParams): Promise<string> {
-    this.checkLbc()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return processError(registerPegin(params, this.liquidityBridgeContract!))
-  }
-
-  /**
    * Disconnects from RSK network, removing Connection object from Flyover and also current LiquidityProvider
    */
   disconnectFromRsk (): void {
@@ -454,7 +438,10 @@ export class Flyover implements Bridge {
   }
 
   /**
-   * Checks if a pegin quote is refundable. This function requires that the LPS associated with this quote has been previously selected using the {@link Flyover.useLiquidityProvider} method.
+   * Determines whether a pegin quote can be refunded. Before calling this function, you must:
+   * - Select a Liquidity Provider Service (LPS) for this quote via {@link Flyover.useLiquidityProvider} (or provide it in initial configuration)
+   * - Connect to the Bitcoin network using {@link Flyover.connectToBitcoin} (or provide it in initial configuration)
+   * - Connect to the RSK network using {@link Flyover.connectToRsk} (or provide it in initial configuration)
    *
    * @param { Quote } quote the quote to check
    * @param { string } providerSignature the signature of the provider
@@ -484,6 +471,14 @@ export class Flyover implements Bridge {
     /* eslint-enable @typescript-eslint/no-non-null-assertion */
   }
 
+  /**
+   * Determines whether a pegout quote can be refunded. Before calling this function, you must:
+   * - Select a Liquidity Provider Service (LPS) for this quote via {@link Flyover.useLiquidityProvider} (or provide it in initial configuration)
+   * - Connect to the RSK network using {@link Flyover.connectToRsk} (or provide it in initial configuration)
+   *
+   * @param { PegoutQuote } quote the quote to check
+   * @returns { IsQuoteRefundableResponse } Object containing whether the quote is refundable and any error details
+   */
   async isPegoutRefundable (quote: PegoutQuote): Promise<IsQuoteRefundableResponse> {
     this.checkLiquidityProvider()
     this.checkLbc()
@@ -491,8 +486,10 @@ export class Flyover implements Bridge {
   }
 
   /**
-   * Refunds a pegin quote by calling registerPegin and refundPegout functions. This function requires that the LPS associated with this quote has
-   * been previously selected using the {@link Flyover.useLiquidityProvider} method.
+   * Registers a peg-in transaction with the bridge and pays to the involved parties. Before calling this function, you must:
+   * - Select a Liquidity Provider Service (LPS) for this quote via {@link Flyover.useLiquidityProvider} (or provide it in initial configuration)
+   * - Connect to the Bitcoin network using {@link Flyover.connectToBitcoin} (or provide it in initial configuration)
+   * - Connect to the RSK network using {@link Flyover.connectToRsk} (or provide it in initial configuration)
    *
    * @param { Quote } quote the quote to refund
    * @param { string } providerSignature the signature of the provider
@@ -500,7 +497,7 @@ export class Flyover implements Bridge {
    *
    * @returns { string } the transaction hash
    */
-  async refundPegin (quote: Quote, providerSignature: string, userBtcTransactionHash: string): Promise<string> {
+  async registerPegin (quote: Quote, providerSignature: string, userBtcTransactionHash: string): Promise<string> {
     this.checkLiquidityProvider()
     this.checkLbc()
 
@@ -508,7 +505,7 @@ export class Flyover implements Bridge {
       throw new Error('Before calling isPeginQuoteRefundable you need to connect to Bitcoin using Flyover.connectToBitcoin')
     }
 
-    return refundPegin({
+    return registerPegin({
       quote,
       providerSignature,
       userBtcTransactionHash,

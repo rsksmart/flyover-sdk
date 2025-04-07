@@ -1,9 +1,21 @@
-import { throwErrorIfFailedTx, validateRequiredFields } from '@rsksmart/bridges-core-sdk'
-import { quoteDetailRequiredFields, quoteRequiredFields, type Quote } from '../api'
-import { type LiquidityBridgeContract } from '../blockchain/lbc'
+import type { Quote } from '../api'
+import type { FlyoverSDKContext } from '../utils/interfaces'
+import { isPeginRefundable } from './isPeginRefundable'
+import { getRawTxWithoutWitnesses } from '../bitcoin/utils'
+import pmtBuilder from '@rsksmart/pmt-builder'
+import { FlyoverError } from '../client/httpClient'
+
+/** Interface  to encapsulate the parameters for the SDK function that builds the parameters for the
+ * registerPegIn function of the Liquidity Bridge Contract */
+export interface RegistePeginParamsBase {
+  quote: Quote
+  providerSignature: string
+  userBtcTransactionHash: string
+  flyoverContext: FlyoverSDKContext
+}
 
 /** Interface to encapsulate parameters required by the registerPegIn function of the Liquidity Bridge Contract */
-export interface RegisterPeginParams {
+export interface RegisterPeginLbcParams {
   /** The quote of the service */
   quote: Quote
   /** The signature of the quote */
@@ -16,12 +28,43 @@ export interface RegisterPeginParams {
   height: number
 }
 
-export async function registerPegin (params: RegisterPeginParams, lbc: LiquidityBridgeContract): Promise<string> {
-  validateRequiredFields(params, 'quote', 'signature', 'btcRawTransaction', 'partialMerkleTree', 'height')
-  validateRequiredFields(params.quote, ...quoteRequiredFields)
-  validateRequiredFields(params.quote.quote, ...quoteDetailRequiredFields)
-  const { quote, signature, btcRawTransaction, partialMerkleTree, height } = params
-  const result = await lbc.registerPegin({ quote, signature, btcRawTransaction, partialMerkleTree, height }, 'execution')
-  throwErrorIfFailedTx(result, "register pegin transaction didn't complete successfully")
-  return result.txHash
+export async function registerPegin (
+  params: RegistePeginParamsBase
+): Promise<string> {
+  const { quote, providerSignature, userBtcTransactionHash, flyoverContext } = params
+
+  const isRefundable = await isPeginRefundable({
+    quote,
+    providerSignature,
+    btcTransactionHash: userBtcTransactionHash,
+    flyoverContext
+  })
+
+  if (!isRefundable.isRefundable) {
+    throw new FlyoverError({
+      timestamp: Date.now(),
+      recoverable: false,
+      message: 'Quote is not refundable',
+      details: isRefundable.error
+    })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const btcDataSource = flyoverContext.btcConnection!
+
+  const btcRawTxWithoutWitnesses = await getRawTxWithoutWitnesses(userBtcTransactionHash, btcDataSource)
+
+  const block = await btcDataSource.getBlockFromTransaction(userBtcTransactionHash)
+  const partialMarkleTree = pmtBuilder.buildPMT(block.transactionHashes, userBtcTransactionHash)
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const txResult = await flyoverContext.lbc!.registerPegin({
+    quote,
+    signature: providerSignature,
+    btcRawTransaction: btcRawTxWithoutWitnesses,
+    partialMerkleTree: partialMarkleTree.hex,
+    height: block.height
+  }, 'execution')
+
+  return txResult.txHash
 }

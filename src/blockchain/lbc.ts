@@ -14,7 +14,7 @@ import {
   callContractFunction,
   type Connection
 } from '@rsksmart/bridges-core-sdk'
-import { type RegisterPeginParams } from '../sdk/registerPegin'
+import { type RegisterPeginLbcParams } from '../sdk/registerPegin'
 import { ensureHexPrefix } from '../utils/format'
 
 export class LiquidityBridgeContract {
@@ -80,7 +80,7 @@ export class LiquidityBridgeContract {
   }
 
   async registerPegin (
-    params: RegisterPeginParams,
+    params: RegisterPeginLbcParams,
     action: 'staticCall' | 'execution' = 'execution'
   ): Promise<TxResult> {
     const { quote, signature, btcRawTransaction, partialMerkleTree, height } = params

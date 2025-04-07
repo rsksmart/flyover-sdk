@@ -79,7 +79,6 @@ describe('refundPegin function should', () => {
     let response: IsQuoteRefundableResponse = { isRefundable: false }
     while (!response.isRefundable) {
       response = await flyover.isPeginRefundable(quote, acceptedQuote.signature, txHash)
-      console.info(`Response: ${JSON.stringify(response)}`)
 
       if (!response.isRefundable) {
         console.info(`The pegin is not refundable yet. Retrying in ${RETRY_INTERVAL / 1000} seconds...`)
@@ -89,7 +88,7 @@ describe('refundPegin function should', () => {
 
     expect(response.isRefundable).toBe(true)
 
-    const refundTxHash = await flyover.refundPegin(quote, acceptedQuote.signature, txHash)
+    const refundTxHash = await flyover.registerPegin(quote, acceptedQuote.signature, txHash)
     console.info('Success, txHash: ', refundTxHash)
   }, 200000)
 })
