@@ -7,11 +7,10 @@ import { FlyoverError } from '../client/httpClient'
 
 /** Interface  to encapsulate the parameters for the SDK function that builds the parameters for the
  * registerPegIn function of the Liquidity Bridge Contract */
-export interface RegistePeginParamsBase {
+export interface RegisterPeginParams {
   quote: Quote
   providerSignature: string
   userBtcTransactionHash: string
-  flyoverContext: FlyoverSDKContext
 }
 
 /** Interface to encapsulate parameters required by the registerPegIn function of the Liquidity Bridge Contract */
@@ -29,9 +28,10 @@ export interface RegisterPeginLbcParams {
 }
 
 export async function registerPegin (
-  params: RegistePeginParamsBase
+  params: RegisterPeginParams,
+  flyoverContext: FlyoverSDKContext
 ): Promise<string> {
-  const { quote, providerSignature, userBtcTransactionHash, flyoverContext } = params
+  const { quote, providerSignature, userBtcTransactionHash } = params
 
   const isRefundable = await isPeginRefundable({
     quote,

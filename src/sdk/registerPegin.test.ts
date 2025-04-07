@@ -1,5 +1,5 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
-import { registerPegin, type RegistePeginParamsBase } from './registerPegin'
+import { registerPegin, type RegisterPeginParams } from './registerPegin'
 import { isPeginRefundable } from './isPeginRefundable'
 import { type HttpClient, type BlockchainConnection, type TxResult } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type Quote } from '../api'
@@ -114,11 +114,10 @@ describe('registerPegin function should', () => {
     lbc: MOCK_LIQUIDITY_BRIDGE_CONTRACT
   } as unknown as FlyoverSDKContext
 
-  const refundPeginParams: RegistePeginParamsBase = {
+  const registerPeginParams: RegisterPeginParams = {
     quote: MOCK_QUOTE,
     providerSignature: MOCK_PROVIDER_SIGNATURE,
-    userBtcTransactionHash: MOCK_BTC_TX_HASH,
-    flyoverContext: MOCK_FLYOVER_CONTEXT
+    userBtcTransactionHash: MOCK_BTC_TX_HASH
   }
 
   beforeEach(() => {
@@ -135,7 +134,7 @@ describe('registerPegin function should', () => {
   })
 
   test('successfully register a pegin and return transaction hash', async () => {
-    const result = await registerPegin(refundPeginParams)
+    const result = await registerPegin(registerPeginParams, MOCK_FLYOVER_CONTEXT)
 
     expect(result).toBe(MOCK_TX_HASH)
 
@@ -171,7 +170,7 @@ describe('registerPegin function should', () => {
     })
 
     await expect(
-      registerPegin(refundPeginParams)
+      registerPegin(registerPeginParams, MOCK_FLYOVER_CONTEXT)
     ).rejects.toMatchObject({
       recoverable: false,
       message: 'Quote is not refundable',
@@ -198,7 +197,7 @@ describe('registerPegin function should', () => {
     })
 
     await expect(
-      registerPegin(refundPeginParams)
+      registerPegin(registerPeginParams, MOCK_FLYOVER_CONTEXT)
     ).rejects.toEqual(MOCK_ERROR)
 
     expect(mockedIsPeginRefundable).toHaveBeenCalledWith({
@@ -230,7 +229,7 @@ describe('registerPegin function should', () => {
     })
 
     await expect(
-      registerPegin(refundPeginParams)
+      registerPegin(registerPeginParams, MOCK_FLYOVER_CONTEXT)
     ).rejects.toEqual(MOCK_ERROR)
 
     expect(mockedIsPeginRefundable).toHaveBeenCalledWith({

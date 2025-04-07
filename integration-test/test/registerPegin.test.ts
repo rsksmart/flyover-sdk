@@ -88,7 +88,7 @@ describe('refundPegin function should', () => {
 
     expect(response.isRefundable).toBe(true)
 
-    const refundTxHash = await flyover.registerPegin(quote, acceptedQuote.signature, txHash)
+    const refundTxHash = await flyover.registerPegin({ quote, providerSignature: acceptedQuote.signature, userBtcTransactionHash: txHash })
     console.info('Success, txHash: ', refundTxHash)
   }, 200000)
 })

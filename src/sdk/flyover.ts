@@ -39,7 +39,7 @@ import { type FlyoverSDKContext, type IsQuoteRefundableResponse, type IsQuotePai
 import crypto from 'crypto'
 import { isPegoutRefundable } from './isPegoutRefundable'
 import { isPeginRefundable } from './isPeginRefundable'
-import { registerPegin } from './registerPegin'
+import { type RegisterPeginParams, registerPegin } from './registerPegin'
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
   private liquidityProvider?: LiquidityProvider
@@ -497,7 +497,7 @@ export class Flyover implements Bridge {
    *
    * @returns { string } the transaction hash
    */
-  async registerPegin (quote: Quote, providerSignature: string, userBtcTransactionHash: string): Promise<string> {
+  async registerPegin (params: RegisterPeginParams): Promise<string> {
     this.checkLiquidityProvider()
     this.checkLbc()
 
@@ -505,12 +505,10 @@ export class Flyover implements Bridge {
       throw new Error('Before calling isPeginQuoteRefundable you need to connect to Bitcoin using Flyover.connectToBitcoin')
     }
 
-    return registerPegin({
-      quote,
-      providerSignature,
-      userBtcTransactionHash,
-      flyoverContext: this.getFlyoverContext()
-    })
+    return registerPegin(
+      params,
+      this.getFlyoverContext()
+    )
   }
 
   async refundPegoutQuote (_quote: PegoutQuote): Promise<string> {
