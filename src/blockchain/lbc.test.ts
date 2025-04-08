@@ -7,7 +7,7 @@ import lbcAbi from './lbc-abi'
 import { type QuotesV2 as Quotes } from './bindings/Lbc'
 import JSONbig from 'json-bigint'
 import { readFile } from 'fs/promises'
-import { type RegisterPeginParams } from '../sdk/registerPegin'
+import { type RegisterPeginLbcParams } from '../sdk/registerPegin'
 import { BridgeError, type FlyoverConfig, type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
 
 const serializer = JSONbig({ useNativeBigInt: true })
@@ -149,7 +149,7 @@ const parsedPeginQuoteMock: Quotes.PeginQuoteStruct = {
 const FAKE_ERROR_MESSAGE = 'some error'
 
 describe('LiquidityBridgeContract class should', () => {
-  let registerPeginParams: RegisterPeginParams
+  let registerPeginParams: RegisterPeginLbcParams
   let btcTxMock: any
 
   beforeAll(async () => {

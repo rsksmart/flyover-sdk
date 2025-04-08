@@ -3,19 +3,23 @@ import { isPeginRefundable, type IsPeginRefundableParams } from './isPeginRefund
 import { isPeginQuotePaid } from './isPeginQuotePaid'
 import { type HttpClient, type BlockchainConnection, type TxResult, BridgeError } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type Quote } from '../api'
-import { type BitcoinDataSource, type BitcoinTransaction } from '../bitcoin/BitcoinDataSource'
+import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
 import { FlyoverErrors } from '../constants/errors'
+import { type FlyoverSDKContext } from '../utils/interfaces'
+import { getRawTxWithoutWitnesses } from '../bitcoin/utils'
 
 jest.mock('./isPeginQuotePaid')
 const mockedIsPeginQuotePaid = isPeginQuotePaid as jest.Mock<typeof isPeginQuotePaid>
+
+jest.mock('../bitcoin/utils')
+const mockedGetRawTxWithoutWitnesses = getRawTxWithoutWitnesses as jest.Mock<typeof getRawTxWithoutWitnesses>
 
 describe('isPeginRefundable function should', () => {
   const MOCK_QUOTE_HASH = '6967171f47cfc1dc6e165e09daae7ecb593bbf8b03ed4463214c1fd92ab985a3'
   const MOCK_BTC_TX_HASH = '6f32f9a0a59b2d206de4825e0dfcd62466518375297d7f047bf370547e1df799'
   const MOCK_PROVIDER_SIGNATURE = '2cedf2bc10bcb3f8bf76805a38fd7ea4449a78d77e9ebc4670cd259e6936cf96499567c329c7eb8ee9e4d6f6fb0037bf601cc7a775237421e18726f4bea2d4c41c'
 
-  const MOCK_BTC_TRANSACTION_HEX = '0200000001c28de5e598a6295c32ca8a66ade34b109cde5da35f3c0a7e961ff24e5946769f000000006a47304402206554949e196e72941841d64e256d657f694d77d35898a8a1f80f31f4f5e4fa7c02202f30c06793900ac9e4d0fa01f961e7549bf18067272d66bd3621f59431c4150801210374116b9b59b002fa1b97001f77f1f14963b0b9a4523d3fd2ddeed9d5d5c5b1b1fdffffff02801d2c040000000017a914f198a0f0c25b7dcf771aaf4a13052debe9e7e9e4871ae40270020000001976a914315a8bc14efd6ce2404c3a9e76875e3d1c0cb17288acfdea0000'
   const MOCK_BTC_TRANSACTION_HEX_WITHOUT_WITNESSES = '0200000001c28de5e598a6295c32ca8a66ade34b109cde5da35f3c0a7e961ff24e5946769f000000006a47304402206554949e196e72941841d64e256d657f694d77d35898a8a1f80f31f4f5e4fa7c02202f30c06793900ac9e4d0fa01f961e7549bf18067272d66bd3621f59431c4150801210374116b9b59b002fa1b97001f77f1f14963b0b9a4523d3fd2ddeed9d5d5c5b1b1fdffffff02801d2c040000000017a914f198a0f0c25b7dcf771aaf4a13052debe9e7e9e4871ae40270020000001976a914315a8bc14efd6ce2404c3a9e76875e3d1c0cb17288acfdea0000'
 
   const MOCK_BLOCK_HEIGHT = 750000
@@ -95,37 +99,39 @@ describe('isPeginRefundable function should', () => {
   const MOCK_RSK_CONNECTION = {} as BlockchainConnection
 
   const MOCK_BTC_DATA_SOURCE: BitcoinDataSource = {
-    getTransaction: jest.fn().mockImplementation(async () => Promise.resolve({} as unknown as BitcoinTransaction)),
-    getTransactionAsHex: jest.fn().mockImplementation(async () => Promise.resolve(MOCK_BTC_TRANSACTION_HEX)),
-    getBlockFromTransaction: jest.fn().mockImplementation(async () => Promise.resolve({
-      hash: '070974fee1c3c07920a92185d5749fd85cb35f8460d03554312ec4425367e6ae',
-      height: MOCK_BLOCK_HEIGHT,
-      transactionHashes: MOCK_TRANSACTION_HASHES
-    }))
+    getBlockFromTransaction: jest.fn()
   } as unknown as BitcoinDataSource
 
   const MOCK_LIQUIDITY_BRIDGE_CONTRACT: LiquidityBridgeContract = {
     registerPegin: jest.fn()
   } as unknown as LiquidityBridgeContract & { registerPegin: jest.Mock }
 
-  const params: IsPeginRefundableParams = {
+  const MOCK_FLYOVER_CONTEXT: FlyoverSDKContext = {
     httpClient: MOCK_HTTP_CLIENT,
-    liquidityProvider: MOCK_LIQUIDITY_PROVIDER,
-    btcDataSource: MOCK_BTC_DATA_SOURCE,
+    provider: MOCK_LIQUIDITY_PROVIDER,
+    btcConnection: MOCK_BTC_DATA_SOURCE,
     rskConnection: MOCK_RSK_CONNECTION,
+    lbc: MOCK_LIQUIDITY_BRIDGE_CONTRACT
+  } as unknown as FlyoverSDKContext
+
+  const params: IsPeginRefundableParams = {
     quote: MOCK_QUOTE,
     providerSignature: MOCK_PROVIDER_SIGNATURE,
     btcTransactionHash: MOCK_BTC_TX_HASH,
-    liquidityBridgeContract: MOCK_LIQUIDITY_BRIDGE_CONTRACT
+    flyoverContext: MOCK_FLYOVER_CONTEXT
   }
 
-  // Setup for each test
   beforeEach(() => {
     jest.clearAllMocks()
 
-    jest.spyOn(MOCK_BTC_DATA_SOURCE, 'getTransactionAsHex').mockImplementation(async () => Promise.resolve(MOCK_BTC_TRANSACTION_HEX))
+    jest.spyOn(MOCK_BTC_DATA_SOURCE, 'getBlockFromTransaction').mockImplementation(async () => Promise.resolve({
+      hash: '070974fee1c3c07920a92185d5749fd85cb35f8460d03554312ec4425367e6ae',
+      height: MOCK_BLOCK_HEIGHT,
+      transactionHashes: MOCK_TRANSACTION_HASHES
+    }))
     mockedIsPeginQuotePaid.mockResolvedValue({ isPaid: false })
     jest.spyOn(MOCK_LIQUIDITY_BRIDGE_CONTRACT, 'registerPegin').mockImplementation(async () => Promise.resolve({} as unknown as TxResult))
+    mockedGetRawTxWithoutWitnesses.mockImplementation(async () => Promise.resolve(MOCK_BTC_TRANSACTION_HEX_WITHOUT_WITNESSES))
   })
 
   test('return isRefundable true when all conditions are met', async () => {
@@ -141,7 +147,6 @@ describe('isPeginRefundable function should', () => {
       MOCK_RSK_CONNECTION
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getTransactionAsHex).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
     expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
@@ -157,10 +162,9 @@ describe('isPeginRefundable function should', () => {
   })
 
   test('return isRefundable true when all conditions are met and transaction is segwit', async () => {
-    const BTC_SEGWIT_TX_HEX = '02000000000101a9e61da524cda1fbcb5bf3d1d56742ba428c78953a819f449308ee46a2c993b50000000000fdffffff02579e6e37000000001976a914dbda47554dfea08a410dd3c8759016c8d6beeb1c88ac801d2c040000000017a914580cefdaba82ab09da80c83f2d1cf113e1794df887024730440220765a3039cc0332e519fc62d6e982ccbef83b6e6416fdf5c3280e99e5d7c78c6a02200f3aa25287d42be3d821f9ccfcbb96ffe24547b16844597ee1af8f746ecfcafc0121025f5d74a69b2be67cc5ccdfcdb0146a61edf1d0e142c1a2381bdbac9026828a13e9f10000'
     const BTC_SEGWIT_TX_WITHOUT_WITNESS = '0200000001a9e61da524cda1fbcb5bf3d1d56742ba428c78953a819f449308ee46a2c993b50000000000fdffffff02579e6e37000000001976a914dbda47554dfea08a410dd3c8759016c8d6beeb1c88ac801d2c040000000017a914580cefdaba82ab09da80c83f2d1cf113e1794df887e9f10000'
 
-    jest.spyOn(MOCK_BTC_DATA_SOURCE, 'getTransactionAsHex').mockImplementation(async () => Promise.resolve(BTC_SEGWIT_TX_HEX))
+    mockedGetRawTxWithoutWitnesses.mockImplementation(async () => Promise.resolve(BTC_SEGWIT_TX_WITHOUT_WITNESS))
 
     const result = await isPeginRefundable(params)
 
@@ -174,7 +178,6 @@ describe('isPeginRefundable function should', () => {
       MOCK_RSK_CONNECTION
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getTransactionAsHex).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
     expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
@@ -204,7 +207,6 @@ describe('isPeginRefundable function should', () => {
       MOCK_RSK_CONNECTION
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getTransactionAsHex).not.toHaveBeenCalled()
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).not.toHaveBeenCalled()
     expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).not.toHaveBeenCalled()
   })
@@ -236,7 +238,6 @@ describe('isPeginRefundable function should', () => {
       MOCK_RSK_CONNECTION
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getTransactionAsHex).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
     expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
@@ -282,7 +283,6 @@ describe('isPeginRefundable function should', () => {
       MOCK_RSK_CONNECTION
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getTransactionAsHex).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
     expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
@@ -316,7 +316,6 @@ describe('isPeginRefundable function should', () => {
       MOCK_RSK_CONNECTION
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getTransactionAsHex).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
     expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
