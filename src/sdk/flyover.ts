@@ -310,7 +310,7 @@ export class Flyover implements Bridge {
   async refundPegout (quote: PegoutQuote): Promise<string> {
     this.checkLbc()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return processError(refundPegout(quote, this.liquidityBridgeContract!))
+    return processError(refundPegout(quote, this.getFlyoverContext()))
   }
 
   /**
