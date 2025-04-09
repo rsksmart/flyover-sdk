@@ -18,8 +18,10 @@ export async function refundPegout (quote: PegoutQuote, context: FlyoverSDKConte
     })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const result = await context.lbc!.refundPegout(quote)
+  const { lbc } = context
+  assertTruthy(lbc, 'Missing Liquidity Bridge Contract')
+
+  const result = await lbc.refundPegout(quote)
   assertTruthy(result, 'refund pegout transaction failed')
   throwErrorIfFailedTx(result, 'refund pegout transaction did not complete successfully')
   return result.txHash

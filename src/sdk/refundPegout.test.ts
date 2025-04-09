@@ -90,4 +90,24 @@ describe('refundPegout function should', () => {
       expect(e.message).toBe('refund pegout transaction did not complete successfully')
     })
   })
+
+  test('throw error when lbc is not defined in context', async () => {
+    // lbc undefined
+    const contextWithoutLbc: FlyoverSDKContext = {
+      ...mockFlyoverContext,
+      lbc: undefined
+    } as unknown as FlyoverSDKContext
+
+    await expect(refundPegout(quoteMock, contextWithoutLbc)).rejects
+      .toThrow('Missing Liquidity Bridge Contract')
+
+    // lbc null
+    const contextWithNullLbc: FlyoverSDKContext = {
+      ...mockFlyoverContext,
+      lbc: null
+    } as unknown as FlyoverSDKContext
+
+    await expect(refundPegout(quoteMock, contextWithNullLbc)).rejects
+      .toThrow('Missing Liquidity Bridge Contract')
+  })
 })
