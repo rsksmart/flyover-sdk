@@ -406,7 +406,7 @@ describe('Flyover object should', () => {
     await flyover.refundPegout(pegoutQuoteMock)
 
     expect(refundPegout).toBeCalledTimes(1)
-    expect(refundPegout).toBeCalledWith(pegoutQuoteMock, expect.any(LiquidityBridgeContract))
+    expect(refundPegout).toBeCalledWith(pegoutQuoteMock, (flyover as any).getFlyoverContext())
   })
 
   test('create LBC instance during refundPegout if not created before', async () => {
