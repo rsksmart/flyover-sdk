@@ -54,7 +54,6 @@ describe('FlyoverSDK refund applicability check should', () => {
     let result: IsQuoteRefundableResponse
     do {
       result = await flyover.isPegoutRefundable(quote)
-      console.log('result', result)
       if (result.error !== undefined) {
         await sleepSeconds(CHECK_LOOP_SECONDS_INTERVAL)
         console.debug(`Check if pegout is refundable failed (${result.error.code}), retrying in ${CHECK_LOOP_SECONDS_INTERVAL}...`)

@@ -963,4 +963,80 @@ describe('Flyover object should', () => {
         .rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
     })
   })
+
+  describe('hashPeginQuote method should', () => {
+    const MOCK_HASH = '0x6967171f47cfc1dc6e165e09daae7ecb593bbf8b03ed4463214c1fd92ab985a3'
+    const mockLBC: LiquidityBridgeContract = {
+      hashPeginQuote: jest.fn()
+    } as unknown as LiquidityBridgeContract
+
+    beforeEach(() => {
+      (flyover as any).liquidityBridgeContract = mockLBC
+      jest.spyOn(mockLBC, 'hashPeginQuote').mockImplementation(async () => MOCK_HASH)
+    })
+
+    test('call the LBC hashPeginQuote method with the quote', async () => {
+      await flyover.connectToRsk(rskConnectionMock)
+
+      const result = await flyover.hashPeginQuote(quoteMock)
+
+      expect(result).toBe(MOCK_HASH)
+      expect(mockLBC.hashPeginQuote).toHaveBeenCalledWith(quoteMock)
+      expect(mockLBC.hashPeginQuote).toHaveBeenCalledTimes(1)
+    })
+
+    test('throw error when LBC is not initialized', async () => {
+      (flyover as any).liquidityBridgeContract = undefined
+
+      await expect(flyover.hashPeginQuote(quoteMock))
+        .rejects.toThrow('Liquidity bridge contract is not initialized')
+    })
+
+    test('handle LBC hashPeginQuote errors', async () => {
+      const ERROR_MESSAGE = 'Hash calculation failed'
+      const error = new Error(ERROR_MESSAGE)
+      jest.spyOn(mockLBC, 'hashPeginQuote').mockImplementation(async () => { throw error })
+
+      await expect(flyover.hashPeginQuote(quoteMock))
+        .rejects.toThrow(ERROR_MESSAGE)
+    })
+  })
+
+  describe('hashPegoutQuote method should', () => {
+    const MOCK_HASH = '0xc73b616363ef74017a085c60acb96de88b57268708d06ed6a5d21fbf5f08b69b'
+    const mockLBC: LiquidityBridgeContract = {
+      hashPegoutQuote: jest.fn()
+    } as unknown as LiquidityBridgeContract
+
+    beforeEach(() => {
+      (flyover as any).liquidityBridgeContract = mockLBC
+      jest.spyOn(mockLBC, 'hashPegoutQuote').mockImplementation(async () => MOCK_HASH)
+    })
+
+    test('call the LBC hashPegoutQuote method with the quote', async () => {
+      await flyover.connectToRsk(rskConnectionMock)
+
+      const result = await flyover.hashPegoutQuote(pegoutQuoteMock)
+
+      expect(result).toBe(MOCK_HASH)
+      expect(mockLBC.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
+      expect(mockLBC.hashPegoutQuote).toHaveBeenCalledTimes(1)
+    })
+
+    test('throw error when LBC is not initialized', async () => {
+      (flyover as any).liquidityBridgeContract = undefined
+
+      await expect(flyover.hashPegoutQuote(pegoutQuoteMock))
+        .rejects.toThrow('Liquidity bridge contract is not initialized')
+    })
+
+    test('handle LBC hashPegoutQuote errors', async () => {
+      const ERROR_MESSAGE = 'Hash calculation failed'
+      const error = new Error(ERROR_MESSAGE)
+      jest.spyOn(mockLBC, 'hashPegoutQuote').mockImplementation(async () => { throw error })
+
+      await expect(flyover.hashPegoutQuote(pegoutQuoteMock))
+        .rejects.toThrow(ERROR_MESSAGE)
+    })
+  })
 })
