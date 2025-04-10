@@ -141,9 +141,10 @@ describe('registerPegin function should', () => {
     expect(mockedIsPeginRefundable).toHaveBeenCalledWith({
       quote: MOCK_QUOTE,
       providerSignature: MOCK_PROVIDER_SIGNATURE,
-      btcTransactionHash: MOCK_BTC_TX_HASH,
-      flyoverContext: MOCK_FLYOVER_CONTEXT
-    })
+      btcTransactionHash: MOCK_BTC_TX_HASH
+    },
+    MOCK_FLYOVER_CONTEXT
+    )
 
     expect(mockedGetRawTxWithoutWitnesses).toHaveBeenCalledWith(MOCK_BTC_TX_HASH, MOCK_BTC_DATA_SOURCE)
 
@@ -180,9 +181,10 @@ describe('registerPegin function should', () => {
     expect(mockedIsPeginRefundable).toHaveBeenCalledWith({
       quote: MOCK_QUOTE,
       providerSignature: MOCK_PROVIDER_SIGNATURE,
-      btcTransactionHash: MOCK_BTC_TX_HASH,
-      flyoverContext: MOCK_FLYOVER_CONTEXT
-    })
+      btcTransactionHash: MOCK_BTC_TX_HASH
+    },
+    MOCK_FLYOVER_CONTEXT
+    )
 
     expect(mockedGetRawTxWithoutWitnesses).not.toHaveBeenCalled()
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).not.toHaveBeenCalled()
@@ -203,9 +205,10 @@ describe('registerPegin function should', () => {
     expect(mockedIsPeginRefundable).toHaveBeenCalledWith({
       quote: MOCK_QUOTE,
       providerSignature: MOCK_PROVIDER_SIGNATURE,
-      btcTransactionHash: MOCK_BTC_TX_HASH,
-      flyoverContext: MOCK_FLYOVER_CONTEXT
-    })
+      btcTransactionHash: MOCK_BTC_TX_HASH
+    },
+    MOCK_FLYOVER_CONTEXT
+    )
 
     expect(mockedGetRawTxWithoutWitnesses).toHaveBeenCalledWith(MOCK_BTC_TX_HASH, MOCK_BTC_DATA_SOURCE)
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
@@ -235,12 +238,57 @@ describe('registerPegin function should', () => {
     expect(mockedIsPeginRefundable).toHaveBeenCalledWith({
       quote: MOCK_QUOTE,
       providerSignature: MOCK_PROVIDER_SIGNATURE,
-      btcTransactionHash: MOCK_BTC_TX_HASH,
-      flyoverContext: MOCK_FLYOVER_CONTEXT
-    })
+      btcTransactionHash: MOCK_BTC_TX_HASH
+    },
+    MOCK_FLYOVER_CONTEXT
+    )
 
     expect(mockedGetRawTxWithoutWitnesses).toHaveBeenCalledWith(MOCK_BTC_TX_HASH, MOCK_BTC_DATA_SOURCE)
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
     expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).not.toHaveBeenCalled()
+  })
+
+  test('throw error when btcConnection in context is missing', async () => {
+    // Test with undefined btcConnection
+    const contextWithUndefinedBtcConnection = {
+      ...MOCK_FLYOVER_CONTEXT,
+      btcConnection: undefined
+    } as unknown as FlyoverSDKContext
+
+    await expect(
+      registerPegin(registerPeginParams, contextWithUndefinedBtcConnection)
+    ).rejects.toThrow('Bitcoin connection is required')
+
+    // Test with null btcConnection
+    const contextWithNullBtcConnection = {
+      ...MOCK_FLYOVER_CONTEXT,
+      btcConnection: null
+    } as unknown as FlyoverSDKContext
+
+    await expect(
+      registerPegin(registerPeginParams, contextWithNullBtcConnection)
+    ).rejects.toThrow('Bitcoin connection is required')
+  })
+
+  test('throw error when lbc in context is missing', async () => {
+    // Test with undefined lbc
+    const contextWithUndefinedLbc = {
+      ...MOCK_FLYOVER_CONTEXT,
+      lbc: undefined
+    } as unknown as FlyoverSDKContext
+
+    await expect(
+      registerPegin(registerPeginParams, contextWithUndefinedLbc)
+    ).rejects.toThrow('Liquidity Bridge Contract is required')
+
+    // Test with null lbc
+    const contextWithNullLbc = {
+      ...MOCK_FLYOVER_CONTEXT,
+      lbc: null
+    } as unknown as FlyoverSDKContext
+
+    await expect(
+      registerPegin(registerPeginParams, contextWithNullLbc)
+    ).rejects.toThrow('Liquidity Bridge Contract is required')
   })
 })

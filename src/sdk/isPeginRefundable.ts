@@ -1,4 +1,4 @@
-import { BridgeError } from '@rsksmart/bridges-core-sdk'
+import { assertTruthy, BridgeError } from '@rsksmart/bridges-core-sdk'
 import { type FlyoverSDKContext, type IsQuoteRefundableResponse } from '../utils/interfaces'
 import { isPeginQuotePaid } from './isPeginQuotePaid'
 import { type Quote } from '../api'
@@ -11,19 +11,22 @@ export interface IsPeginRefundableParams {
   quote: Quote
   providerSignature: string
   btcTransactionHash: string
-  flyoverContext: FlyoverSDKContext
 }
 
 export async function isPeginRefundable (
-  params: IsPeginRefundableParams
+  params: IsPeginRefundableParams,
+  context: FlyoverSDKContext
 ): Promise<IsQuoteRefundableResponse> {
   const FAILED_TO_VALIDATE_BTC_TRANSACTION_ERROR_CODE = 'LBC031'
-  const { quote, providerSignature, btcTransactionHash, flyoverContext } = params
-  const { httpClient, provider, rskConnection, btcConnection, lbc } = flyoverContext
+
+  const { quote, providerSignature, btcTransactionHash } = params
+  const { btcConnection, lbc } = context
+
+  assertTruthy(btcConnection, 'Bitcoin connection is required')
+  assertTruthy(lbc, 'Liquidity bridge contract is required')
 
   // Validate the quote is not paid
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const isPaidResponse = await isPeginQuotePaid(httpClient, provider!, quote.quoteHash, rskConnection!)
+  const isPaidResponse = await isPeginQuotePaid(quote.quoteHash, context)
 
   if (isPaidResponse.isPaid) {
     return { isRefundable: false, error: FlyoverErrors.PEG_IN_REFUND_ALREADY_PAID }
@@ -31,15 +34,13 @@ export async function isPeginRefundable (
 
   // Execute a static call to registerPegin()
   try {
-    /* eslint-disable @typescript-eslint/no-non-null-assertion */
     await executeStaticCallToRegisterPegin(
-      btcConnection!,
+      btcConnection,
       quote,
       providerSignature,
       btcTransactionHash,
-      lbc!
+      lbc
     )
-    /* eslint-enable @typescript-eslint/no-non-null-assertion */
   } catch (error) {
     if (error instanceof BridgeError) {
       if (error.details.error.message.includes(FAILED_TO_VALIDATE_BTC_TRANSACTION_ERROR_CODE)) {
@@ -79,7 +80,6 @@ async function executeStaticCallToRegisterPegin (
   const block = await btcDataSource.getBlockFromTransaction(btcTransactionHash)
   const partialMarkleTree = pmtBuilder.buildPMT(block.transactionHashes, btcTransactionHash)
 
-  // Make a static call to registerPegin
   await liquidityBridgeContract.registerPegin({
     quote,
     signature: providerSignature,

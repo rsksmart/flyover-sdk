@@ -78,7 +78,7 @@ describe('isPeginRefundable function should', () => {
     // Check in a loop until the quote is refundable
     let response: IsQuoteRefundableResponse = { isRefundable: false }
     while (!response.isRefundable) {
-      response = await flyover.isPeginRefundable(quote, acceptedQuote.signature, txHash)
+      response = await flyover.isPeginRefundable({ quote, providerSignature: acceptedQuote.signature, btcTransactionHash: txHash })
       console.info(`Response: ${JSON.stringify(response)}`)
 
       if (!response.isRefundable) {

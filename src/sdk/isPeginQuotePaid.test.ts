@@ -4,10 +4,31 @@ import { getPeginStatus } from './getPeginStatus'
 import { type HttpClient, type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
 import { FlyoverErrors } from '../constants/errors'
 import type { PeginQuoteStatus, LiquidityProvider, QuoteDetail, PeginQuoteStatusDetail, PeginCreationData } from '../api'
+import { type FlyoverSDKContext } from '../utils/interfaces'
 
-// Mock getPeginStatus
 jest.mock('./getPeginStatus')
 const mockedGetPeginStatus = getPeginStatus as jest.Mock<typeof getPeginStatus>
+
+jest.mock('ethers', () => {
+  return {
+    __esModule: true,
+    utils: {
+      Interface: jest.fn().mockImplementation(() => ({
+        parseLog: jest.fn().mockImplementation((log: any) => {
+          // Check the log position and return a parsed log to make it more realistic
+          if (log.logIndex === 0) {
+            return parsedFirstLog
+          } else if (log.logIndex === 1) {
+            return parsedSecondLog
+          } else if (log.logIndex === 2) {
+            return parsedThirdLog
+          }
+          return null
+        })
+      }))
+    }
+  }
+})
 
 const FAKE_QUOTE_HASH = '8ea2608fbeac552d2a5ea9254f2abe6bac37d845c41af7c27041d3117fd5b530'
 const FAKE_CALL_FOR_USER_TX_HASH = '0x3ba2b1337bda32785d38c53274ddeac570911c69aed5ee7ed74e7b14fd5d87a6'
@@ -46,28 +67,6 @@ const parsedThirdLog = {
   }
 }
 
-// Mock ethers Contract
-jest.mock('ethers', () => {
-  return {
-    __esModule: true,
-    utils: {
-      Interface: jest.fn().mockImplementation(() => ({
-        parseLog: jest.fn().mockImplementation((log: any) => {
-          // Check the log position and return a parsed log to make it more realistic
-          if (log.logIndex === 0) {
-            return parsedFirstLog
-          } else if (log.logIndex === 1) {
-            return parsedSecondLog
-          } else if (log.logIndex === 2) {
-            return parsedThirdLog
-          }
-          return null
-        })
-      }))
-    }
-  }
-})
-
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 const mockClient: HttpClient = {
   async get<M>(_url: string) {
@@ -103,7 +102,6 @@ const providerMock: LiquidityProvider = {
   }
 }
 
-// Create mock quote data
 const mockPeginQuoteDTO: QuoteDetail = {
   agreementTimestamp: 1234567890,
   btcRefundAddr: 'btcAddress',
@@ -155,7 +153,6 @@ const peginCreationDataMock: PeginCreationData = {
   gasPrice: BigInt(1)
 }
 
-// Mock PeginQuoteStatus
 const mockPeginStatusWithTxHash: PeginQuoteStatus = {
   detail: mockPeginQuoteDTO,
   status: mockPeginQuoteStatusWithCallForUserTxHash,
@@ -168,7 +165,6 @@ const mockPeginStatusWithoutTxHash: PeginQuoteStatus = {
   creationData: peginCreationDataMock
 }
 
-// Mock transaction receipt
 const mockTxCallForUserReceipt = {
   to: '0x8901a2Bbf639bFD21A97004BA4D7aE2BD00B8DA8',
   from: '0x9D93929A9099be4355fC2389FbF253982F9dF47c',
@@ -214,7 +210,6 @@ const mockTxCallForUserReceipt = {
   ]
 }
 
-// Mock BlockchainConnection
 const mockConnectionWithReceipt = {
   getTransactionReceipt: jest.fn().mockImplementation(async () => Promise.resolve(mockTxCallForUserReceipt)),
   signer: {} as any
@@ -225,19 +220,25 @@ const mockConnectionWithoutReceipt = {
   signer: {} as any
 } as unknown as BlockchainConnection
 
+let mockFlyoverContext: FlyoverSDKContext
+
 describe('isQuotePaid function should', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+
+    mockFlyoverContext = {
+      httpClient: mockClient,
+      provider: providerMock,
+      rskConnection: mockConnectionWithReceipt
+    } as unknown as FlyoverSDKContext
   })
 
   test('return isPaid true when quote is paid', async () => {
     mockedGetPeginStatus.mockResolvedValue(mockPeginStatusWithTxHash)
 
     const result = await isPeginQuotePaid(
-      mockClient,
-      providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockFlyoverContext
     )
 
     expect(result.isPaid).toBe(true)
@@ -259,10 +260,8 @@ describe('isQuotePaid function should', () => {
     } as typeof global.setTimeout
 
     const result = await isPeginQuotePaid(
-      mockClient,
-      providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockFlyoverContext
     )
 
     // Restore original function
@@ -276,10 +275,8 @@ describe('isQuotePaid function should', () => {
     mockedGetPeginStatus.mockResolvedValue(mockPeginStatusWithoutTxHash)
 
     const result = await isPeginQuotePaid(
-      mockClient,
-      providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockFlyoverContext
     )
 
     expect(result.isPaid).toBe(false)
@@ -289,11 +286,14 @@ describe('isQuotePaid function should', () => {
   test('return isPaid false when transaction receipt is not found', async () => {
     mockedGetPeginStatus.mockResolvedValue(mockPeginStatusWithTxHash)
 
+    const contextWithoutReceipt = {
+      ...mockFlyoverContext,
+      rskConnection: mockConnectionWithoutReceipt
+    } as unknown as FlyoverSDKContext
+
     const result = await isPeginQuotePaid(
-      mockClient,
-      providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithoutReceipt
+      contextWithoutReceipt
     )
 
     expect(result.isPaid).toBe(false)
@@ -305,10 +305,8 @@ describe('isQuotePaid function should', () => {
     parsedThirdLog.name = undefined as unknown as string
 
     const result = await isPeginQuotePaid(
-      mockClient,
-      providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockFlyoverContext
     )
 
     expect(result.isPaid).toBe(false)
@@ -322,10 +320,8 @@ describe('isQuotePaid function should', () => {
     parsedThirdLog.args.quoteHash = 'different-hash'
 
     const result = await isPeginQuotePaid(
-      mockClient,
-      providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockFlyoverContext
     )
 
     expect(result.isPaid).toBe(false)
@@ -338,10 +334,8 @@ describe('isQuotePaid function should', () => {
     mockedGetPeginStatus.mockResolvedValue(mockPeginStatusWithTxHash)
 
     const result = await isPeginQuotePaid(
-      mockClient,
-      providerMock,
       '0x' + FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockFlyoverContext
     )
 
     expect(result.isPaid).toBe(true)
@@ -350,15 +344,85 @@ describe('isQuotePaid function should', () => {
     parsedThirdLog.args.quoteHash = '0x' + FAKE_QUOTE_HASH
 
     const result2 = await isPeginQuotePaid(
-      mockClient,
-      providerMock,
       FAKE_QUOTE_HASH,
-      mockConnectionWithReceipt
+      mockFlyoverContext
     )
 
     expect(result2.isPaid).toBe(true)
     expect(result2.error).toBeUndefined()
 
     parsedThirdLog.args.quoteHash = FAKE_QUOTE_HASH
+  })
+
+  test('throw error when httpClient in context is not defined', async () => {
+    // Test with undefined httpClient
+    const contextWithUndefinedClient = {
+      ...mockFlyoverContext,
+      httpClient: undefined
+    } as unknown as FlyoverSDKContext
+
+    await expect(isPeginQuotePaid(
+      FAKE_QUOTE_HASH,
+      contextWithUndefinedClient
+    )).rejects.toThrow('HTTP client is required')
+
+    // Test with null httpClient
+    const contextWithNullClient = {
+      ...mockFlyoverContext,
+      httpClient: null
+    } as unknown as FlyoverSDKContext
+
+    await expect(isPeginQuotePaid(
+      FAKE_QUOTE_HASH,
+      contextWithNullClient
+    )).rejects.toThrow('HTTP client is required')
+  })
+
+  test('throw error when provider in context is not defined', async () => {
+    // Test with undefined provider
+    const contextWithUndefinedProvider = {
+      ...mockFlyoverContext,
+      provider: undefined
+    } as unknown as FlyoverSDKContext
+
+    await expect(isPeginQuotePaid(
+      FAKE_QUOTE_HASH,
+      contextWithUndefinedProvider
+    )).rejects.toThrow('Provider is required')
+
+    // Test with null provider
+    const contextWithNullProvider = {
+      ...mockFlyoverContext,
+      provider: null
+    } as unknown as FlyoverSDKContext
+
+    await expect(isPeginQuotePaid(
+      FAKE_QUOTE_HASH,
+      contextWithNullProvider
+    )).rejects.toThrow('Provider is required')
+  })
+
+  test('throw error when rskConnection in context is not defined', async () => {
+    // Test with undefined rskConnection
+    const contextWithUndefinedConnection = {
+      ...mockFlyoverContext,
+      rskConnection: undefined
+    } as unknown as FlyoverSDKContext
+
+    await expect(isPeginQuotePaid(
+      FAKE_QUOTE_HASH,
+      contextWithUndefinedConnection
+    )).rejects.toThrow('RSK connection is required')
+
+    // Test with null rskConnection
+    const contextWithNullConnection = {
+      ...mockFlyoverContext,
+      rskConnection: null
+    } as unknown as FlyoverSDKContext
+
+    await expect(isPeginQuotePaid(
+      FAKE_QUOTE_HASH,
+      contextWithNullConnection
+    )).rejects.toThrow('RSK connection is required')
   })
 })

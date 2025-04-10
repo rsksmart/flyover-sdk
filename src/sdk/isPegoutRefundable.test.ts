@@ -65,12 +65,12 @@ describe('isPegoutRefundable function should', () => {
   })
   test('return error if the quote is already paid', async () => {
     jest.spyOn(isPaidMod, 'isPegoutQuotePaid').mockResolvedValue({ isPaid: true })
-    const result = await isPegoutRefundable(contextMock, pegoutQuoteMock)
+    const result = await isPegoutRefundable(pegoutQuoteMock, contextMock)
     expect(result.isRefundable).toBe(false)
     expect(result.error).toBe(FlyoverErrors.PEG_OUT_REFUND_ALREADY_PAID)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledTimes(1)
-    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(contextMock, pegoutQuoteMock.quoteHash)
+    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash, contextMock)
     expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledTimes(1)
     expect(lbcMock.isPegOutQuoteCompleted).not.toHaveBeenCalled()
     expect(connectionMock.getChainHeight).not.toHaveBeenCalled()
@@ -80,12 +80,12 @@ describe('isPegoutRefundable function should', () => {
   test('return error if the quote is already completed', async () => {
     jest.spyOn(isPaidMod, 'isPegoutQuotePaid').mockResolvedValue({ isPaid: false, error: FlyoverErrors.QUOTE_STATUS_TRANSACTION_NOT_FOUND })
     lbcMock.isPegOutQuoteCompleted?.mockResolvedValue(true)
-    const result = await isPegoutRefundable(contextMock, pegoutQuoteMock)
+    const result = await isPegoutRefundable(pegoutQuoteMock, contextMock)
     expect(result.isRefundable).toBe(false)
     expect(result.error).toBe(FlyoverErrors.PEG_OUT_REFUND_ALREADY_COMPLETED)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledTimes(1)
-    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(contextMock, pegoutQuoteMock.quoteHash)
+    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash, contextMock)
     expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledTimes(1)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledTimes(1)
@@ -98,12 +98,12 @@ describe('isPegoutRefundable function should', () => {
     lbcMock.isPegOutQuoteCompleted?.mockResolvedValue(false)
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     providerMock.getBlock?.mockResolvedValue({ timestamp: pegoutQuoteMock.quote.expireDate - 5000 } as ethers.providers.Block)
-    const result = await isPegoutRefundable(contextMock, pegoutQuoteMock)
+    const result = await isPegoutRefundable(pegoutQuoteMock, contextMock)
     expect(result.isRefundable).toBe(false)
     expect(result.error).toBe(FlyoverErrors.PEG_OUT_REFUND_NOT_EXPIRED_BY_DATE)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledTimes(1)
-    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(contextMock, pegoutQuoteMock.quoteHash)
+    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash, contextMock)
     expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledTimes(1)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledTimes(1)
@@ -117,12 +117,12 @@ describe('isPegoutRefundable function should', () => {
     lbcMock.isPegOutQuoteCompleted?.mockResolvedValue(false)
     providerMock.getBlock?.mockResolvedValue(expiredBlock)
     connectionMock.getChainHeight?.mockResolvedValue(pegoutQuoteMock.quote.expireBlocks - 1)
-    const result = await isPegoutRefundable(contextMock, pegoutQuoteMock)
+    const result = await isPegoutRefundable(pegoutQuoteMock, contextMock)
     expect(result.isRefundable).toBe(false)
     expect(result.error).toBe(FlyoverErrors.PEG_OUT_REFUND_NOT_EXPIRED_BY_BLOCKS)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledTimes(1)
-    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(contextMock, pegoutQuoteMock.quoteHash)
+    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash, contextMock)
     expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledTimes(1)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledTimes(1)
@@ -144,7 +144,7 @@ describe('isPegoutRefundable function should', () => {
       details: { error: ethersError }
     })
     lbcMock.refundPegout?.mockImplementation(() => { throw bridgeError })
-    const result = await isPegoutRefundable(contextMock, pegoutQuoteMock)
+    const result = await isPegoutRefundable(pegoutQuoteMock, contextMock)
     expect(result.isRefundable).toBe(false)
     expect(result.error).toMatchObject({
       ...FlyoverErrors.PEG_OUT_REFUND_FAILED,
@@ -152,7 +152,7 @@ describe('isPegoutRefundable function should', () => {
     })
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledTimes(1)
-    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(contextMock, pegoutQuoteMock.quoteHash)
+    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash, contextMock)
     expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledTimes(1)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledTimes(1)
@@ -168,12 +168,12 @@ describe('isPegoutRefundable function should', () => {
     providerMock.getBlock?.mockResolvedValue(expiredBlock)
     connectionMock.getChainHeight?.mockResolvedValue(pegoutQuoteMock.quote.expireBlocks + 5)
     lbcMock.refundPegout?.mockResolvedValue(null)
-    const result = await isPegoutRefundable(contextMock, pegoutQuoteMock)
+    const result = await isPegoutRefundable(pegoutQuoteMock, contextMock)
     expect(result.isRefundable).toBe(true)
     expect(result.error).toBeUndefined()
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
     expect(lbcMock.hashPegoutQuote).toHaveBeenCalledTimes(1)
-    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(contextMock, pegoutQuoteMock.quoteHash)
+    expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash, contextMock)
     expect(isPaidMod.isPegoutQuotePaid).toHaveBeenCalledTimes(1)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledWith(pegoutQuoteMock.quoteHash)
     expect(lbcMock.isPegOutQuoteCompleted).toHaveBeenCalledTimes(1)
@@ -182,5 +182,48 @@ describe('isPegoutRefundable function should', () => {
     expect(lbcMock.refundPegout).toHaveBeenCalledTimes(1)
     expect(providerMock.getBlock).toHaveBeenCalledWith('latest')
     expect(providerMock.getBlock).toHaveBeenCalledTimes(1)
+  })
+  test('throw error when lbc in context is missing', async () => {
+    // Test with undefined lbc
+    const contextWithUndefinedLbc = {
+      ...contextMock,
+      lbc: undefined
+    } as unknown as FlyoverSDKContext
+
+    await expect(
+      isPegoutRefundable(pegoutQuoteMock, contextWithUndefinedLbc)
+    ).rejects.toThrow('Missing Liquidity Bridge Contract')
+
+    // Test with null lbc
+    const contextWithNullLbc = {
+      ...contextMock,
+      lbc: null
+    } as unknown as FlyoverSDKContext
+
+    await expect(
+      isPegoutRefundable(pegoutQuoteMock, contextWithNullLbc)
+    ).rejects.toThrow('Missing Liquidity Bridge Contract')
+  })
+
+  test('throw error when rskConnection in context is missing', async () => {
+    // Test with undefined rskConnection
+    const contextWithUndefinedConnection = {
+      ...contextMock,
+      rskConnection: undefined
+    } as unknown as FlyoverSDKContext
+
+    await expect(
+      isPegoutRefundable(pegoutQuoteMock, contextWithUndefinedConnection)
+    ).rejects.toThrow('Missing RSK connection')
+
+    // Test with null rskConnection
+    const contextWithNullConnection = {
+      ...contextMock,
+      rskConnection: null
+    } as unknown as FlyoverSDKContext
+
+    await expect(
+      isPegoutRefundable(pegoutQuoteMock, contextWithNullConnection)
+    ).rejects.toThrow('Missing RSK connection')
   })
 })

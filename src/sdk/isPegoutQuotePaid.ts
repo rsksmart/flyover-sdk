@@ -9,21 +9,23 @@ const MAX_RETRIES = 3
 const RETRY_DELAY = 3000 // 3 seconds
 
 /**
- * Checks if a pegout quote has been paid by verifying the transaction reported in the pegout status
- * and the OP_RETURN output.
+ * Verifies if a Liquidity Provider Service (LPS) has paid a pegout quote by validating both the transaction
+ * in the pegout status and its OP_RETURN data.
  *
- * @param httpClient - The HTTP client to use for the request.
- * @param provider - The liquidity provider related to the quote
  * @param quoteHash - The hash of the quote to check if it has been paid.
- * @param bitcoinDataSource - A Bitcoin data source to check the lps payment transaction.
- * @returns A promise that resolves to the isPegoutQuotePaid response.
+ * @param context - The context of the Flyover SDK.
+ * @returns A promise that resolves to the {@link IsQuotePaidResponse} response.
  */
 export async function isPegoutQuotePaid (
-  context: FlyoverSDKContext,
-  quoteHash: string
+  quoteHash: string,
+  context: FlyoverSDKContext
 ): Promise<IsQuotePaidResponse> {
-  const { httpClient, provider, btcConnection: bitcoinDataSource } = context
+  const { httpClient, provider, btcConnection } = context
+
+  assertTruthy(httpClient, 'Missing HTTP Client')
   assertTruthy(provider, 'Missing Liquidity Provider')
+  assertTruthy(btcConnection, 'Missing Bitcoin Connection')
+
   let pegoutStatus: PegoutQuoteStatus
 
   // Get the pegout status from the Liquidity Provider
@@ -48,7 +50,7 @@ export async function isPegoutQuotePaid (
   }
 
   // Check if the transaction reported in the pegout status is valid
-  const isValid = await isBtcTransactionValid(pegoutStatus, quoteHash, bitcoinDataSource)
+  const isValid = await isBtcTransactionValid(pegoutStatus, quoteHash, btcConnection)
 
   if (!isValid.isValid) {
     return {
@@ -88,16 +90,11 @@ async function getPegoutStatusWithRetries (
 async function isBtcTransactionValid (
   pegoutStatus: PegoutQuoteStatus,
   quoteHash: string,
-  bitcoinDataSource: BitcoinDataSource | undefined
+  bitcoinDataSource: BitcoinDataSource
 ): Promise<{ isValid: boolean, errorMessage?: string }> {
   try {
-    if (!bitcoinDataSource) {
-      return { isValid: false, errorMessage: 'Flyover is not connected to Bitcoin' }
-    }
-
     const bitcoinTx = await bitcoinDataSource.getTransaction(pegoutStatus.status.lpBtcTxHash)
 
-    // Check if the transaction has enough confirmations
     if (!bitcoinTx.isConfirmed) {
       return { isValid: false, errorMessage: 'Transaction is not confirmed' }
     }

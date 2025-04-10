@@ -8,7 +8,7 @@ export async function refundPegout (quote: PegoutQuote, context: FlyoverSDKConte
   validateRequiredFields(quote, ...pegoutQuoteRequiredFields)
   validateRequiredFields(quote.quote, ...pegoutQuoteDetailRequiredFields)
 
-  const isRefundable = await isPegoutRefundable(context, quote)
+  const isRefundable = await isPegoutRefundable(quote, context)
   if (!isRefundable.isRefundable) {
     throw new FlyoverError({
       timestamp: Date.now(),

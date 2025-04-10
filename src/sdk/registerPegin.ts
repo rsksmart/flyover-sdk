@@ -4,9 +4,9 @@ import { isPeginRefundable } from './isPeginRefundable'
 import { getRawTxWithoutWitnesses } from '../bitcoin/utils'
 import pmtBuilder from '@rsksmart/pmt-builder'
 import { FlyoverError } from '../client/httpClient'
+import { assertTruthy } from '@rsksmart/bridges-core-sdk'
 
-/** Interface  to encapsulate the parameters for the SDK function that builds the parameters for the
- * registerPegIn function of the Liquidity Bridge Contract */
+/** Interface  to encapsulate the parameters for calling the registerPegin function */
 export interface RegisterPeginParams {
   quote: Quote
   providerSignature: string
@@ -27,6 +27,14 @@ export interface RegisterPeginLbcParams {
   height: number
 }
 
+/**
+ * Registers a peg-in transaction in the Liquidity Bridge Contract. Takes a RegisterPeginParams object
+ * and fill the missing parameters to get a RegisterPeginLbcParams object. Then calls the registerPegin function
+ * of the Liquidity Bridge Contract.
+ * @param params - The parameters for calling the registerPegin function
+ * @param flyoverContext - The context of the Flyover SDK
+ * @returns The transaction hash of the register pegin transaction
+ */
 export async function registerPegin (
   params: RegisterPeginParams,
   flyoverContext: FlyoverSDKContext
@@ -36,9 +44,8 @@ export async function registerPegin (
   const isRefundable = await isPeginRefundable({
     quote,
     providerSignature,
-    btcTransactionHash: userBtcTransactionHash,
-    flyoverContext
-  })
+    btcTransactionHash: userBtcTransactionHash
+  }, flyoverContext)
 
   if (!isRefundable.isRefundable) {
     throw new FlyoverError({
@@ -48,17 +55,17 @@ export async function registerPegin (
       details: isRefundable.error
     })
   }
+  const { btcConnection, lbc } = flyoverContext
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const btcDataSource = flyoverContext.btcConnection!
+  assertTruthy(btcConnection, 'Bitcoin connection is required')
+  assertTruthy(lbc, 'Liquidity Bridge Contract is required')
 
-  const btcRawTxWithoutWitnesses = await getRawTxWithoutWitnesses(userBtcTransactionHash, btcDataSource)
+  const btcRawTxWithoutWitnesses = await getRawTxWithoutWitnesses(userBtcTransactionHash, btcConnection)
 
-  const block = await btcDataSource.getBlockFromTransaction(userBtcTransactionHash)
+  const block = await btcConnection.getBlockFromTransaction(userBtcTransactionHash)
   const partialMarkleTree = pmtBuilder.buildPMT(block.transactionHashes, userBtcTransactionHash)
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const txResult = await flyoverContext.lbc!.registerPegin({
+  const txResult = await lbc.registerPegin({
     quote,
     signature: providerSignature,
     btcRawTransaction: btcRawTxWithoutWitnesses,
