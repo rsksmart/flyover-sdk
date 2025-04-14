@@ -21,8 +21,7 @@ import { processError } from '../utils/errorHandling'
 import {
   type CaptchaTokenResolver, type FlyoverConfig,
   getHttpClient, type HttpClient, isBtcAddress, isRskAddress, isSecureUrl,
-  type Network, type Connection, type Bridge, type BridgeMetadata,
-  assertTruthy
+  type Network, type Connection, type Bridge, type BridgeMetadata
 } from '@rsksmart/bridges-core-sdk'
 import { FlyoverError } from '../client/httpClient'
 import { getMetadata } from './getMetadata'
@@ -578,12 +577,14 @@ export class Flyover implements Bridge {
   }
 
   async hashPeginQuote (quote: Quote): Promise<string> {
-    assertTruthy(this.liquidityBridgeContract, 'Liquidity bridge contract is not initialized')
-    return this.liquidityBridgeContract.hashPeginQuote(quote)
+    this.checkLbc()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.liquidityBridgeContract!.hashPeginQuote(quote)
   }
 
   async hashPegoutQuote (quote: PegoutQuote): Promise<string> {
-    assertTruthy(this.liquidityBridgeContract, 'Liquidity bridge contract is not initialized')
-    return this.liquidityBridgeContract.hashPegoutQuote(quote)
+    this.checkLbc()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.liquidityBridgeContract!.hashPegoutQuote(quote)
   }
 }

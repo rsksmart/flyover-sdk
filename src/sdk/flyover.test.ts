@@ -965,78 +965,114 @@ describe('Flyover object should', () => {
   })
 
   describe('hashPeginQuote method should', () => {
-    const MOCK_HASH = '0x6967171f47cfc1dc6e165e09daae7ecb593bbf8b03ed4463214c1fd92ab985a3'
-    const mockLBC: LiquidityBridgeContract = {
+    const MOCK_HASH = 'mocked-hash-value'
+
+    const mockLiquidityBridgeContract: LiquidityBridgeContract = {
       hashPeginQuote: jest.fn()
     } as unknown as LiquidityBridgeContract
 
     beforeEach(() => {
-      (flyover as any).liquidityBridgeContract = mockLBC
-      jest.spyOn(mockLBC, 'hashPeginQuote').mockImplementation(async () => MOCK_HASH)
+      jest.clearAllMocks()
+
+      jest.spyOn(mockLiquidityBridgeContract, 'hashPeginQuote').mockImplementation(async () => Promise.resolve(MOCK_HASH))
+      ;(flyover as any).liquidityBridgeContract = mockLiquidityBridgeContract
     })
 
-    test('call the LBC hashPeginQuote method with the quote', async () => {
+    test('call liquidityBridgeContract.hashPeginQuote with the correct quote', async () => {
       await flyover.connectToRsk(rskConnectionMock)
 
       const result = await flyover.hashPeginQuote(quoteMock)
 
+      expect(mockLiquidityBridgeContract.hashPeginQuote).toHaveBeenCalledWith(quoteMock)
       expect(result).toBe(MOCK_HASH)
-      expect(mockLBC.hashPeginQuote).toHaveBeenCalledWith(quoteMock)
-      expect(mockLBC.hashPeginQuote).toHaveBeenCalledTimes(1)
     })
 
-    test('throw error when LBC is not initialized', async () => {
-      (flyover as any).liquidityBridgeContract = undefined
+    test('return the hash computed by the LBC contract', async () => {
+      await flyover.connectToRsk(rskConnectionMock)
+      jest.spyOn(LiquidityBridgeContract.prototype, 'hashPeginQuote').mockResolvedValue(MOCK_HASH)
 
-      await expect(flyover.hashPeginQuote(quoteMock))
-        .rejects.toThrow('Liquidity bridge contract is not initialized')
+      const result = await flyover.hashPeginQuote(quoteMock)
+
+      expect(result).toBe(MOCK_HASH)
     })
 
-    test('handle LBC hashPeginQuote errors', async () => {
-      const ERROR_MESSAGE = 'Hash calculation failed'
-      const error = new Error(ERROR_MESSAGE)
-      jest.spyOn(mockLBC, 'hashPeginQuote').mockImplementation(async () => { throw error })
+    test('throw error if not connected to RSK', async () => {
+      await expect(flyover.hashPeginQuote(quoteMock)).rejects.toThrow('Not connected to RSK')
+    })
 
-      await expect(flyover.hashPeginQuote(quoteMock))
-        .rejects.toThrow(ERROR_MESSAGE)
+    test('create LBC instance if not created before', async () => {
+      flyover = new Flyover({
+        network: FAKE_NETWORK,
+        allowInsecureConnections: true,
+        captchaTokenResolver: async () => Promise.resolve('')
+      })
+
+      expect(flyover).not.toHaveProperty('liquidityBridgeContract')
+
+      await flyover.connectToRsk(rskConnectionMock)
+
+      // The result of this call is not important, we just want to check that the LBC instance is created
+      try {
+        await flyover.hashPeginQuote(quoteMock)
+      } catch (error) {}
+
+      expect(flyover).toHaveProperty('liquidityBridgeContract')
     })
   })
 
   describe('hashPegoutQuote method should', () => {
-    const MOCK_HASH = '0xc73b616363ef74017a085c60acb96de88b57268708d06ed6a5d21fbf5f08b69b'
-    const mockLBC: LiquidityBridgeContract = {
+    const MOCK_HASH = 'mocked-pegout-hash-value'
+
+    const mockLiquidityBridgeContract: LiquidityBridgeContract = {
       hashPegoutQuote: jest.fn()
     } as unknown as LiquidityBridgeContract
 
     beforeEach(() => {
-      (flyover as any).liquidityBridgeContract = mockLBC
-      jest.spyOn(mockLBC, 'hashPegoutQuote').mockImplementation(async () => MOCK_HASH)
+      jest.clearAllMocks()
+
+      jest.spyOn(mockLiquidityBridgeContract, 'hashPegoutQuote').mockImplementation(async () => Promise.resolve(MOCK_HASH))
+      ;(flyover as any).liquidityBridgeContract = mockLiquidityBridgeContract
     })
 
-    test('call the LBC hashPegoutQuote method with the quote', async () => {
+    test('call liquidityBridgeContract.hashPegoutQuote with the correct quote', async () => {
       await flyover.connectToRsk(rskConnectionMock)
 
       const result = await flyover.hashPegoutQuote(pegoutQuoteMock)
 
+      expect(mockLiquidityBridgeContract.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
       expect(result).toBe(MOCK_HASH)
-      expect(mockLBC.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
-      expect(mockLBC.hashPegoutQuote).toHaveBeenCalledTimes(1)
     })
 
-    test('throw error when LBC is not initialized', async () => {
-      (flyover as any).liquidityBridgeContract = undefined
+    test('return the hash computed by the LBC contract', async () => {
+      await flyover.connectToRsk(rskConnectionMock)
+      jest.spyOn(LiquidityBridgeContract.prototype, 'hashPegoutQuote').mockResolvedValue(MOCK_HASH)
 
-      await expect(flyover.hashPegoutQuote(pegoutQuoteMock))
-        .rejects.toThrow('Liquidity bridge contract is not initialized')
+      const result = await flyover.hashPegoutQuote(pegoutQuoteMock)
+
+      expect(result).toBe(MOCK_HASH)
     })
 
-    test('handle LBC hashPegoutQuote errors', async () => {
-      const ERROR_MESSAGE = 'Hash calculation failed'
-      const error = new Error(ERROR_MESSAGE)
-      jest.spyOn(mockLBC, 'hashPegoutQuote').mockImplementation(async () => { throw error })
+    test('throw error if not connected to RSK', async () => {
+      await expect(flyover.hashPegoutQuote(pegoutQuoteMock)).rejects.toThrow('Not connected to RSK')
+    })
 
-      await expect(flyover.hashPegoutQuote(pegoutQuoteMock))
-        .rejects.toThrow(ERROR_MESSAGE)
+    test('create LBC instance if not created before', async () => {
+      flyover = new Flyover({
+        network: FAKE_NETWORK,
+        allowInsecureConnections: true,
+        captchaTokenResolver: async () => Promise.resolve('')
+      })
+
+      expect(flyover).not.toHaveProperty('liquidityBridgeContract')
+
+      await flyover.connectToRsk(rskConnectionMock)
+
+      // The result of this call is not important, we just want to check that the LBC instance is created
+      try {
+        await flyover.hashPegoutQuote(pegoutQuoteMock)
+      } catch (error) {}
+
+      expect(flyover).toHaveProperty('liquidityBridgeContract')
     })
   })
 })

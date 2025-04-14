@@ -8,14 +8,6 @@ import { type FlyoverSDKContext, type IsQuotePaidResponse } from '../utils/inter
 const MAX_RETRIES = 3
 const RETRY_DELAY = 3000 // 3 seconds
 
-/**
- * Verifies if a Liquidity Provider Service (LPS) has paid a pegout quote by validating both the transaction
- * in the pegout status and its OP_RETURN data.
- *
- * @param quoteHash - The hash of the quote to check if it has been paid.
- * @param context - The context of the Flyover SDK.
- * @returns A promise that resolves to the {@link IsQuotePaidResponse} response.
- */
 export async function isPegoutQuotePaid (
   quoteHash: string,
   context: FlyoverSDKContext
