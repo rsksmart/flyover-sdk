@@ -29,7 +29,7 @@ describe('isPeginRefundable function should', () => {
     'a0d98152130105fd0bb9442d2f13d2e46c33bcf64dd9917c3c88a343aea1389e'
   ]
 
-  const MOCK_PARTIAL_MARKLE_TREE = {
+  const mockPartialMarkleTree = {
     totalTX: 3,
     hashes: MOCK_TRANSACTION_HASHES,
     flags: 11,
@@ -37,13 +37,13 @@ describe('isPeginRefundable function should', () => {
   }
 
   /* eslint-disable @typescript-eslint/consistent-type-assertions */
-  const MOCK_HTTP_CLIENT: HttpClient = {
+  const mockHttpClient: HttpClient = {
     async get<M>(_url: string) {
       return Promise.resolve({} as M)
     }
   } as HttpClient
 
-  const MOCK_LIQUIDITY_PROVIDER: LiquidityProvider = {
+  const mockLiquidityProvider: LiquidityProvider = {
     id: 1,
     provider: '0x9D93929A9099be4355fC2389FbF253982F9dF47c',
     apiBaseUrl: 'http://localhost:8080',
@@ -70,7 +70,7 @@ describe('isPeginRefundable function should', () => {
     }
   }
 
-  const MOCK_QUOTE: Quote = {
+  const mockQuote: Quote = {
     quote: {
       fedBTCAddr: '2N5muMepJizJE1gR7FbHJU6CD18V3BpNF9p',
       lbcAddr: '0x7557fcE0BbFAe81a9508FF469D481f2c72a8B5f3',
@@ -96,65 +96,66 @@ describe('isPeginRefundable function should', () => {
     quoteHash: MOCK_QUOTE_HASH
   }
 
-  const MOCK_RSK_CONNECTION = {} as BlockchainConnection
+  const mockRskConnection = {} as BlockchainConnection
 
-  const MOCK_BTC_DATA_SOURCE: BitcoinDataSource = {
+  const mockBtcDataSource: BitcoinDataSource = {
     getBlockFromTransaction: jest.fn()
   } as unknown as BitcoinDataSource
 
-  const MOCK_LIQUIDITY_BRIDGE_CONTRACT: LiquidityBridgeContract = {
+  const mockLiquidityBridgeContract: LiquidityBridgeContract = {
     registerPegin: jest.fn()
   } as unknown as LiquidityBridgeContract & { registerPegin: jest.Mock }
 
-  const MOCK_FLYOVER_CONTEXT: FlyoverSDKContext = {
-    httpClient: MOCK_HTTP_CLIENT,
-    provider: MOCK_LIQUIDITY_PROVIDER,
-    btcConnection: MOCK_BTC_DATA_SOURCE,
-    rskConnection: MOCK_RSK_CONNECTION,
-    lbc: MOCK_LIQUIDITY_BRIDGE_CONTRACT
+  const mockFlyoverContext: FlyoverSDKContext = {
+    httpClient: mockHttpClient,
+    provider: mockLiquidityProvider,
+    btcConnection: mockBtcDataSource,
+    rskConnection: mockRskConnection,
+    lbc: mockLiquidityBridgeContract
   } as unknown as FlyoverSDKContext
 
   const params: IsPeginRefundableParams = {
-    quote: MOCK_QUOTE,
+    quote: mockQuote,
     providerSignature: MOCK_PROVIDER_SIGNATURE,
-    btcTransactionHash: MOCK_BTC_TX_HASH,
-    flyoverContext: MOCK_FLYOVER_CONTEXT
+    btcTransactionHash: MOCK_BTC_TX_HASH
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
 
-    jest.spyOn(MOCK_BTC_DATA_SOURCE, 'getBlockFromTransaction').mockImplementation(async () => Promise.resolve({
+    jest.spyOn(mockBtcDataSource, 'getBlockFromTransaction').mockImplementation(async () => Promise.resolve({
       hash: '070974fee1c3c07920a92185d5749fd85cb35f8460d03554312ec4425367e6ae',
       height: MOCK_BLOCK_HEIGHT,
       transactionHashes: MOCK_TRANSACTION_HASHES
     }))
     mockedIsPeginQuotePaid.mockResolvedValue({ isPaid: false })
-    jest.spyOn(MOCK_LIQUIDITY_BRIDGE_CONTRACT, 'registerPegin').mockImplementation(async () => Promise.resolve({} as unknown as TxResult))
+    jest.spyOn(mockLiquidityBridgeContract, 'registerPegin').mockImplementation(async () => Promise.resolve({} as unknown as TxResult))
     mockedGetRawTxWithoutWitnesses.mockImplementation(async () => Promise.resolve(MOCK_BTC_TRANSACTION_HEX_WITHOUT_WITNESSES))
   })
 
   test('return isRefundable true when all conditions are met', async () => {
-    const result = await isPeginRefundable(params)
+    const result = await isPeginRefundable(params, mockFlyoverContext)
 
     expect(result.isRefundable).toBe(true)
     expect(result.error).toBeUndefined()
 
     expect(mockedIsPeginQuotePaid).toHaveBeenCalledWith(
-      MOCK_HTTP_CLIENT,
-      MOCK_LIQUIDITY_PROVIDER,
       MOCK_QUOTE_HASH,
-      MOCK_RSK_CONNECTION
+      expect.objectContaining({
+        httpClient: mockHttpClient,
+        provider: mockLiquidityProvider,
+        rskConnection: mockRskConnection
+      })
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
+    expect(mockBtcDataSource.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
-    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
+    expect(mockLiquidityBridgeContract.registerPegin).toHaveBeenCalledWith(
       {
-        quote: MOCK_QUOTE,
+        quote: mockQuote,
         signature: MOCK_PROVIDER_SIGNATURE,
         btcRawTransaction: MOCK_BTC_TRANSACTION_HEX_WITHOUT_WITNESSES,
-        partialMerkleTree: MOCK_PARTIAL_MARKLE_TREE.hex,
+        partialMerkleTree: mockPartialMarkleTree.hex,
         height: MOCK_BLOCK_HEIGHT
       },
       'staticCall'
@@ -166,26 +167,28 @@ describe('isPeginRefundable function should', () => {
 
     mockedGetRawTxWithoutWitnesses.mockImplementation(async () => Promise.resolve(BTC_SEGWIT_TX_WITHOUT_WITNESS))
 
-    const result = await isPeginRefundable(params)
+    const result = await isPeginRefundable(params, mockFlyoverContext)
 
     expect(result.isRefundable).toBe(true)
     expect(result.error).toBeUndefined()
 
     expect(mockedIsPeginQuotePaid).toHaveBeenCalledWith(
-      MOCK_HTTP_CLIENT,
-      MOCK_LIQUIDITY_PROVIDER,
       MOCK_QUOTE_HASH,
-      MOCK_RSK_CONNECTION
+      expect.objectContaining({
+        httpClient: mockHttpClient,
+        provider: mockLiquidityProvider,
+        rskConnection: mockRskConnection
+      })
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
+    expect(mockBtcDataSource.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
-    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
+    expect(mockLiquidityBridgeContract.registerPegin).toHaveBeenCalledWith(
       {
-        quote: MOCK_QUOTE,
+        quote: mockQuote,
         signature: MOCK_PROVIDER_SIGNATURE,
         btcRawTransaction: BTC_SEGWIT_TX_WITHOUT_WITNESS,
-        partialMerkleTree: MOCK_PARTIAL_MARKLE_TREE.hex,
+        partialMerkleTree: mockPartialMarkleTree.hex,
         height: MOCK_BLOCK_HEIGHT
       },
       'staticCall'
@@ -195,20 +198,22 @@ describe('isPeginRefundable function should', () => {
   test('return isRefundable false when quote is already paid', async () => {
     mockedIsPeginQuotePaid.mockResolvedValue({ isPaid: true })
 
-    const result = await isPeginRefundable(params)
+    const result = await isPeginRefundable(params, mockFlyoverContext)
 
     expect(result.isRefundable).toBe(false)
     expect(result.error).toBe(FlyoverErrors.PEG_IN_REFUND_ALREADY_PAID)
 
     expect(mockedIsPeginQuotePaid).toHaveBeenCalledWith(
-      MOCK_HTTP_CLIENT,
-      MOCK_LIQUIDITY_PROVIDER,
       MOCK_QUOTE_HASH,
-      MOCK_RSK_CONNECTION
+      expect.objectContaining({
+        httpClient: mockHttpClient,
+        provider: mockLiquidityProvider,
+        rskConnection: mockRskConnection
+      })
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).not.toHaveBeenCalled()
-    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).not.toHaveBeenCalled()
+    expect(mockBtcDataSource.getBlockFromTransaction).not.toHaveBeenCalled()
+    expect(mockLiquidityBridgeContract.registerPegin).not.toHaveBeenCalled()
   })
 
   test('return isRefundable false when transaction does not have enough confirmations', async () => {
@@ -224,28 +229,30 @@ describe('isPeginRefundable function should', () => {
       }
     }
 
-    jest.spyOn(MOCK_LIQUIDITY_BRIDGE_CONTRACT, 'registerPegin').mockImplementation(async () => { throw new BridgeError(mockError) })
+    jest.spyOn(mockLiquidityBridgeContract, 'registerPegin').mockImplementation(async () => { throw new BridgeError(mockError) })
 
-    const result = await isPeginRefundable(params)
+    const result = await isPeginRefundable(params, mockFlyoverContext)
 
     expect(result.isRefundable).toBe(false)
     expect(result.error).toBe(FlyoverErrors.PEG_IN_REFUND_DOES_NOT_HAVE_ENOUGH_CONFIRMATIONS)
 
     expect(mockedIsPeginQuotePaid).toHaveBeenCalledWith(
-      MOCK_HTTP_CLIENT,
-      MOCK_LIQUIDITY_PROVIDER,
       MOCK_QUOTE_HASH,
-      MOCK_RSK_CONNECTION
+      expect.objectContaining({
+        httpClient: mockHttpClient,
+        provider: mockLiquidityProvider,
+        rskConnection: mockRskConnection
+      })
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
+    expect(mockBtcDataSource.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
-    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
+    expect(mockLiquidityBridgeContract.registerPegin).toHaveBeenCalledWith(
       {
-        quote: MOCK_QUOTE,
+        quote: mockQuote,
         signature: MOCK_PROVIDER_SIGNATURE,
         btcRawTransaction: MOCK_BTC_TRANSACTION_HEX_WITHOUT_WITNESSES,
-        partialMerkleTree: MOCK_PARTIAL_MARKLE_TREE.hex,
+        partialMerkleTree: mockPartialMarkleTree.hex,
         height: MOCK_BLOCK_HEIGHT
       },
       'staticCall'
@@ -265,9 +272,9 @@ describe('isPeginRefundable function should', () => {
       }
     }
 
-    jest.spyOn(MOCK_LIQUIDITY_BRIDGE_CONTRACT, 'registerPegin').mockImplementation(async () => { throw new BridgeError(mockError) })
+    jest.spyOn(mockLiquidityBridgeContract, 'registerPegin').mockImplementation(async () => { throw new BridgeError(mockError) })
 
-    const result = await isPeginRefundable(params)
+    const result = await isPeginRefundable(params, mockFlyoverContext)
 
     expect(result.isRefundable).toBe(false)
     expect(result.error).toEqual({
@@ -275,22 +282,23 @@ describe('isPeginRefundable function should', () => {
       detail: mockError.details.error.message
     })
 
-    // Verify all dependencies were called
     expect(mockedIsPeginQuotePaid).toHaveBeenCalledWith(
-      MOCK_HTTP_CLIENT,
-      MOCK_LIQUIDITY_PROVIDER,
       MOCK_QUOTE_HASH,
-      MOCK_RSK_CONNECTION
+      expect.objectContaining({
+        httpClient: mockHttpClient,
+        provider: mockLiquidityProvider,
+        rskConnection: mockRskConnection
+      })
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
+    expect(mockBtcDataSource.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
-    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
+    expect(mockLiquidityBridgeContract.registerPegin).toHaveBeenCalledWith(
       {
-        quote: MOCK_QUOTE,
+        quote: mockQuote,
         signature: MOCK_PROVIDER_SIGNATURE,
         btcRawTransaction: MOCK_BTC_TRANSACTION_HEX_WITHOUT_WITNESSES,
-        partialMerkleTree: MOCK_PARTIAL_MARKLE_TREE.hex,
+        partialMerkleTree: mockPartialMarkleTree.hex,
         height: MOCK_BLOCK_HEIGHT
       },
       'staticCall'
@@ -299,9 +307,9 @@ describe('isPeginRefundable function should', () => {
 
   test('return isRefundable false when registerPegin fails with unknown error structure', async () => {
     const MOCK_ERROR_MESSAGE = 'Unknown error'
-    jest.spyOn(MOCK_LIQUIDITY_BRIDGE_CONTRACT, 'registerPegin').mockImplementation(async () => { throw new Error(MOCK_ERROR_MESSAGE) })
+    jest.spyOn(mockLiquidityBridgeContract, 'registerPegin').mockImplementation(async () => { throw new Error(MOCK_ERROR_MESSAGE) })
 
-    const result = await isPeginRefundable(params)
+    const result = await isPeginRefundable(params, mockFlyoverContext)
 
     expect(result.isRefundable).toBe(false)
     expect(result.error).toEqual({
@@ -310,23 +318,73 @@ describe('isPeginRefundable function should', () => {
     })
 
     expect(mockedIsPeginQuotePaid).toHaveBeenCalledWith(
-      MOCK_HTTP_CLIENT,
-      MOCK_LIQUIDITY_PROVIDER,
       MOCK_QUOTE_HASH,
-      MOCK_RSK_CONNECTION
+      expect.objectContaining({
+        httpClient: mockHttpClient,
+        provider: mockLiquidityProvider,
+        rskConnection: mockRskConnection
+      })
     )
 
-    expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
+    expect(mockBtcDataSource.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
-    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
+    expect(mockLiquidityBridgeContract.registerPegin).toHaveBeenCalledWith(
       {
-        quote: MOCK_QUOTE,
+        quote: mockQuote,
         signature: MOCK_PROVIDER_SIGNATURE,
         btcRawTransaction: MOCK_BTC_TRANSACTION_HEX_WITHOUT_WITNESSES,
-        partialMerkleTree: MOCK_PARTIAL_MARKLE_TREE.hex,
+        partialMerkleTree: mockPartialMarkleTree.hex,
         height: MOCK_BLOCK_HEIGHT
       },
       'staticCall'
     )
+  })
+
+  test('throw error when btcConnection in context is undefined or null', async () => {
+    // Test with undefined btcConnection
+    const contextWithUndefinedBtcConnection = {
+      ...mockFlyoverContext,
+      btcConnection: undefined
+    } as unknown as FlyoverSDKContext
+
+    await expect(isPeginRefundable(
+      params,
+      contextWithUndefinedBtcConnection
+    )).rejects.toThrow('Bitcoin connection is required')
+
+    // Test with null btcConnection
+    const contextWithNullBtcConnection = {
+      ...mockFlyoverContext,
+      btcConnection: null
+    } as unknown as FlyoverSDKContext
+
+    await expect(isPeginRefundable(
+      params,
+      contextWithNullBtcConnection
+    )).rejects.toThrow('Bitcoin connection is required')
+  })
+
+  test('throw error when lbc in context is undefined or null', async () => {
+    // Test with undefined lbc
+    const contextWithUndefinedLbc = {
+      ...mockFlyoverContext,
+      lbc: undefined
+    } as unknown as FlyoverSDKContext
+
+    await expect(isPeginRefundable(
+      params,
+      contextWithUndefinedLbc
+    )).rejects.toThrow('Liquidity bridge contract is required')
+
+    // Test with null lbc
+    const contextWithNullLbc = {
+      ...mockFlyoverContext,
+      lbc: null
+    } as unknown as FlyoverSDKContext
+
+    await expect(isPeginRefundable(
+      params,
+      contextWithNullLbc
+    )).rejects.toThrow('Liquidity bridge contract is required')
   })
 })

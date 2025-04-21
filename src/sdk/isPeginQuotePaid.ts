@@ -1,21 +1,24 @@
 import { getPeginStatus } from './getPeginStatus'
-import { type HttpClient, type Connection } from '@rsksmart/bridges-core-sdk'
+import { assertTruthy, type HttpClient } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type PeginQuoteStatus } from '../api'
 import { FlyoverErrors } from '../constants/errors'
 import { parseLBCLogs } from '../blockchain/parsing'
 import { type ContractReceipt } from 'ethers'
-import { type IsQuotePaidResponse } from '../utils/interfaces'
+import { type FlyoverSDKContext, type IsQuotePaidResponse } from '../utils/interfaces'
 
 const MAX_RETRIES = 3
 const RETRY_DELAY = 3000 // 3 seconds
 
 export async function isPeginQuotePaid (
-  httpClient: HttpClient,
-  provider: LiquidityProvider,
   quoteHash: string,
-  rskConnection: Connection
+  context: FlyoverSDKContext
 ): Promise<IsQuotePaidResponse> {
   let peginStatus: PeginQuoteStatus
+
+  const { httpClient, provider, rskConnection } = context
+  assertTruthy(httpClient, 'HTTP client is required')
+  assertTruthy(provider, 'Provider is required')
+  assertTruthy(rskConnection, 'RSK connection is required')
 
   try {
     // Get the pegin status from the Liquidity Provider

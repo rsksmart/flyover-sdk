@@ -3,7 +3,7 @@ import { assertTruthy, BlockchainConnection } from '@rsksmart/bridges-core-sdk'
 import { Flyover, FlyoverUtils, type IsQuoteRefundableResponse } from '@rsksmart/flyover-sdk'
 import { integrationTestConfig } from '../config'
 import { EXTENDED_TIMEOUT } from './common/constants'
-import { fakeTokenResolver, sleepSeconds } from './common/utils'
+import { fakeTokenResolver, getBitcoinDataSource, sleepSeconds } from './common/utils'
 
 describe('FlyoverSDK refund applicability check should', () => {
   const WAIT_SECONDS_BEFORE_PAYMENT = 30
@@ -22,6 +22,10 @@ describe('FlyoverSDK refund applicability check should', () => {
       integrationTestConfig.nodeUrl
     )
     await flyover.connectToRsk(rsk)
+
+    const bitcoinDataSource = getBitcoinDataSource(integrationTestConfig.network)
+
+    flyover.connectToBitcoin(bitcoinDataSource)
   })
 
   test('verify an expired pegout is refundable', async () => {

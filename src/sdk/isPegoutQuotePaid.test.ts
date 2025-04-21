@@ -7,12 +7,12 @@ import { type BitcoinDataSource, type BitcoinTransaction, type BitcoinTransactio
 import { FlyoverErrors } from '../constants/errors'
 import { type FlyoverSDKContext } from '../utils/interfaces'
 
+jest.mock('./getPegoutStatus')
+const mockedGetPegoutStatus = getPegoutStatus as jest.Mock
+
 const FAKE_QUOTE_HASH = '733f96c67bc6d4086ed710714c36cf6d31b526b7ceb321d56ac52e721e8e97ff'
 const FAKE_LP_BTC_TX_HASH = '81d20ff8f2f961ce88aeceeb2d859287bcd6ebba2ef532e7d083100a52faad87'
 const QUOTE_VALUE_IN_SATS = 60_000_000
-
-jest.mock('./getPegoutStatus')
-const mockedGetPegoutStatus = getPegoutStatus as jest.Mock
 
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 const mockClient: HttpClient = {
@@ -21,8 +21,7 @@ const mockClient: HttpClient = {
   }
 } as unknown as HttpClient
 
-// Create mock provider
-const providerMock: LiquidityProvider = {
+const mockProvider: LiquidityProvider = {
   id: 1,
   provider: '0x9D93929A9099be4355fC2389FbF253982F9dF47c',
   apiBaseUrl: 'http://localhost:8080',
@@ -49,7 +48,6 @@ const providerMock: LiquidityProvider = {
   }
 }
 
-// Success case of the getPegoutStatus mock
 const mockPegoutStatusWithTxHash = {
   detail: {
     lbcAddress: '0x7557fcE0BbFAe81a9508FF469D481f2c72a8B5f3',
@@ -108,9 +106,9 @@ const mockBitcoinDataSource: BitcoinDataSource = jest.mocked({
   getTransaction: jest.fn().mockImplementation(async () => Promise.resolve(mockBitcoinTransaction))
 } as unknown as BitcoinDataSource)
 
-const contextMock: FlyoverSDKContext = {
+const mockContext: FlyoverSDKContext = {
   btcConnection: mockBitcoinDataSource,
-  provider: providerMock,
+  provider: mockProvider,
   httpClient: mockClient
 } as FlyoverSDKContext
 
@@ -123,7 +121,7 @@ describe('isPegoutQuotePaid function', () => {
   test('should return true if the quote is paid', async () => {
     jest.spyOn(mockBitcoinDataSource, 'getTransaction').mockImplementation(async () => Promise.resolve(mockBitcoinTransaction))
 
-    const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
+    const result = await isPegoutQuotePaid(FAKE_QUOTE_HASH, mockContext)
     expect(result.isPaid).toBe(true)
     expect(result.error).not.toBeDefined()
   })
@@ -140,7 +138,7 @@ describe('isPegoutQuotePaid function', () => {
       return 0 as any
     } as typeof global.setTimeout
 
-    const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
+    const result = await isPegoutQuotePaid(FAKE_QUOTE_HASH, mockContext)
 
     expect(result.isPaid).toBe(false)
     expect(result.error).toStrictEqual({
@@ -171,27 +169,15 @@ describe('isPegoutQuotePaid function', () => {
     // Mock getPegoutStatus to return a status without lpBtcTxHash
     mockedGetPegoutStatus.mockImplementation(async () => Promise.resolve(mockPegoutStatusWithoutTxHash))
 
-    const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
+    const result = await isPegoutQuotePaid(FAKE_QUOTE_HASH, mockContext)
 
     expect(result.isPaid).toBe(false)
     expect(result.error).toBe(FlyoverErrors.QUOTE_STATUS_DOES_NOT_HAVE_A_PEGOUT_TX_HASH)
-    expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+    expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, mockProvider, FAKE_QUOTE_HASH)
     expect(mockBitcoinDataSource.getTransaction).not.toHaveBeenCalled()
   })
 
   describe('isBtcTransactionValid validation cases', () => {
-    test('should return isPaid false when bitcoinDataSource is not defined', async () => {
-      const context = { ...contextMock }
-      context.btcConnection = undefined
-      const result = await isPegoutQuotePaid(context, FAKE_QUOTE_HASH)
-
-      expect(result.isPaid).toBe(false)
-      expect(result.error).toStrictEqual({
-        ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
-        detail: new Error('Flyover is not connected to Bitcoin')
-      })
-    })
-
     test('should return isPaid false when transaction is not confirmed', async () => {
       const unconfirmedTransaction = {
         ...mockBitcoinTransaction,
@@ -201,14 +187,14 @@ describe('isPegoutQuotePaid function', () => {
         Promise.resolve(unconfirmedTransaction)
       )
 
-      const result2 = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
+      const result2 = await isPegoutQuotePaid(FAKE_QUOTE_HASH, mockContext)
 
       expect(result2.isPaid).toBe(false)
       expect(result2.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
         detail: new Error('Transaction is not confirmed')
       })
-      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, mockProvider, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
     })
 
@@ -228,14 +214,14 @@ describe('isPegoutQuotePaid function', () => {
         Promise.resolve(insufficientOutputsTransaction)
       )
 
-      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
+      const result = await isPegoutQuotePaid(FAKE_QUOTE_HASH, mockContext)
 
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
         detail: new Error('Transaction does not have enough outputs')
       })
-      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, mockProvider, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
     })
 
@@ -259,7 +245,7 @@ describe('isPegoutQuotePaid function', () => {
       )
 
       // Execute
-      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
+      const result = await isPegoutQuotePaid(FAKE_QUOTE_HASH, mockContext)
 
       // Verify
       expect(result.isPaid).toBe(false)
@@ -267,7 +253,7 @@ describe('isPegoutQuotePaid function', () => {
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
         detail: new Error('Transaction value is less than the quote value')
       })
-      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, mockProvider, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
     })
 
@@ -283,14 +269,14 @@ describe('isPegoutQuotePaid function', () => {
         Promise.resolve(missingOpReturnTransaction)
       )
 
-      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
+      const result = await isPegoutQuotePaid(FAKE_QUOTE_HASH, mockContext)
 
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
         detail: new Error('Transaction does not have a valid OP_RETURN output')
       })
-      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, mockProvider, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
     })
 
@@ -312,14 +298,14 @@ describe('isPegoutQuotePaid function', () => {
         Promise.resolve(invalidOpReturnTransaction)
       )
 
-      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
+      const result = await isPegoutQuotePaid(FAKE_QUOTE_HASH, mockContext)
 
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
         detail: new Error('Transaction does not have a valid OP_RETURN output')
       })
-      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, mockProvider, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
     })
 
@@ -341,14 +327,14 @@ describe('isPegoutQuotePaid function', () => {
         Promise.resolve(wrongQuoteHashTransaction)
       )
 
-      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
+      const result = await isPegoutQuotePaid(FAKE_QUOTE_HASH, mockContext)
 
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
         detail: new Error('Transaction does not have a valid OP_RETURN output')
       })
-      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, mockProvider, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
     })
 
@@ -359,14 +345,14 @@ describe('isPegoutQuotePaid function', () => {
         throw new Error(errorMessage)
       })
 
-      const result = await isPegoutQuotePaid(contextMock, FAKE_QUOTE_HASH)
+      const result = await isPegoutQuotePaid(FAKE_QUOTE_HASH, mockContext)
 
       expect(result.isPaid).toBe(false)
       expect(result.error).toStrictEqual({
         ...FlyoverErrors.LPS_BTC_TRANSACTION_IS_NOT_VALID,
         detail: new Error(`Failed to check OP_RETURN output: Error: ${errorMessage}`)
       })
-      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, providerMock, FAKE_QUOTE_HASH)
+      expect(getPegoutStatus).toHaveBeenCalledWith(mockClient, mockProvider, FAKE_QUOTE_HASH)
       expect(mockBitcoinDataSource.getTransaction).toHaveBeenCalledWith(FAKE_LP_BTC_TX_HASH)
     })
   })

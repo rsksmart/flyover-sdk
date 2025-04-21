@@ -6,14 +6,15 @@ import { type FlyoverSDKContext, type IsQuoteRefundableResponse } from '../utils
 import { isPegoutQuotePaid } from './isPegoutQuotePaid'
 
 export async function isPegoutRefundable (
-  context: FlyoverSDKContext,
-  quote: PegoutQuote
+  quote: PegoutQuote,
+  context: FlyoverSDKContext
 ): Promise<IsQuoteRefundableResponse> {
   const { lbc, rskConnection } = context
   assertTruthy(lbc, 'Missing Liquidity Bridge Contract')
   assertTruthy(rskConnection, 'Missing RSK connection')
+
   const quoteHash = await lbc.hashPegoutQuote(quote)
-  const result = await isPegoutQuotePaid(context, quoteHash)
+  const result = await isPegoutQuotePaid(quoteHash, context)
   if (result.isPaid) {
     return { isRefundable: false, error: FlyoverErrors.PEG_OUT_REFUND_ALREADY_PAID }
   }
