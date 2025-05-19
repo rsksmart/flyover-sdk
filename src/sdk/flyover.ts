@@ -33,6 +33,7 @@ import { FlyoverNetworks, type FlyoverSupportedNetworks } from '../constants/net
 import { getAvailableLiquidity } from './getAvailableLiquidity'
 import { RskBridge } from '../blockchain/bridge'
 import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
+import { acceptAuthenticatedQuote } from './acceptAuthenticatedQuote'
 
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
@@ -126,6 +127,30 @@ export class Flyover implements Bridge {
     this.checkLbc()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return acceptQuote(this.httpClient, this.liquidityBridgeContract!, this.liquidityProvider!, quote)
+  }
+
+  /**
+   * Accept a specific pegin quote from a trusted account
+   *
+   * @param { Quote } quote Quote to be accepted
+   * @param { string } signature The hash of the quote signed by the trusted account
+   *
+   * @returns { AcceptedQuote } Accepted quote with confirmation data
+   *
+   * @throws { Error } When provider has not been set in the Flyover instance
+   *
+   * @throws { Error } When quote has missing fields
+   *
+   * @throws { Error } When signature is invalid
+   *
+   * @throws { Error } When locking cap is not enough
+   *
+   **/
+  async acceptAuthenticatedQuote (quote: Quote, signature: string): Promise<AcceptedQuote> {
+    this.checkLiquidityProvider()
+    this.checkLbc()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return acceptAuthenticatedQuote(this.httpClient, this.liquidityBridgeContract!, this.liquidityProvider!, quote, signature)
   }
 
   /**
