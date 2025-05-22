@@ -39,6 +39,7 @@ export type LiquidityProvider = LiquidityProviderBase & LiquidityProviderDetail
 export const Routes = {
   getQuote: Pegin.PostGetQuotePath,
   acceptQuote: Pegin.PostAcceptQuotePath,
+  acceptQuoteFromTrustedAccount: Pegin.PostAcceptAuthenticatedQuotePath,
   getProviders: GetProviders.GetProvidersListPath,
   getPegoutQuote: Pegout.PostGetQuotesPath,
   acceptPegoutQuote: Pegout.PostAcceptQuotePath,
