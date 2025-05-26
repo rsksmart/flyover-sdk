@@ -458,6 +458,7 @@ export interface PegoutQuoteStatusDTO {
 export const PegoutQuoteStatusDtoRequiredFields: string[] = ["detail", "status", "creationData"];
 
 export interface ProviderDetail {
+  /** @deprecated */
   fee: bigint;
   feePercentage: number;
   fixedFee: bigint;
