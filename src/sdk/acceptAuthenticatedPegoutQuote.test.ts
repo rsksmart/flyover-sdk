@@ -1,8 +1,7 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
-import { acceptAuthenticatedQuote } from './acceptAuthenticatedQuote'
+import { acceptAuthenticatedPegoutQuote } from './acceptAuthenticatedPegoutQuote'
 import * as bridgesCoreSdk from '@rsksmart/bridges-core-sdk'
-import { type LiquidityProvider, type Quote, providerRequiredFields, quoteRequiredFields, quoteDetailRequiredFields, Routes, type QuoteDetail } from '../api'
-import { type LiquidityBridgeContract } from '../blockchain/lbc'
+import { type LiquidityProvider, type PegoutQuote, providerRequiredFields, pegoutQuoteRequiredFields, pegoutQuoteDetailRequiredFields, Routes, type PegoutQuoteDetail } from '../api'
 
 jest.mock('@rsksmart/bridges-core-sdk', () => {
     const actual = jest.requireActual<typeof import('@rsksmart/bridges-core-sdk')>('@rsksmart/bridges-core-sdk');
@@ -16,7 +15,7 @@ const mockClient: bridgesCoreSdk.HttpClient = {
   async post<M>(_url: string, _body: object) {
     return Promise.resolve({
       signature: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-      bitcoinDepositAddressHash: 'valid_address'
+      lbcAddress: '0x18D8212bC00106b93070123f325021C723D503a3'
     } as M)
   }
 } as bridgesCoreSdk.HttpClient
@@ -29,7 +28,7 @@ const providerMock: LiquidityProvider = {
   apiBaseUrl: mockApiBaseUrl,
   name: 'any name',
   status: true,
-  providerType: 'pegin',
+  providerType: 'pegout',
   siteKey: 'any key',
   liquidityCheckEnabled: true,
   pegin: {
@@ -50,39 +49,34 @@ const providerMock: LiquidityProvider = {
   }
 }
 
-const quoteMock: Quote = {
+const pegoutQuoteMock: PegoutQuote = {
   quoteHash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
   quote: {
-    fedBTCAddr: 'any address',
-    lbcAddr: 'any address',
-    lpRSKAddr: 'any address',
-    btcRefundAddr: 'any address',
-    rskRefundAddr: 'any address',
-    lpBTCAddr: 'any address',
-    contractAddr: 'any address',
-    callFee: BigInt(1),
-    penaltyFee: BigInt(1),
-    data: 'any data',
-    gasLimit: 1,
-    nonce: BigInt(1),
-    value: BigInt('9007199254740993'),
-    timeForDeposit: 1,
-    lpCallTime: 1,
     agreementTimestamp: 1,
-    confirmations: 1,
-    callOnRegister: true,
+    btcRefundAddress: 'any address',
+    callFee: BigInt(1),
+    depositAddr: 'any address',
+    depositConfirmations: 1,
+    depositDateLimit: 1,
+    expireBlocks: 1,
+    expireDate: 1,
     gasFee: BigInt('1'),
+    lbcAddress: 'any address',
+    liquidityProviderRskAddress: 'any address',
+    lpBtcAddr: 'any address',
+    nonce: BigInt(1),
+    penaltyFee: BigInt(1),
+    rskRefundAddress: 'any address',
+    transferConfirmations: 1,
+    transferTime: 1,
+    value: BigInt('9007199254740993'),
     productFeeAmount: BigInt(50000000000000)
   }
 }
 
 const signatureMock = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
 
-const lbcMock = {
-  validatePeginDepositAddress: async (_quote: Quote, _depositAddress: string) => Promise.resolve(true),
-} as unknown as LiquidityBridgeContract
-
-describe('acceptAuthenticatedQuote function should', () => {
+describe('acceptAuthenticatedPegoutQuote function should', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -91,48 +85,36 @@ describe('acceptAuthenticatedQuote function should', () => {
     jest.spyOn(bridgesCoreSdk, 'isValidSignature').mockImplementation(() => true)
     const clientSpy = jest.spyOn(mockClient, 'post')
 
-    await acceptAuthenticatedQuote(mockClient, lbcMock, providerMock, quoteMock, signatureMock)
+    await acceptAuthenticatedPegoutQuote(mockClient, providerMock, pegoutQuoteMock, signatureMock)
 
     expect(clientSpy).toBeCalledWith(
-      mockApiBaseUrl + Routes.acceptAuthenticatedQuote,
-      { quoteHash: quoteMock.quoteHash, signature: signatureMock },
+      mockApiBaseUrl + Routes.acceptAuthenticatedPegoutQuote,
+      { quoteHash: pegoutQuoteMock.quoteHash, signature: signatureMock },
       { includeCaptcha: false }
     )
   })
 
   test('fail on provider missing properties', async () => {
-    await expect(acceptAuthenticatedQuote(mockClient, lbcMock, {} as any, quoteMock, signatureMock))
+    await expect(acceptAuthenticatedPegoutQuote(mockClient, {} as any, pegoutQuoteMock, signatureMock))
       .rejects.toThrow(`Validation failed for object with following missing properties: ${providerRequiredFields.join(', ')}`)
   })
 
   test('fail on quote missing properties', async () => {
-    await expect(acceptAuthenticatedQuote(mockClient, lbcMock, providerMock, {} as any, signatureMock))
-      .rejects.toThrow(`Validation failed for object with following missing properties: ${quoteRequiredFields.join(', ')}`)
+    await expect(acceptAuthenticatedPegoutQuote(mockClient, providerMock, {} as any, signatureMock))
+      .rejects.toThrow(`Validation failed for object with following missing properties: ${pegoutQuoteRequiredFields.join(', ')}`)
   })
 
   test('fail on quote detail missing properties', async () => {
-    const invalidQuote = { ...quoteMock, quote: {} as QuoteDetail }
-    await expect(acceptAuthenticatedQuote(mockClient, lbcMock, providerMock, invalidQuote, signatureMock))
-      .rejects.toThrow(`Validation failed for object with following missing properties: ${quoteDetailRequiredFields.join(', ')}`)
+    const invalidQuote = { ...pegoutQuoteMock, quote: {} as PegoutQuoteDetail }
+    await expect(acceptAuthenticatedPegoutQuote(mockClient, providerMock, invalidQuote, signatureMock))
+      .rejects.toThrow(`Validation failed for object with following missing properties: ${pegoutQuoteDetailRequiredFields.join(', ')}`)
   })
 
   test('fail when signature is invalid', async () => {
     jest.spyOn(bridgesCoreSdk, 'isValidSignature').mockReturnValue(false)
 
     await expect(async () => {
-      await acceptAuthenticatedQuote(mockClient, lbcMock, providerMock, quoteMock, signatureMock)
+      await acceptAuthenticatedPegoutQuote(mockClient, providerMock, pegoutQuoteMock, signatureMock)
     }).rejects.toThrow(/Invalid signature/)
-  })
-
-  test('fail when deposit address is invalid', async () => {
-    jest.spyOn(bridgesCoreSdk, 'isValidSignature').mockReturnValue(true)
-    const lbcWithInvalidAddress = {
-      ...lbcMock,
-      validatePeginDepositAddress: async () => Promise.resolve(false)
-    } as unknown as LiquidityBridgeContract
-
-    await expect(async () => {
-      await acceptAuthenticatedQuote(mockClient, lbcWithInvalidAddress, providerMock, quoteMock, signatureMock)
-    }).rejects.toThrow(/Invalid BTC address/)
   })
 })
