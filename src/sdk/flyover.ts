@@ -34,6 +34,7 @@ import { getAvailableLiquidity } from './getAvailableLiquidity'
 import { RskBridge } from '../blockchain/bridge'
 import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
 import { acceptAuthenticatedQuote } from './acceptAuthenticatedQuote'
+import { signQuote } from './signQuote'
 
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
@@ -483,5 +484,22 @@ export class Flyover implements Bridge {
       provider: this.liquidityProvider!
     }, params, options)
     /* eslint-enable @typescript-eslint/no-non-null-assertion */
+  }
+
+  /**
+   * Signs a quote hash with the connected signer. This is useful for the authenticated quote
+   * feature, where the quote hash needs to be signed in order to accept a quote.
+   *
+   * @param { Quote|PegoutQuote } quote The quote to sign
+   *
+   * @throws { Error } If not connected to RSK
+   *
+   * @returns { string } The signature of the quote hash
+   */
+  async signQuote (quote: Quote|PegoutQuote): Promise<string> {
+    this.checkLbc()
+    this.checkLiquidityProvider()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return signQuote(this.config, this.liquidityBridgeContract!, this.liquidityProvider!, quote)
   }
 }

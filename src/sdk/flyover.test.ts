@@ -20,6 +20,7 @@ import { getPegoutStatus } from './getPegoutStatus'
 import { getAvailableLiquidity } from './getAvailableLiquidity'
 import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
 import { RskBridge } from '../blockchain/bridge'
+import { signQuote } from './signQuote'
 
 jest.mock('ethers')
 
@@ -38,6 +39,7 @@ jest.mock('./getPeginStatus')
 jest.mock('./getPegoutStatus')
 jest.mock('./getAvailableLiquidity')
 jest.mock('./validatePeginTransaction')
+jest.mock('./signQuote')
 
 const mockedGetQuote = getQuote as jest.Mock<typeof getQuote>
 const mockedGetPegoutQuote = getPegoutQuote as jest.Mock<typeof getPegoutQuote>
@@ -649,6 +651,35 @@ describe('Flyover object should', () => {
       expect(flyover).not.toHaveProperty('rskBridge')
       await flyover.validatePeginTransaction(params)
       expect(flyover).not.toHaveProperty('rskBridge', undefined)
+    })
+  })
+
+  describe('signQuote method should', () => {
+    test('invoke correctly signQuote', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(connectionMock)
+      await flyover.signQuote(quoteMock)
+      expect(signQuote).toBeCalledTimes(1)
+      expect(signQuote).toBeCalledWith(
+        expect.objectContaining({
+          network: 'Regtest',
+          allowInsecureConnections: true
+        }),
+        expect.any(LiquidityBridgeContract),
+        providerMock,
+        quoteMock,
+      )
+    })
+    test('fail if LP has not been selected', async () => {
+      await flyover.connectToRsk(connectionMock)
+      await expect(flyover.signQuote(quoteMock)).rejects.toThrow('You need to select a provider to do this operation')
+    })
+    test('create LBC instance if not created before', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(connectionMock)
+      expect(flyover).not.toHaveProperty('liquidityBridgeContract')
+      await flyover.signQuote(quoteMock)
+      expect(flyover).not.toHaveProperty('liquidityBridgeContract', undefined)
     })
   })
 })
