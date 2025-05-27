@@ -12,10 +12,10 @@ import {
     validateRequiredFields(quote.quote, ...quoteDetailRequiredFields)
     validateRequiredFields(provider, ...providerRequiredFields)
 
-    const url = provider.apiBaseUrl + Routes.acceptQuoteFromTrustedAccount
+    const url = provider.apiBaseUrl + Routes.acceptAuthenticatedQuote
     const acceptedQuote = await httpClient.post<AcceptedQuote>(
       url,
-      { QuoteHash: quote.quoteHash, Signature: signature },
+      { quoteHash: quote.quoteHash, signature: signature },
       { includeCaptcha: false }
     )
     if (!isValidSignature(provider.provider, quote.quoteHash, acceptedQuote.signature)) {

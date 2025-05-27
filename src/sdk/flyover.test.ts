@@ -4,6 +4,7 @@ import { getQuote } from './getQuote'
 import { getProviders } from './getProviders'
 import { acceptQuote } from './acceptQuote'
 import { acceptAuthenticatedQuote } from './acceptAuthenticatedQuote'
+import { acceptAuthenticatedPegoutQuote } from './acceptAuthenticatedPegoutQuote'
 import { getPegoutQuote } from './getPegoutQuote'
 import { acceptPegoutQuote } from './acceptPegoutQuote'
 import { depositPegout } from './depositPegout'
@@ -28,6 +29,7 @@ jest.mock('./getProviders')
 jest.mock('./getQuote')
 jest.mock('./acceptQuote')
 jest.mock('./acceptAuthenticatedQuote')
+jest.mock('./acceptAuthenticatedPegoutQuote')
 jest.mock('./getPegoutQuote')
 jest.mock('./acceptPegoutQuote')
 jest.mock('./depositPegout')
@@ -261,6 +263,33 @@ describe('Flyover object should', () => {
     flyover.useLiquidityProvider(providerMock)
     await flyover.acceptPegoutQuote(pegoutQuoteMock)
     expect(acceptPegoutQuote).toBeCalledTimes(1)
+  })
+
+  describe('acceptAuthenticatedPegoutQuote method should', () => {
+    test('invoke correctly acceptAuthenticatedPegoutQuote', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(connectionMock)
+      await flyover.acceptAuthenticatedPegoutQuote(pegoutQuoteMock, signatureMock)
+      expect(acceptAuthenticatedPegoutQuote).toBeCalledTimes(1)
+      expect(acceptAuthenticatedPegoutQuote).toBeCalledWith(
+        (flyover as any).httpClient,
+        providerMock,
+        pegoutQuoteMock,
+        signatureMock
+      )
+    })
+
+    test('fail to accept authenticated pegout quote if liquidity provider has not been selected', async () => {
+      await expect(flyover.acceptAuthenticatedPegoutQuote(pegoutQuoteMock, signatureMock)).rejects.toThrow('You need to select a provider to do this operation')
+    })
+
+    test('fail to accept authenticated pegout quote when allowInsecureConnections is false and Provider apiBaseUrl is insecure', async () => {
+      (flyover as any).config.allowInsecureConnections = false
+      const provider = { ...providerMock }
+      provider.apiBaseUrl = 'http://localhost:1234'
+      flyover.useLiquidityProvider(provider)
+      await expect(flyover.acceptAuthenticatedPegoutQuote(pegoutQuoteMock, signatureMock)).rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
+    })
   })
 
   test('change network correctly', () => {

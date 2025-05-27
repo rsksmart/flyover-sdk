@@ -596,6 +596,21 @@ export interface TrustedAccountRequest {
   rbtcLockingCap?: Type;
 }
 
+export interface PkgAcceptAuthenticatedQuoteRequest {
+  /**
+   * QuoteHash
+   * @example "0x0"
+   */
+  quoteHash: string;
+  /**
+   * Signature from a trusted account
+   * @example "0x0"
+   */
+  signature: string;
+}
+
+export const PkgAcceptAuthenticatedQuoteRequestRequiredFields: string[] = ["quoteHash", "signature"];
+
 export interface PkgAcceptPeginRespose {
   /**
    * Hash of the deposit BTC address
@@ -610,6 +625,21 @@ export interface PkgAcceptPeginRespose {
 }
 
 export const PkgAcceptPeginResposeRequiredFields: string[] = ["signature", "bitcoinDepositAddressHash"];
+
+export interface PkgAcceptPegoutResponse {
+  /**
+   * LBC address to execute depositPegout function
+   * @example "0x0"
+   */
+  lbcAddress: string;
+  /**
+   * Signature of the quote
+   * @example "0x0"
+   */
+  signature: string;
+}
+
+export const PkgAcceptPegoutResponseRequiredFields: string[] = ["signature", "lbcAddress"];
 
 export interface PkgAcceptQuoteRequest {
   /**
