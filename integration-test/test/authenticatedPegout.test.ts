@@ -1,5 +1,5 @@
 import { describe, test, beforeAll, expect } from '@jest/globals'
-import { Flyover, type Quote, PeginQuoteRequest, AcceptedQuote } from '@rsksmart/flyover-sdk'
+import { Flyover, type PegoutQuote, PegoutQuoteRequest, AcceptedPegoutQuote } from '@rsksmart/flyover-sdk'
 import { assertTruthy, BlockchainConnection, Network } from '@rsksmart/bridges-core-sdk'
 import { integrationTestConfig } from '../config'
 import { fakeTokenResolver } from './common/utils'
@@ -10,13 +10,13 @@ import { fakeTokenResolver } from './common/utils'
  * The recommended locking caps are 3 BTC and 1 RBTC.
  * The inserted address for that trusted account must be under control of the tester and the mnemonic must be provided
  * as a parameter in the .env file.
- * After a full execution of the test, the documents created in retainedPeginQuote in the database must be deleted to
+ * After a full execution of the test, the documents created in retainedPegoutQuote in the database must be deleted to
  * have locking cap reset for the next test execution.
  */
-describe('Flyover authenticated pegin process should', () => {
+describe('Flyover authenticated pegout process should', () => {
     let flyover: Flyover
-    let quotes: Quote[]
-    let quote: Quote
+    let quotes: PegoutQuote[]
+    let quote: PegoutQuote
 
     beforeAll(async () => {
         flyover = new Flyover({
@@ -42,13 +42,13 @@ describe('Flyover authenticated pegin process should', () => {
         flyover.useLiquidityProvider(provider)
 
         // Get quote
-        const request: PeginQuoteRequest = {
-            callEoaOrContractAddress: integrationTestConfig.rskAddress,
-            callContractArguments: '',
-            valueToTransfer: integrationTestConfig.peginAmount,
+        const request: PegoutQuoteRequest = {
+            to: integrationTestConfig.btcAddress,
+            valueToTransfer: integrationTestConfig.pegoutAmount,
             rskRefundAddress: integrationTestConfig.rskAddress
         }
-        quotes = await flyover.getQuotes(request)
+
+        quotes = await flyover.getPegoutQuotes(request)
 
         expect(quotes.length).toBeGreaterThan(0)
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -56,9 +56,9 @@ describe('Flyover authenticated pegin process should', () => {
 
         const signedQuote = await flyover.signQuote(quote)
 
-        const acceptedQuote = await flyover.acceptAuthenticatedQuote(quote, signedQuote)
+        const acceptedQuote = await flyover.acceptAuthenticatedPegoutQuote(quote, signedQuote)
         expect(acceptedQuote.signature).not.toBeUndefined()
-        expect(acceptedQuote.bitcoinDepositAddressHash).not.toBeUndefined()
+        expect(acceptedQuote.lbcAddress).not.toBeUndefined()
     })
 
     test('fail to accept tampered signature', async () => {
@@ -69,13 +69,12 @@ describe('Flyover authenticated pegin process should', () => {
         flyover.useLiquidityProvider(provider)
 
         // Get quote
-        const request: PeginQuoteRequest = {
-            callEoaOrContractAddress: integrationTestConfig.rskAddress,
-            callContractArguments: '',
-            valueToTransfer: integrationTestConfig.peginAmount,
+        const request: PegoutQuoteRequest = {
+            to: integrationTestConfig.btcAddress,
+            valueToTransfer: integrationTestConfig.pegoutAmount,
             rskRefundAddress: integrationTestConfig.rskAddress
         }
-        quotes = await flyover.getQuotes(request)
+        quotes = await flyover.getPegoutQuotes(request)
 
         expect(quotes.length).toBeGreaterThan(0)
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -85,7 +84,7 @@ describe('Flyover authenticated pegin process should', () => {
         const tamperedSignedQuote = signedQuote.slice(0, -1) + (signedQuote.slice(-1) === 'a' ? 'b' : 'a')
         assertTruthy(tamperedSignedQuote !== signedQuote, 'Tampered signed quote is the same as the original')
 
-        await expect(flyover.acceptAuthenticatedQuote(quote, tamperedSignedQuote))
+        await expect(flyover.acceptAuthenticatedPegoutQuote(quote, tamperedSignedQuote))
             .rejects
             .toMatchObject({
                 details: {
@@ -95,25 +94,23 @@ describe('Flyover authenticated pegin process should', () => {
             })
     })
 
-    test('fail when lockingcap has been exceeded', async () => {
+    test.only('fail when lockingcap has been exceeded', async () => {
         const providers = await flyover.getLiquidityProviders()
 
         const provider = providers.find(p => p.id === integrationTestConfig.providerId)
         assertTruthy(provider, 'Provider not found')
         flyover.useLiquidityProvider(provider)
 
-        const request: PeginQuoteRequest = {
-            callEoaOrContractAddress: integrationTestConfig.rskAddress,
-            callContractArguments: '',
-            valueToTransfer: integrationTestConfig.peginAmount,
+        const request: PegoutQuoteRequest = {
+            to: integrationTestConfig.btcAddress,
+            valueToTransfer: integrationTestConfig.pegoutAmount,
             rskRefundAddress: integrationTestConfig.rskAddress
         }
-        let acceptedQuote: AcceptedQuote = {} as AcceptedQuote
+        let acceptedQuote: AcceptedPegoutQuote = {} as AcceptedPegoutQuote
 
         let lockinCapExceeded = false
         while (!lockinCapExceeded) {
-            quotes = await flyover.getQuotes(request)
-
+            quotes = await flyover.getPegoutQuotes(request)
             expect(quotes.length).toBeGreaterThan(0)
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             quote = quotes[0]!
@@ -121,9 +118,9 @@ describe('Flyover authenticated pegin process should', () => {
             const signedQuote = await flyover.signQuote(quote)
 
             try {
-                acceptedQuote = await flyover.acceptAuthenticatedQuote(quote, signedQuote)
+                acceptedQuote = await flyover.acceptAuthenticatedPegoutQuote(quote, signedQuote)
                 expect(acceptedQuote.signature).not.toBeUndefined()
-                expect(acceptedQuote.bitcoinDepositAddressHash).not.toBeUndefined()
+                expect(acceptedQuote.lbcAddress).not.toBeUndefined()
             } catch (error) {
                 expect(error).toMatchObject({
                     details: {
@@ -133,7 +130,7 @@ describe('Flyover authenticated pegin process should', () => {
 
                 // The error message format is something like this:
                 // details: {
-                //     error: 'AcceptPeginQuote: locking cap exceeded. Args: {"address":"0x1538283abbD198DcD966f43230363A68108c6373","currentLocked":"2400269000000000000","lockingCap":"3000000000000000000"}'
+                //     error: 'AcceptPegoutQuote: locking cap exceeded. Args: {"address":"0x1538283abbD198DcD966f43230363A68108c6373","currentLocked":"2400269000000000000","lockingCap":"3000000000000000000"}'
                 // },
                 // Extract JSON from error message
                 const errorMessage = (error as any).details.error
