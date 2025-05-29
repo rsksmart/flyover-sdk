@@ -5,11 +5,12 @@ import { integrationTestConfig } from '../config'
 import { fakeTokenResolver } from './common/utils'
 
 /**
- * In order to run this test, a trusted account must be created in the database of the LPS. The best option is to use the
- * management console to avoid the security checks derived from manual insertions.
- * The recommended locking caps are 3 BTC and 1 RBTC.
+ * In order to run this test, a trusted account must be created in the database of the LPS.
+ * For local testing, the LPS has a parameter and a script that does the insertion. Change that parameter and run the script.
+ * Another option is to use the management console of the LPS.
+ * The recommended locking caps are 3 BTC and 3 RBTC to be able to test the locking cap exceeded error in a more visible way.
  * The inserted address for that trusted account must be under control of the tester and the mnemonic must be provided
- * as a parameter in the .env file.
+ * as a parameter in the /integration-test/.env file.
  * After a full execution of the test, the documents created in retainedPeginQuote in the database must be deleted to
  * have locking cap reset for the next test execution.
  */
