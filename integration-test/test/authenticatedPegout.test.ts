@@ -1,8 +1,7 @@
-import { describe, test, beforeAll, expect } from '@jest/globals'
+import { describe, test, beforeAll, expect, jest } from '@jest/globals'
 import { Flyover, type PegoutQuote, PegoutQuoteRequest, AcceptedPegoutQuote } from '@rsksmart/flyover-sdk'
 import { assertTruthy, BlockchainConnection, Network } from '@rsksmart/bridges-core-sdk'
 import { integrationTestConfig } from '../config'
-import { fakeTokenResolver } from './common/utils'
 
 /**
  * In order to run this test, a trusted account must be created in the database of the LPS.
@@ -19,11 +18,13 @@ describe('Flyover authenticated pegout process should', () => {
     let quotes: PegoutQuote[]
     let quote: PegoutQuote
 
+    const mockTokenResolver = jest.fn<() => Promise<string>>().mockResolvedValue('a-captcha-token')
+
     beforeAll(async () => {
         flyover = new Flyover({
             network: integrationTestConfig.network as Network,
             allowInsecureConnections: true,
-            captchaTokenResolver: fakeTokenResolver,
+            captchaTokenResolver: mockTokenResolver,
             disableChecksum: true
         })
 
@@ -60,6 +61,9 @@ describe('Flyover authenticated pegout process should', () => {
         const acceptedQuote = await flyover.acceptAuthenticatedPegoutQuote(quote, signedQuote)
         expect(acceptedQuote.signature).not.toBeUndefined()
         expect(acceptedQuote.lbcAddress).not.toBeUndefined()
+
+        // Assert that the captcha token resolver was not called
+        expect(mockTokenResolver).not.toHaveBeenCalled()
     })
 
     test('fail to accept tampered signature', async () => {
