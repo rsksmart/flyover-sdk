@@ -23,12 +23,16 @@ const providerMock: LiquidityProvider = {
     minTransactionValue: BigInt(1),
     maxTransactionValue: BigInt(100),
     fee: BigInt(1),
+    fixedFee: BigInt(3),
+    feePercentage: 1.25,
     requiredConfirmations: 5
   },
   pegout: {
     minTransactionValue: BigInt(1),
     maxTransactionValue: BigInt(100),
     fee: BigInt(1),
+    fixedFee: BigInt(3),
+    feePercentage: 1.25,
     requiredConfirmations: 5
   }
 }
