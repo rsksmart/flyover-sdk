@@ -1,0 +1,40 @@
+{
+  "name": "flyover-sdk-demo-cli",
+  "version": "1.0.0",
+  "description": "Interactive CLI demo for Flyover SDK authenticated pegin/pegout functionality",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "flyover-demo": "dist/index.js"
+  },
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "node --disable-warning=DEP0040 dist/index.js",
+    "dev": "tsc && node --disable-warning=DEP0040 dist/index.js",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "flyover",
+    "bitcoin",
+    "rootstock",
+    "rsk",
+    "pegin",
+    "pegout",
+    "demo",
+    "cli"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "@rsksmart/flyover-sdk": "file:../..",
+    "chalk": "^4.1.2",
+    "dotenv": "^17.2.0",
+    "inquirer": "^9.2.12",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.8.2"
+  }
+}
