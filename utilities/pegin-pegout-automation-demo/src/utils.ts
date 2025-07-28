@@ -56,15 +56,6 @@ export function stringifyWithBigInt(obj: unknown, space?: number): string {
 }
 
 /**
- * Assert that a value is truthy, throw error if not
- */
-export function assertTruthy<T>(value: T, message: string): asserts value is NonNullable<T> {
-  if (!value) {
-    throw new Error(message)
-  }
-}
-
-/**
  * Wait for user to press Enter to continue
  * @param message - Optional custom message (defaults to "Press Enter to continue...")
  */

@@ -4,7 +4,7 @@ This utility provides automated demonstration flows for testing and showcasing t
 
 ## Overview
 
-The automation demo includes several flows designed to demonstrate different aspects of the Flyover bridge:
+The automation demo includes several flows designed to demonstrate different aspects of the Flyover protocol:
 
 - **Pegin Flows**: Move Bitcoin to RSK (RBTC)
 - **Pegout Flows**: Move RBTC to Bitcoin
@@ -14,6 +14,7 @@ The automation demo includes several flows designed to demonstrate different asp
 
 - Having the local environment running with the flyover sdk installed and configured.
 - Having a valid mnemonic and addresses for testing in local.
+- The nmemonic should be the one capable of derivating the whitelisted addresses for the demo.
 
 ## Installation
 

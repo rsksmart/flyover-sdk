@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node --disable-warning=DEP0040 dist/index.js",
-    "dev": "tsc && node --disable-warning=DEP0040 dist/index.js",
+    "dev": "tsc && node dist/index.js",
     "clean": "rm -rf dist"
   },
   "keywords": [
