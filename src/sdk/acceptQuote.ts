@@ -21,7 +21,7 @@ export async function acceptQuote (httpClient: HttpClient, lbc: LiquidityBridgeC
     throw FlyoverError.invalidSignatureError({
       serverUrl: provider.apiBaseUrl,
       address: quote.quote.lpRSKAddr,
-      sinature: acceptedQuote.signature
+      signature: acceptedQuote.signature
     })
   }
   const isValidAddress = await lbc.validatePeginDepositAddress(quote, acceptedQuote.bitcoinDepositAddressHash)
