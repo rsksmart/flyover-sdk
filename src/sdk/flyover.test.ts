@@ -3,6 +3,8 @@ import { Flyover } from './flyover'
 import { getQuote } from './getQuote'
 import { getProviders } from './getProviders'
 import { acceptQuote } from './acceptQuote'
+import { acceptAuthenticatedQuote } from './acceptAuthenticatedQuote'
+import { acceptAuthenticatedPegoutQuote } from './acceptAuthenticatedPegoutQuote'
 import { getPegoutQuote } from './getPegoutQuote'
 import { acceptPegoutQuote } from './acceptPegoutQuote'
 import { depositPegout } from './depositPegout'
@@ -19,12 +21,15 @@ import { getPegoutStatus } from './getPegoutStatus'
 import { getAvailableLiquidity } from './getAvailableLiquidity'
 import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
 import { RskBridge } from '../blockchain/bridge'
+import { signQuote } from './signQuote'
 
 jest.mock('ethers')
 
 jest.mock('./getProviders')
 jest.mock('./getQuote')
 jest.mock('./acceptQuote')
+jest.mock('./acceptAuthenticatedQuote')
+jest.mock('./acceptAuthenticatedPegoutQuote')
 jest.mock('./getPegoutQuote')
 jest.mock('./acceptPegoutQuote')
 jest.mock('./depositPegout')
@@ -36,6 +41,7 @@ jest.mock('./getPeginStatus')
 jest.mock('./getPegoutStatus')
 jest.mock('./getAvailableLiquidity')
 jest.mock('./validatePeginTransaction')
+jest.mock('./signQuote')
 
 const mockedGetQuote = getQuote as jest.Mock<typeof getQuote>
 const mockedGetPegoutQuote = getPegoutQuote as jest.Mock<typeof getPegoutQuote>
@@ -225,10 +231,65 @@ describe('Flyover object should', () => {
     expect(acceptQuote).toBeCalledTimes(1)
   })
 
+  describe('acceptAuthenticatedQuote method should', () => {
+    test('invoke correctly acceptAuthenticatedQuote', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(connectionMock)
+      await flyover.acceptAuthenticatedQuote(quoteMock, signatureMock)
+      expect(acceptAuthenticatedQuote).toBeCalledTimes(1)
+      expect(acceptAuthenticatedQuote).toBeCalledWith(
+        (flyover as any).httpClient,
+        (flyover as any).liquidityBridgeContract,
+        providerMock,
+        quoteMock,
+        signatureMock
+      )
+    })
+
+    test('fail to accept authenticated quote if liquidity provider has not been selected', async () => {
+      await expect(flyover.acceptAuthenticatedQuote(quoteMock, signatureMock)).rejects.toThrow('You need to select a provider to do this operation')
+    })
+
+    test('fail to accept authenticated quote when allowInsecureConnections is false and Provider apiBaseUrl is insecure', async () => {
+      (flyover as any).config.allowInsecureConnections = false
+      const provider = { ...providerMock }
+      provider.apiBaseUrl = 'http://localhost:1234'
+      flyover.useLiquidityProvider(provider)
+      await expect(flyover.acceptAuthenticatedQuote(quoteMock, signatureMock)).rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
+    })
+  })
+
   test('invoke correctly acceptPegoutQuote', async () => {
     flyover.useLiquidityProvider(providerMock)
     await flyover.acceptPegoutQuote(pegoutQuoteMock)
     expect(acceptPegoutQuote).toBeCalledTimes(1)
+  })
+
+  describe('acceptAuthenticatedPegoutQuote method should', () => {
+    test('invoke correctly acceptAuthenticatedPegoutQuote', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(connectionMock)
+      await flyover.acceptAuthenticatedPegoutQuote(pegoutQuoteMock, signatureMock)
+      expect(acceptAuthenticatedPegoutQuote).toBeCalledTimes(1)
+      expect(acceptAuthenticatedPegoutQuote).toBeCalledWith(
+        (flyover as any).httpClient,
+        providerMock,
+        pegoutQuoteMock,
+        signatureMock
+      )
+    })
+
+    test('fail to accept authenticated pegout quote if liquidity provider has not been selected', async () => {
+      await expect(flyover.acceptAuthenticatedPegoutQuote(pegoutQuoteMock, signatureMock)).rejects.toThrow('You need to select a provider to do this operation')
+    })
+
+    test('fail to accept authenticated pegout quote when allowInsecureConnections is false and Provider apiBaseUrl is insecure', async () => {
+      (flyover as any).config.allowInsecureConnections = false
+      const provider = { ...providerMock }
+      provider.apiBaseUrl = 'http://localhost:1234'
+      flyover.useLiquidityProvider(provider)
+      await expect(flyover.acceptAuthenticatedPegoutQuote(pegoutQuoteMock, signatureMock)).rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
+    })
   })
 
   test('change network correctly', () => {
@@ -619,6 +680,35 @@ describe('Flyover object should', () => {
       expect(flyover).not.toHaveProperty('rskBridge')
       await flyover.validatePeginTransaction(params)
       expect(flyover).not.toHaveProperty('rskBridge', undefined)
+    })
+  })
+
+  describe('signQuote method should', () => {
+    test('invoke correctly signQuote', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(connectionMock)
+      await flyover.signQuote(quoteMock)
+      expect(signQuote).toBeCalledTimes(1)
+      expect(signQuote).toBeCalledWith(
+        expect.objectContaining({
+          network: 'Regtest',
+          allowInsecureConnections: true
+        }),
+        expect.any(LiquidityBridgeContract),
+        providerMock,
+        quoteMock,
+      )
+    })
+    test('fail if LP has not been selected', async () => {
+      await flyover.connectToRsk(connectionMock)
+      await expect(flyover.signQuote(quoteMock)).rejects.toThrow('You need to select a provider to do this operation')
+    })
+    test('create LBC instance if not created before', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(connectionMock)
+      expect(flyover).not.toHaveProperty('liquidityBridgeContract')
+      await flyover.signQuote(quoteMock)
+      expect(flyover).not.toHaveProperty('liquidityBridgeContract', undefined)
     })
   })
 })
