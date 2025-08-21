@@ -36,7 +36,6 @@ describe('isPeginRefundable function should', () => {
     hex: '0300000003e28cf65869dfe5dc2f9ed0c93a35d53ebbdc0623b4be98c2189ce0867dc43eda99f71d7e5470f37b047f7d297583516624d6fc0d5e82e46d202d9ba5a0f9326f1746c3fe9334ffe54d4106f6637eae2476db38b8bc8174c803c0840862e524bf010b'
   }
 
-  /* eslint-disable @typescript-eslint/consistent-type-assertions */
   const mockHttpClient: HttpClient = {
     async get<M>(_url: string) {
       return Promise.resolve({} as M)

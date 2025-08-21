@@ -53,14 +53,13 @@ describe('isPegoutRefundable function should', () => {
     providerMock = {
       getBlock: jest.fn()
     }
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+
     contextMock = {
       lbc: lbcMock as Partial<LiquidityBridgeContract>,
       rskConnection: connectionMock as Partial<Connection>
     } as FlyoverSDKContext
     lbcMock.hashPegoutQuote?.mockResolvedValue(pegoutQuoteMock.quoteHash)
     connectionMock.getUnderlyingProvider?.mockReturnValue(providerMock as ethers.providers.Provider)
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     expiredBlock = { timestamp: pegoutQuoteMock.quote.expireDate + 5000 } as ethers.providers.Block
   })
   test('return error if the quote is already paid', async () => {
@@ -96,7 +95,6 @@ describe('isPegoutRefundable function should', () => {
   test('return error if the quote is not expired by date', async () => {
     jest.spyOn(isPaidMod, 'isPegoutQuotePaid').mockResolvedValue({ isPaid: false, error: FlyoverErrors.QUOTE_STATUS_TRANSACTION_NOT_FOUND })
     lbcMock.isPegOutQuoteCompleted?.mockResolvedValue(false)
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     providerMock.getBlock?.mockResolvedValue({ timestamp: pegoutQuoteMock.quote.expireDate - 5000 } as ethers.providers.Block)
     const result = await isPegoutRefundable(pegoutQuoteMock, contextMock)
     expect(result.isRefundable).toBe(false)

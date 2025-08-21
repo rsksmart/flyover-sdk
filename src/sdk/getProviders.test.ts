@@ -31,7 +31,7 @@ const mockClient: HttpClient = {
     return Promise.resolve(detailMock as M)
   },
   async post<M>(_url: string, _body: object) {
-    return Promise.resolve({} as M) // eslint-disable-line @typescript-eslint/consistent-type-assertions
+    return Promise.resolve({} as M)
   },
   getCaptchaToken: async () => Promise.resolve('')
 }
@@ -55,7 +55,7 @@ const providersMock: LiquidityProviderBase[] = [
   }
 ]
 
-const lbcMock = { // eslint-disable-line @typescript-eslint/consistent-type-assertions
+const lbcMock = {
   getProviders: async () => Promise.resolve(providersMock)
 } as LiquidityBridgeContract
 

@@ -7,7 +7,6 @@ const originalFetch = global.fetch
 
 // Create a mock fetch function
 const mockFetch = jest.fn().mockImplementation(async () => {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return {
     json: async () => ({ result: {} })
   } as Response
@@ -110,7 +109,6 @@ describe('LocalBTCDataSource', () => {
     it('should successfully retrieve and transform a transaction', async () => {
       // For getting the transaction details
       mockFetch.mockImplementationOnce(async () => {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         return {
           json: async () => ({ result: mockRawTransaction })
         } as Response
@@ -118,7 +116,6 @@ describe('LocalBTCDataSource', () => {
 
       // For getting the height of the block where the transaction was included
       mockFetch.mockImplementationOnce(async () => {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         return {
           json: async () => ({ result: mockBlock })
         } as Response
@@ -205,7 +202,6 @@ describe('LocalBTCDataSource', () => {
 
     it('should successfully retrieve transaction hex', async () => {
       mockFetch.mockImplementationOnce(async () => {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         return {
           json: async () => ({ result: mockRawTransaction })
         } as Response
@@ -247,7 +243,6 @@ describe('LocalBTCDataSource', () => {
 
     it('should handle RPC errors', async () => {
       mockFetch.mockImplementationOnce(async () => {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         return {
           json: async () => ({
             error: {
@@ -299,7 +294,6 @@ describe('LocalBTCDataSource', () => {
         .mockResolvedValueOnce(confirmedTransaction)
 
       mockFetch.mockImplementationOnce(async () => {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         return {
           json: async () => ({ result: mockBlock })
         } as Response
@@ -379,7 +373,6 @@ describe('LocalBTCDataSource', () => {
         .mockResolvedValueOnce(confirmedTransaction)
 
       mockFetch.mockImplementationOnce(async () => {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         return {
           json: async () => ({
             error: {

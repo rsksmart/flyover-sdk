@@ -67,13 +67,11 @@ const parsedThirdLog = {
   }
 }
 
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
 const mockClient: HttpClient = {
   async get<M>(_url: string) {
     return Promise.resolve({} as M)
   }
 } as HttpClient
-/* eslint-enable @typescript-eslint/consistent-type-assertions */
 
 const providerMock: LiquidityProvider = {
   id: 1,

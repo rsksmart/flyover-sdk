@@ -39,6 +39,10 @@ import { type FlyoverSDKContext, type IsQuoteRefundableResponse, type IsQuotePai
 import { isPegoutRefundable } from './isPegoutRefundable'
 import { isPeginRefundable, type IsPeginRefundableParams } from './isPeginRefundable'
 import { type RegisterPeginParams, registerPegin } from './registerPegin'
+import { acceptAuthenticatedQuote } from './acceptAuthenticatedQuote'
+import { acceptAuthenticatedPegoutQuote } from './acceptAuthenticatedPegoutQuote'
+import { signQuote } from './signQuote'
+
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
   private liquidityProvider?: LiquidityProvider
@@ -136,6 +140,30 @@ export class Flyover implements Bridge {
   }
 
   /**
+   * Accept a specific pegin quote from a trusted account
+   *
+   * @param { Quote } quote Quote to be accepted
+   * @param { string } signature The hash of the quote signed by the trusted account
+   *
+   * @returns { AcceptedQuote } Accepted quote with confirmation data
+   *
+   * @throws { Error } When provider has not been set in the Flyover instance
+   *
+   * @throws { Error } When quote has missing fields
+   *
+   * @throws { Error } When signature is invalid
+   *
+   * @throws { Error } When locking cap is not enough
+   *
+   **/
+  async acceptAuthenticatedQuote (quote: Quote, signature: string): Promise<AcceptedQuote> {
+    this.checkLiquidityProvider()
+    this.checkLbc()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return acceptAuthenticatedQuote(this.httpClient, this.liquidityBridgeContract!, this.liquidityProvider!, quote, signature)
+  }
+
+  /**
    * Get available pegout quotes for given parameters
    *
    * @param { PegoutQuoteRequest } quoteRequest Quote request to compute available quotes
@@ -188,6 +216,30 @@ export class Flyover implements Bridge {
   }
 
   /**
+   * Accept a specific pegout quote from a trusted account
+   *
+   * @param { PegoutQuote } quote Pegout quote to be accepted
+   * @param { string } signature The hash of the quote signed by the trusted account
+   *
+   * @returns { AcceptedPegoutQuote } Accepted quote with confirmation data
+   *
+   * @throws { Error } When provider has not been set in the Flyover instance
+   *
+   * @throws { Error } When quote has missing fields
+   *
+   * @throws { Error } When signature is invalid
+   *
+   * @throws { Error } When LBC address doesn't match expected address
+   *
+   **/
+  async acceptAuthenticatedPegoutQuote (quote: PegoutQuote, signature: string): Promise<AcceptedPegoutQuote> {
+    this.checkLiquidityProvider()
+    this.checkLbc()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return acceptAuthenticatedPegoutQuote(this.httpClient, this.liquidityProvider!, quote, signature)
+  }
+
+  /**
    * Set provider whose LPS will be used to get/accept quotes
    *
    * @param { LiquidityProvider } provider Provider to use its apiBaseUrl
@@ -234,8 +286,8 @@ export class Flyover implements Bridge {
     try {
       const qrCodeUrl = await toDataURL(text.toString())
       return qrCodeUrl
-    } catch (err) {
-      throw new Error('Error generating QR code')
+    } catch (err: unknown) {
+      throw new Error('Error generating QR code: ' + (err as Error).message)
     }
   }
 
@@ -308,7 +360,6 @@ export class Flyover implements Bridge {
    */
   async refundPegout (quote: PegoutQuote): Promise<string> {
     this.checkLbc()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return processError(refundPegout(quote, this.getFlyoverContext()))
   }
 
@@ -456,13 +507,11 @@ export class Flyover implements Bridge {
     const { quote, providerSignature, btcTransactionHash } = params
 
     // Check if the quote is refundable
-    /* eslint-disable @typescript-eslint/no-non-null-assertion */
     return isPeginRefundable({
       quote,
       providerSignature,
       btcTransactionHash
     }, this.getFlyoverContext())
-    /* eslint-enable @typescript-eslint/no-non-null-assertion */
   }
 
   /**
@@ -586,5 +635,22 @@ export class Flyover implements Bridge {
     this.checkLbc()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.liquidityBridgeContract!.hashPegoutQuote(quote)
+  }
+
+  /**
+   * Signs a quote hash with the connected signer. This is useful for the authenticated quote
+   * feature, where the quote hash needs to be signed in order to accept a quote.
+   *
+   * @param { Quote|PegoutQuote } quote The quote to sign
+   *
+   * @throws { Error } If not connected to RSK
+   *
+   * @returns { string } The signature of the quote hash
+   */
+  async signQuote (quote: Quote|PegoutQuote): Promise<string> {
+    this.checkLbc()
+    this.checkLiquidityProvider()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return signQuote(this.config, this.liquidityBridgeContract!, this.liquidityProvider!, quote)
   }
 }

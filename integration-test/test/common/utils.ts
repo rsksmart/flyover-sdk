@@ -23,6 +23,18 @@ export interface UTXO {
   value: bigint
 }
 
+interface UTXOResponse {
+  txid: string
+  vout: number
+  value: number
+  status: {
+    confirmed: boolean
+    block_height: number
+    block_hash: string
+    block_time: number
+  }
+}
+
 /**
  * Fetches the UTXOs from the mempool.space API for the given address. Use this function
  * only for tests, not as part of any SDK.
@@ -33,7 +45,7 @@ export interface UTXO {
 export async function getUtxosFromMempoolSpace (url: string, address: string): Promise<UTXO[]> {
   return fetch(`${url}/api/address/${address}/utxo`)
     .then(async res => res.json())
-    .then((utxos: any[]) => utxos.map(utxo => ({
+    .then((utxos: UTXOResponse[]) => utxos.map(utxo => ({
       txid: utxo.txid,
       vout: utxo.vout,
       status: {

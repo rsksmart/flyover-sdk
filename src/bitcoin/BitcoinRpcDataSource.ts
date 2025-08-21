@@ -7,7 +7,7 @@ interface BitcoinClientConfig {
   rpcconnect: string
 }
 
-type RpcCaller = (method: string, ...args: any[]) => Promise<any>
+type RpcCaller = <T>(method: string, ...args: unknown[]) => Promise<T>
 
 function getBitcoinRpcCaller (config: BitcoinClientConfig): RpcCaller {
   const url = `http://${config.rpcconnect}:${config.rpcport}`
@@ -16,7 +16,7 @@ function getBitcoinRpcCaller (config: BitcoinClientConfig): RpcCaller {
   const token = Buffer.from(`${config.rpcuser}:${config.rpcpassword}`).toString('base64')
   headers.append('Authorization', 'Basic ' + token)
 
-  return async function (method: string, ...args: any[]): Promise<any> {
+  return async function <T>(method: string, ...args: unknown[]): Promise<T> {
     const body = JSON.stringify({
       jsonrpc: '1.0',
       method: method.toLowerCase(),
@@ -32,6 +32,22 @@ function getBitcoinRpcCaller (config: BitcoinClientConfig): RpcCaller {
         return response.result
       })
   }
+}
+
+interface GetRawTransactionResponse {
+  txid: string
+  blockhash: string
+  vout: {
+    value:number
+    scriptPubKey: { hex: string }
+  }[]
+  confirmations: number
+  hex: string
+}
+
+interface GetBlockResponse {
+  height: number
+  tx: string[]
 }
 
 export class BitcoindRpcDataSource implements BitcoinDataSource {
@@ -51,13 +67,13 @@ export class BitcoindRpcDataSource implements BitcoinDataSource {
   async getTransaction (txHash: string): Promise<BitcoinTransaction> {
     try {
       // The second parameter 'true' tells Bitcoin Core to return the full decoded transaction
-      const transaction = await this.rpcCaller('getrawtransaction', txHash, true)
+      const transaction = await this.rpcCaller<GetRawTransactionResponse>('getrawtransaction', txHash, true)
 
-      const btcBlock = await this.rpcCaller('getblock', transaction.blockhash)
+      const btcBlock = await this.rpcCaller<GetBlockResponse>('getblock', transaction.blockhash)
       return {
         txid: transaction.txid,
         isConfirmed: transaction.confirmations >= MIN_BTC_CONFIRMATIONS,
-        vout: transaction.vout.map((output: any) => ({
+        vout: transaction.vout.map((output) => ({
           valueInSats: output.value * 100_000_000, // Convert BTC to satoshis
           hex: output.scriptPubKey.hex
         })),
@@ -65,18 +81,18 @@ export class BitcoindRpcDataSource implements BitcoinDataSource {
         blockHeight: btcBlock.height
       }
     } catch (error: unknown) {
-      const errorMessage = (error as any).message ? (error as any).message : 'Unknown error'
+      const errorMessage = (error as Error).message ? (error as Error).message : 'Unknown error'
       throw new Error(`Failed to get transaction details: ${errorMessage}`)
     }
   }
 
   async getTransactionAsHex (txHash: string): Promise<string> {
     try {
-      const rawTx = await this.rpcCaller('getrawtransaction', txHash, true)
+      const rawTx = await this.rpcCaller<GetRawTransactionResponse>('getrawtransaction', txHash, true)
 
       return rawTx.hex
     } catch (error: unknown) {
-      const errorMessage = (error as any).message ? (error as any).message : 'Unknown error'
+      const errorMessage = (error as Error).message ? (error as Error).message : 'Unknown error'
       throw new Error(`Failed to get transaction: ${errorMessage}`)
     }
   }
@@ -89,7 +105,7 @@ export class BitcoindRpcDataSource implements BitcoinDataSource {
         throw new Error('Transaction has not been confirmed')
       }
 
-      const btcBlock = await this.rpcCaller('getblock', transaction.blockHash)
+      const btcBlock = await this.rpcCaller<GetBlockResponse>('getblock', transaction.blockHash)
       const transactionHashes = btcBlock.tx
 
       return {
@@ -98,7 +114,7 @@ export class BitcoindRpcDataSource implements BitcoinDataSource {
         transactionHashes
       }
     } catch (error: unknown) {
-      const errorMessage = (error as any).message ? (error as any).message : 'Unknown error'
+      const errorMessage = (error as Error).message ? (error as Error).message : 'Unknown error'
       throw new Error(`Failed to get block from transaction: ${errorMessage}`)
     }
   }
