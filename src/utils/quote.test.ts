@@ -1,19 +1,7 @@
 import { describe, test, expect } from '@jest/globals'
-import { getQuoteTotal, isPeginStillPayable, satsToWei } from './quote'
+import { getQuoteTotal, isPeginQuote, isPeginStillPayable, satsToWei } from './quote'
 import { type QuoteDetail, type PegoutQuote, type Quote } from '../api'
 
-describe('getQuoteTotal function should', () => {
-  test('fail if quote is empty', () => {
-    expect(() => { getQuoteTotal(null as any) }).toThrow('empty quote')
-    expect(() => { getQuoteTotal(undefined as any) }).toThrow('empty quote')
-  })
-  test('fail if quote detail is empty', () => {
-    /* eslint-disable @typescript-eslint/consistent-type-assertions */
-    expect(() => { getQuoteTotal({} as Quote) }).toThrow('empty quote detail')
-    expect(() => { getQuoteTotal({} as PegoutQuote) }).toThrow('empty quote detail')
-    /* eslint-enable @typescript-eslint/consistent-type-assertions */
-  })
-  test('sum properly quote value', () => {
     const peginQuote: Quote = {
       quote: {
         fedBTCAddr: 'any addres',
@@ -39,7 +27,7 @@ describe('getQuoteTotal function should', () => {
       },
       quoteHash: 'a hash'
     }
-    const pegoutQuote = {
+    const pegoutQuote: PegoutQuote = {
       quote: {
         lbcAddress: 'an address',
         liquidityProviderRskAddress: 'an address',
@@ -63,6 +51,17 @@ describe('getQuoteTotal function should', () => {
       },
       quoteHash: 'a hash'
     }
+
+describe('getQuoteTotal function should', () => {
+  test('fail if quote is empty', () => {
+    expect(() => { getQuoteTotal(null as any) }).toThrow('empty quote')
+    expect(() => { getQuoteTotal(undefined as any) }).toThrow('empty quote')
+  })
+  test('fail if quote detail is empty', () => {
+    expect(() => { getQuoteTotal({} as Quote) }).toThrow('empty quote detail')
+    expect(() => { getQuoteTotal({} as PegoutQuote) }).toThrow('empty quote detail')
+  })
+  test('sum properly quote value', () => {
     expect(getQuoteTotal(peginQuote)).toBe(BigInt('9000000001234567890'))
     expect(getQuoteTotal(pegoutQuote)).toBe(BigInt('13500000000000000000'))
   })
@@ -83,15 +82,13 @@ describe('isPeginStillPayable function should', () => {
     expect(() => { isPeginStillPayable(undefined as any) }).toThrow('empty quote')
   })
   test('fail if quote detail is empty', () => {
-    /* eslint-disable @typescript-eslint/consistent-type-assertions */
     expect(() => { isPeginStillPayable({ quote: {}, quoteHash: 'hash 1' } as Quote) }).toThrow('Validation failed for object with following missing properties: agreementTimestamp, timeForDeposit')
     expect(() => { isPeginStillPayable({ quote: { timeForDeposit: 10 }, quoteHash: 'hash 1' } as Quote) }).toThrow('Validation failed for object with following missing properties: agreementTimestamp')
     expect(() => { isPeginStillPayable({ quote: { agreementTimestamp: 50 }, quoteHash: 'hash 1' } as Quote) }).toThrow('Validation failed for object with following missing properties: timeForDeposit')
-    /* eslint-enable @typescript-eslint/consistent-type-assertions */
   })
   test('return true if quote is still payable', () => {
     const now = Date.now() / 1000
-    const testCases: Array<{ result: boolean, quote: Partial<QuoteDetail> }> = [
+    const testCases: { result: boolean, quote: Partial<QuoteDetail> }[] = [
       {
         result: false,
         quote: {
@@ -130,7 +127,7 @@ describe('isPeginStillPayable function should', () => {
 
 describe('satsToWei function should', () => {
   test('convert sats to wei', () => {
-    const cases: Array<[string, string]> = [
+    const cases: [string, string][] = [
       ['0', '0'],
       ['1', '10000000000'],
       ['100000000', '1000000000000000000'],
@@ -145,5 +142,35 @@ describe('satsToWei function should', () => {
   })
   test('fail if sats is negative', () => {
     expect(() => { satsToWei(BigInt(-1)) }).toThrow('Negative sats value')
+  })
+
+  describe('isPeginQuote function should', () => {
+    test('return true for a pegin quote', () => {
+      expect(isPeginQuote(peginQuote)).toBe(true)
+    })
+
+    test('return false for a pegout quote', () => {
+      expect(isPeginQuote(pegoutQuote)).toBe(false)
+    })
+
+    test('return false if fedBTCAddr is missing', () => {
+      const notPeginQuote = {
+        quote: {
+          lbcAddr: 'any addres'
+        },
+        quoteHash: 'hash'
+      }
+      expect(isPeginQuote(notPeginQuote as any)).toBe(false)
+    })
+
+    test('return false if fedBTCAddr is undefined', () => {
+      const notPeginQuote = {
+        quote: {
+          fedBTCAddr: undefined
+        },
+        quoteHash: 'hash'
+      }
+      expect(isPeginQuote(notPeginQuote as any)).toBe(false)
+    })
   })
 })

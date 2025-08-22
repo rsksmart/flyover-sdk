@@ -69,7 +69,7 @@ async function getPegoutStatusWithRetries (
   while (attempts < MAX_RETRIES) {
     try {
       return await getPegoutStatus(httpClient, provider, quoteHash)
-    } catch (error) {
+    } catch (error) {  // eslint-disable-line @typescript-eslint/no-unused-vars
       attempts++
       await new Promise(resolve => setTimeout(resolve, RETRY_DELAY))
     }

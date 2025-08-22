@@ -7,10 +7,10 @@ import { acceptQuote } from './acceptQuote'
 
 const mockClient: HttpClient = {
   async get<M>(_url: string) {
-    return Promise.resolve({} as M) // eslint-disable-line @typescript-eslint/consistent-type-assertions
+    return Promise.resolve({} as M)
   },
   async post<T>(_url: string, _body: object) {
-    return Promise.resolve({ // eslint-disable-line @typescript-eslint/consistent-type-assertions
+    return Promise.resolve({
       signature: '02e620159216c49acb29a0f32ba6e190fab648667aab4027de41c134665f6c2b103065818178c108ab9a0603d16ae10c57e974151b057c3276a4c9a646a3559a1b',
       bitcoinDepositAddressHash: 'any address hash'
     } as T)
@@ -71,7 +71,7 @@ const providerMock: LiquidityProvider = {
   }
 }
 
-const lbcMock = { // eslint-disable-line @typescript-eslint/consistent-type-assertions
+const lbcMock = {
   validatePeginDepositAddress: async (_quote: Quote, _depositAddress: string) => Promise.resolve(true)
 } as LiquidityBridgeContract
 

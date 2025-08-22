@@ -70,7 +70,6 @@ describe('Mempool', () => {
     test('should return the BitcoinTransaction when successful', async () => {
       // Mock successful fetch response
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: true,
           json: async () => Promise.resolve(mockMempoolTransaction)
@@ -87,7 +86,6 @@ describe('Mempool', () => {
     test('should throw an error when the API call fails with non-ok response', async () => {
       // Mock failed fetch response with non-ok status
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: false,
           status: 404
@@ -118,7 +116,6 @@ describe('Mempool', () => {
 
     test('should return the transaction hex when successful', async () => {
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: true,
           text: async () => Promise.resolve(FAKE_TX_HEX)
@@ -135,7 +132,6 @@ describe('Mempool', () => {
     test('should throw an HTTP error when response is not ok', async () => {
       // Mock non-ok response
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: false,
           status: 404
@@ -164,7 +160,6 @@ describe('Mempool', () => {
     test('should throw "Transaction not found" when transaction hex is empty', async () => {
       // Mock successful response with empty content
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: true,
           text: async () => Promise.resolve('')
@@ -192,7 +187,6 @@ describe('Mempool', () => {
     test('should return the block information when transaction is confirmed', async () => {
       // Mock getTransaction response
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: true,
           json: async () => Promise.resolve({
@@ -209,7 +203,6 @@ describe('Mempool', () => {
 
       // Mock block txids response
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: true,
           json: async () => Promise.resolve(FAKE_TXIDS)
@@ -231,7 +224,6 @@ describe('Mempool', () => {
     test('should throw an error when transaction is not confirmed', async () => {
       // Mock unconfirmed transaction response
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: true,
           json: async () => Promise.resolve({
@@ -254,7 +246,6 @@ describe('Mempool', () => {
     test('should throw an error when block transaction fetch fails', async () => {
       // Mock successful transaction response
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: true,
           json: async () => Promise.resolve({
@@ -271,7 +262,6 @@ describe('Mempool', () => {
 
       // Mock failed block txids response
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: false,
           status: 404
@@ -288,7 +278,6 @@ describe('Mempool', () => {
     test('should throw an error when block transaction response is not an array', async () => {
       // Mock successful transaction response
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: true,
           json: async () => Promise.resolve({
@@ -305,7 +294,6 @@ describe('Mempool', () => {
 
       // Mock invalid block txids response (not an array)
       mockFetch.mockResolvedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         {
           ok: true,
           json: async () => Promise.resolve({ error: 'Invalid response' })

@@ -5,8 +5,8 @@
     "main": "index.js",
     "scripts": {
         "test:integration": "rm -rf node_modules && npm i && jest --verbose --testPathPattern=test",
-        "lint": "npx eslint --ignore-path .eslintignore --ext .ts --fix .",
-        "lint:validate": "npx eslint --ignore-path .eslintignore --ext .ts ."
+        "lint": "npx eslint --fix .",
+        "lint:validate": "npx eslint ."
     },
     "author": "Luis Chavez",
     "license": "ISC",

@@ -14,7 +14,6 @@ const FAKE_QUOTE_HASH = '733f96c67bc6d4086ed710714c36cf6d31b526b7ceb321d56ac52e7
 const FAKE_LP_BTC_TX_HASH = '81d20ff8f2f961ce88aeceeb2d859287bcd6ebba2ef532e7d083100a52faad87'
 const QUOTE_VALUE_IN_SATS = 60_000_000
 
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
 const mockClient: HttpClient = {
   async get<M>(_url: string) {
     return Promise.resolve({} as M)

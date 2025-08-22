@@ -9,10 +9,10 @@ import { acceptPegoutQuote } from './acceptPegoutQuote'
 
 const mockClient: HttpClient = {
   async get<M>(_url: string) {
-    return Promise.resolve({} as M) // eslint-disable-line @typescript-eslint/consistent-type-assertions
+    return Promise.resolve({} as M)
   },
   async post<T>(_url: string, _body: object) {
-    return Promise.resolve({ // eslint-disable-line @typescript-eslint/consistent-type-assertions
+    return Promise.resolve({
       signature: '6bd8d8adb95b381a0c13d6823c3a890f323af022fd946f4e7fc70d7778413b527e0f33475fd1311e00f7976afd098badb03260ee29ca97d73c987b17c6d471e41b',
       lbcAddress: 'any address hash'
     } as T)

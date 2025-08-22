@@ -13,7 +13,7 @@ import * as validation from '../utils/validation'
 function getMockClient (): HttpClient {
   return {
     async get<M>(_url: string) {
-      return Promise.resolve({} as M) // eslint-disable-line @typescript-eslint/consistent-type-assertions
+      return Promise.resolve({} as M)
     },
     post: async <M>(_url: string, _body: object) => Promise.resolve([quoteResponseMock] as M),
     getCaptchaToken: async () => Promise.resolve('')
@@ -84,7 +84,7 @@ const configMock: FlyoverConfig = {
   captchaTokenResolver: async () => Promise.resolve('')
 }
 
-const lbcMock = { // eslint-disable-line @typescript-eslint/consistent-type-assertions
+const lbcMock = {
   hashPegoutQuote: async (quote: PegoutQuote) => Promise.resolve(quote.quoteHash)
 } as LiquidityBridgeContract
 
