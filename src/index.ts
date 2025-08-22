@@ -4,6 +4,7 @@ export { Flyover } from './sdk/flyover'
 export { type FlyoverNetworks } from './constants/networks'
 
 export { type RegisterPeginParams } from './sdk/registerPegin'
+export { type IsPeginRefundableParams } from './sdk/isPeginRefundable'
 export { type ValidatePeginTransactionParams, type ValidatePeginTransactionOptions } from './sdk/validatePeginTransaction'
 
 export { FlyoverError } from './client/httpClient'
@@ -28,3 +29,11 @@ export {
 } from './api'
 
 export { FlyoverUtils } from './sdk/flyoverUtils'
+
+export { type IsQuotePaidResponse, type IsQuoteRefundableResponse } from './utils/interfaces'
+
+export { FlyoverErrors } from './constants/errors'
+
+export { Mempool } from './bitcoin/Mempool'
+export { BitcoindRpcDataSource } from './bitcoin/BitcoinRpcDataSource'
+export { type BitcoinDataSource } from './bitcoin/BitcoinDataSource'
