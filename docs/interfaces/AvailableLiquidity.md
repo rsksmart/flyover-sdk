@@ -25,7 +25,7 @@ Available liquidity for PegIn operations in wei
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:77](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L77)
+[src/api/bindings/data-contracts.ts:77](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L77)
 
 ___
 
@@ -43,4 +43,4 @@ Available liquidity for PegOut operations in satoshi
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:82](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L82)
+[src/api/bindings/data-contracts.ts:82](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L82)

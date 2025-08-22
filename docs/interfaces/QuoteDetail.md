@@ -37,7 +37,7 @@ The timestamp of the agreement
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:225](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L225)
+[src/api/bindings/data-contracts.ts:225](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L225)
 
 ___
 
@@ -49,7 +49,7 @@ A User BTC refund address
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:227](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L227)
+[src/api/bindings/data-contracts.ts:227](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L227)
 
 ___
 
@@ -61,7 +61,7 @@ The fee charged by the LP
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:229](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L229)
+[src/api/bindings/data-contracts.ts:229](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L229)
 
 ___
 
@@ -73,7 +73,7 @@ A boolean value indicating whether the callForUser can be called on registerPegI
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:231](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L231)
+[src/api/bindings/data-contracts.ts:231](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L231)
 
 ___
 
@@ -85,7 +85,7 @@ The number of confirmations that the LP requires before making the call
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:233](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L233)
+[src/api/bindings/data-contracts.ts:233](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L233)
 
 ___
 
@@ -97,7 +97,7 @@ The destination address of the peg-in
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:235](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L235)
+[src/api/bindings/data-contracts.ts:235](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L235)
 
 ___
 
@@ -109,7 +109,7 @@ The arguments to send in the call
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:237](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L237)
+[src/api/bindings/data-contracts.ts:237](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L237)
 
 ___
 
@@ -121,7 +121,7 @@ The BTC address of the PowPeg
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:239](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L239)
+[src/api/bindings/data-contracts.ts:239](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L239)
 
 ___
 
@@ -133,7 +133,7 @@ Fee to pay for the gas of every call done during the pegin (call on behalf of th
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:241](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L241)
+[src/api/bindings/data-contracts.ts:241](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L241)
 
 ___
 
@@ -145,7 +145,7 @@ The gas limit
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:243](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L243)
+[src/api/bindings/data-contracts.ts:243](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L243)
 
 ___
 
@@ -157,7 +157,7 @@ The address of the LBC
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:245](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L245)
+[src/api/bindings/data-contracts.ts:245](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L245)
 
 ___
 
@@ -169,7 +169,7 @@ The BTC address of the LP
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:247](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L247)
+[src/api/bindings/data-contracts.ts:247](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L247)
 
 ___
 
@@ -181,7 +181,7 @@ The time (in seconds) that the LP has to perform the call on behalf of the user 
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:249](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L249)
+[src/api/bindings/data-contracts.ts:249](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L249)
 
 ___
 
@@ -193,7 +193,7 @@ The RSK address of the LP
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:251](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L251)
+[src/api/bindings/data-contracts.ts:251](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L251)
 
 ___
 
@@ -205,7 +205,7 @@ A nonce that uniquely identifies this quote
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:253](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L253)
+[src/api/bindings/data-contracts.ts:253](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L253)
 
 ___
 
@@ -217,7 +217,7 @@ The penalty fee that the LP pays if it fails to deliver the service
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:255](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L255)
+[src/api/bindings/data-contracts.ts:255](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L255)
 
 ___
 
@@ -229,7 +229,7 @@ The DAO Fee amount
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:257](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L257)
+[src/api/bindings/data-contracts.ts:257](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L257)
 
 ___
 
@@ -241,7 +241,7 @@ A User RSK refund address
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:259](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L259)
+[src/api/bindings/data-contracts.ts:259](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L259)
 
 ___
 
@@ -253,7 +253,7 @@ The time (in seconds) that the user has to achieve one confirmation on the BTC d
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:261](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L261)
+[src/api/bindings/data-contracts.ts:261](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L261)
 
 ___
 
@@ -265,4 +265,4 @@ The value to transfer in the call
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:263](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L263)
+[src/api/bindings/data-contracts.ts:263](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L263)

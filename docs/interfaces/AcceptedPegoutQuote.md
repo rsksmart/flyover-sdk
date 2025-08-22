@@ -25,7 +25,7 @@ LBC address to execute depositPegout function
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:34](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L34)
+[src/api/bindings/data-contracts.ts:34](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L34)
 
 ___
 
@@ -43,4 +43,4 @@ Signature of the quote
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:39](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L39)
+[src/api/bindings/data-contracts.ts:39](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L39)

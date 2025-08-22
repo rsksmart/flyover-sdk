@@ -31,13 +31,13 @@ export class FlyoverError extends BridgeError {
     })
   }
 
-  static invalidSignatureError (args: { serverUrl: string, sinature: string, address: string }): FlyoverError {
+  static invalidSignatureError (args: { serverUrl: string, signature: string, address: string }): FlyoverError {
     return new FlyoverError({
       timestamp: Date.now(),
       recoverable: false,
       serverUrl: args.serverUrl,
       message: 'Invalid signature',
-      details: `Address ${args.address} couldn't be recovered from signature ${args.sinature}.
+      details: `Address ${args.address} couldn't be recovered from signature ${args.signature}.
         ${args.serverUrl} is potentially a malicious liquidity provider.`
     })
   }
