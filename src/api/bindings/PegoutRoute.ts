@@ -10,6 +10,7 @@
  */
 
 import {
+  AcceptAuthenticatedQuoteRequest,
   AcceptPegoutResponse,
   AcceptQuoteRequest,
   AddCollateralRequest,
@@ -22,6 +23,22 @@ import {
 } from "./data-contracts";
 
 export namespace Pegout {
+  /**
+   * @description  Accepts Quote with trusted account signature
+   * @name PostAcceptAuthenticatedQuote
+   * @summary Accept authenticated quote
+   * @request POST:/pegout/acceptAuthenticatedQuote
+   */
+  export namespace PostAcceptAuthenticatedQuote {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = AcceptAuthenticatedQuoteRequest;
+    export type RequestHeaders = {};
+    export type ResponseBody = AcceptPegoutResponse;
+  }
+
+  export const PostAcceptAuthenticatedQuotePath = "/pegout/acceptAuthenticatedQuote";
+
   /**
    * @description  Accepts Quote Pegout
    * @name PostAcceptQuote

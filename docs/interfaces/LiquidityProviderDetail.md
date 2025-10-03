@@ -19,7 +19,7 @@
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:430](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L430)
+[src/api/bindings/data-contracts.ts:430](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L430)
 
 ___
 
@@ -29,7 +29,7 @@ ___
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:431](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L431)
+[src/api/bindings/data-contracts.ts:431](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L431)
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:432](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L432)
+[src/api/bindings/data-contracts.ts:432](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L432)
 
 ___
 
@@ -49,4 +49,4 @@ ___
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:433](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L433)
+[src/api/bindings/data-contracts.ts:433](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L433)

@@ -20,4 +20,4 @@ Wether the [Flyover.validatePeginTransaction](../classes/Flyover.md#validatepegi
 
 #### Defined in
 
-[src/sdk/validatePeginTransaction.ts:23](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/validatePeginTransaction.ts#L23)
+[src/sdk/validatePeginTransaction.ts:23](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/validatePeginTransaction.ts#L23)
