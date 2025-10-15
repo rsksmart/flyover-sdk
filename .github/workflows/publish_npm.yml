@@ -1,0 +1,131 @@
+name: Deploy library on NPM
+
+on:
+  release:
+    types: [created, edited, published]
+    
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  publish:
+    permissions:
+      id-token: write
+      contents: read
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: "Check file existence"
+        id: check_files
+        uses: andstor/file-existence-action@076e0072799f4942c8bc574a82233e1e4d13e9d6 # v3.0.0
+        with:
+          files: "package.json, README.md"
+          
+      - name: File exists
+        if: steps.check_files.outputs.files_exists != 'true'
+        # Only runs if all of the files exists
+        run: exit 1
+
+      - name: Get package.json package name and match with repository name
+        run: |
+          echo PACKAGE_NAME=$(cat package.json | jq -r .name | cut -f2 -d"\"" | cut -f2 -d"@") >> $GITHUB_OUTPUT
+          echo PACKAGE_VERSION="refs/tags/v"$(cat package.json | jq -r .version) >> $GITHUB_OUTPUT
+          echo PACKAGE_REPOSITORY=$(cat package.json | jq -r .repository.url | sed 's/\+https//') >> $GITHUB_OUTPUT
+        id: get_package_info
+
+      - name: Print outputs for debugging
+        run: |
+          echo "GitHub Repository: ${{ github.repository }}"
+          echo "Package Name: ${{ steps.get_package_info.outputs.PACKAGE_NAME }}"
+          echo "Github Tag: ${{ github.ref }}"
+          echo "Package Version: ${{ steps.get_package_info.outputs.PACKAGE_VERSION }}"
+          echo "GitHub Repository URL: ${{ github.repositoryUrl }}"
+          echo "Package Repository: ${{ steps.get_package_info.outputs.PACKAGE_REPOSITORY }}"
+
+      - name: Check if package_name matches with repository name
+        if: github.repository != steps.get_package_info.outputs.PACKAGE_NAME
+        # Fail if package name not properly configured
+        run: exit 1
+
+      - name: Check if package version matches with tag
+        if: github.ref != steps.get_package_info.outputs.PACKAGE_VERSION
+        # Fail if package version not properly setted
+        run: exit 1
+      
+      - name: Check if package repository matches with repository
+        if: github.repositoryUrl != steps.get_package_info.outputs.PACKAGE_REPOSITORY
+        # Fail if package repository doesn't match with repository
+        run: exit 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Clean install dependencies
+        run: |
+          rm -rf lib
+          npm ci
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Build
+        run: npm run build
+
+      - name: Pre upload validation
+        id: pack
+        run: | 
+          rm -f *.tgz
+          PRE_UPLOAD_HASH=$(npm pack --dry-run 2>&1 | grep 'shasum:' | awk '{print $NF}')
+          echo "PRE_UPLOAD_HASH=$PRE_UPLOAD_HASH" >> $GITHUB_OUTPUT
+          echo "PRE_UPLOAD_HASH: $PRE_UPLOAD_HASH"
+        
+      - name: Check if version is already published
+        run: |
+          PACKAGE_NAME=$(cat package.json | jq -r .name)
+          PACKAGE_VERSION=$(cat package.json | jq -r .version)
+
+          if npm view $PACKAGE_NAME@$PACKAGE_VERSION > /dev/null 2>&1; then
+            echo "Version $PACKAGE_VERSION of $PACKAGE_NAME is already published."
+            exit 0
+          fi
+
+          echo "Version $PACKAGE_VERSION of $PACKAGE_NAME is not published. Proceeding with publishing..."
+
+      - name: Upload package
+        run: npm publish
+      
+      - name: Post upload validation
+        id: unpack
+        run: |
+          # Get the package name and version
+          PACKAGE_NAME=$(cat package.json | jq -r .name)
+          PACKAGE_VERSION=$(cat package.json | jq -r .version)
+          FULL_PACKAGE_NAME="${PACKAGE_NAME}@${PACKAGE_VERSION}"
+
+          # Wait for package propagation
+          echo "Waiting for package propagation..."
+          sleep 15
+
+          # Fetch the shasum from npm
+          POST_UPLOAD_HASH=$(npm view $FULL_PACKAGE_NAME dist.shasum)
+          echo "POST_UPLOAD_HASH=$POST_UPLOAD_HASH" >> $GITHUB_OUTPUT
+          echo "POST_UPLOAD_HASH: $POST_UPLOAD_HASH"
+
+      - name: Pre and Post Upload validation
+        run: |
+          echo "Comparing hashes..."
+          echo "PRE_UPLOAD_HASH: '${{ steps.pack.outputs.PRE_UPLOAD_HASH }}'"
+          echo "POST_UPLOAD_HASH: '${{ steps.unpack.outputs.POST_UPLOAD_HASH }}'"
+
+          if [ "${{ steps.pack.outputs.PRE_UPLOAD_HASH }}" != "${{ steps.unpack.outputs.POST_UPLOAD_HASH }}" ]; then
+            echo "Hash mismatch detected!"
+            exit 1
+          fi
+          echo "Hashes match successfully!"
