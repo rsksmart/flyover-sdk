@@ -11,6 +11,21 @@
 
 export type Type = any;
 
+export interface AcceptAuthenticatedQuoteRequest {
+  /**
+   * QuoteHash
+   * @example "0x0"
+   */
+  quoteHash: string;
+  /**
+   * Signature from a trusted account
+   * @example "0x0"
+   */
+  signature: string;
+}
+
+export const AcceptAuthenticatedQuoteRequestRequiredFields: string[] = ["quoteHash", "signature"];
+
 export interface AcceptPeginRespose {
   /**
    * Hash of the deposit BTC address
@@ -574,6 +589,58 @@ export interface Services {
   rsk?: string;
 }
 
+export interface TrustedAccountRequest {
+  address?: string;
+  btcLockingCap?: Type;
+  name?: string;
+  rbtcLockingCap?: Type;
+}
+
+export interface PkgAcceptAuthenticatedQuoteRequest {
+  /**
+   * QuoteHash
+   * @example "0x0"
+   */
+  quoteHash: string;
+  /**
+   * Signature from a trusted account
+   * @example "0x0"
+   */
+  signature: string;
+}
+
+export const PkgAcceptAuthenticatedQuoteRequestRequiredFields: string[] = ["quoteHash", "signature"];
+
+export interface PkgAcceptPeginRespose {
+  /**
+   * Hash of the deposit BTC address
+   * @example "0x0"
+   */
+  bitcoinDepositAddressHash: string;
+  /**
+   * Signature of the quote
+   * @example "0x0"
+   */
+  signature: string;
+}
+
+export const PkgAcceptPeginResposeRequiredFields: string[] = ["signature", "bitcoinDepositAddressHash"];
+
+export interface PkgAcceptPegoutResponse {
+  /**
+   * LBC address to execute depositPegout function
+   * @example "0x0"
+   */
+  lbcAddress: string;
+  /**
+   * Signature of the quote
+   * @example "0x0"
+   */
+  signature: string;
+}
+
+export const PkgAcceptPegoutResponseRequiredFields: string[] = ["signature", "lbcAddress"];
+
 export interface PkgAcceptQuoteRequest {
   /**
    * QuoteHash
@@ -607,3 +674,10 @@ export interface PkgGetCollateralResponse {
 }
 
 export const PkgGetCollateralResponseRequiredFields: string[] = ["collateral"];
+
+export interface PkgTrustedAccountRequest {
+  address?: string;
+  btcLockingCap?: Type;
+  name?: string;
+  rbtcLockingCap?: Type;
+}

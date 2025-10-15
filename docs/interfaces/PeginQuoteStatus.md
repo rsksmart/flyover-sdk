@@ -19,7 +19,7 @@ Agreed specification of the quote
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:321](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L321)
+[src/api/bindings/data-contracts.ts:321](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L321)
 
 ___
 
@@ -31,4 +31,4 @@ Current status of the quote
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:323](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L323)
+[src/api/bindings/data-contracts.ts:323](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L323)
