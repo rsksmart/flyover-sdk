@@ -20,6 +20,7 @@ import {
   PeginConfigurationRequest,
   PeginQuoteRequest,
   PeginQuoteStatusDTO,
+  RecommendedOperationDTO,
 } from "./data-contracts";
 
 export namespace Pegin {
@@ -118,6 +119,38 @@ export namespace Pegin {
   }
 
   export const PostGetQuotePath = "/pegin/getQuote";
+
+  /**
+   * @description  Returns the recommended quote value to create a quote whose total payment is the input amount
+   * @name RecommendedList
+   * @summary Recommended pegin
+   * @request GET:/pegin/recommended
+   */
+  export namespace RecommendedList {
+    export type RequestParams = {};
+    export type RequestQuery = {
+      /**
+       * Amount in wei expected to use as total payment for the quote
+       * @format string
+       */
+      amount: string;
+      /**
+       * Destination address for the pegin. Is optional, but if provided, it will increase the estimation accuracy.
+       * @format string
+       */
+      destination_address?: string;
+      /**
+       * Hex-encoded data payload to include in the pegin transaction. Is optional, but if provided, it will increase the estimation accuracy.
+       * @format string
+       */
+      data?: string;
+    };
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = RecommendedOperationDTO;
+  }
+
+  export const RecommendedListPath = "/pegin/recommended";
 
   /**
    * @description  Returns the status of an accepted pegin quote
