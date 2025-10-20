@@ -3,7 +3,7 @@ import { estimateRecommendedPegout } from './recommendedPegout'
 import { FlyoverSDKContext } from '../utils/interfaces'
 import { LiquidityProvider } from '../api'
 import { HttpClient } from '@rsksmart/bridges-core-sdk'
-import { BtcAddressType } from '../../lib'
+import { BtcAddressType } from '../bitcoin/address'
 
 const providerMock: LiquidityProvider = {
     id: 1,
