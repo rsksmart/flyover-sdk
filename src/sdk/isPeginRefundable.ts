@@ -80,7 +80,7 @@ async function executeStaticCallToRegisterPegin (
   const block = await btcDataSource.getBlockFromTransaction(btcTransactionHash)
   const partialMarkleTree = pmtBuilder.buildPMT(block.transactionHashes, btcTransactionHash)
 
-  await liquidityBridgeContract.registerPegin({
+  await liquidityBridgeContract.pegInContract.registerPegin({
     quote,
     signature: providerSignature,
     btcRawTransaction: btcRawTxWithoutWitnesses,

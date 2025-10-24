@@ -102,7 +102,9 @@ describe('isPeginRefundable function should', () => {
   } as unknown as BitcoinDataSource
 
   const mockLiquidityBridgeContract: LiquidityBridgeContract = {
-    registerPegin: jest.fn()
+    pegInContract: {
+      registerPegin: jest.fn()
+    }
   } as unknown as LiquidityBridgeContract & { registerPegin: jest.Mock }
 
   const mockFlyoverContext: FlyoverSDKContext = {
@@ -128,7 +130,7 @@ describe('isPeginRefundable function should', () => {
       transactionHashes: MOCK_TRANSACTION_HASHES
     }))
     mockedIsPeginQuotePaid.mockResolvedValue({ isPaid: false })
-    jest.spyOn(mockLiquidityBridgeContract, 'registerPegin').mockImplementation(async () => Promise.resolve({} as unknown as TxResult))
+    jest.spyOn(mockLiquidityBridgeContract.pegInContract, 'registerPegin').mockImplementation(async () => Promise.resolve({} as unknown as TxResult))
     mockedGetRawTxWithoutWitnesses.mockImplementation(async () => Promise.resolve(MOCK_BTC_TRANSACTION_HEX_WITHOUT_WITNESSES))
   })
 
@@ -149,7 +151,7 @@ describe('isPeginRefundable function should', () => {
 
     expect(mockBtcDataSource.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
-    expect(mockLiquidityBridgeContract.registerPegin).toHaveBeenCalledWith(
+    expect(mockLiquidityBridgeContract.pegInContract.registerPegin).toHaveBeenCalledWith(
       {
         quote: mockQuote,
         signature: MOCK_PROVIDER_SIGNATURE,
@@ -182,7 +184,7 @@ describe('isPeginRefundable function should', () => {
 
     expect(mockBtcDataSource.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
-    expect(mockLiquidityBridgeContract.registerPegin).toHaveBeenCalledWith(
+    expect(mockLiquidityBridgeContract.pegInContract.registerPegin).toHaveBeenCalledWith(
       {
         quote: mockQuote,
         signature: MOCK_PROVIDER_SIGNATURE,
@@ -212,7 +214,7 @@ describe('isPeginRefundable function should', () => {
     )
 
     expect(mockBtcDataSource.getBlockFromTransaction).not.toHaveBeenCalled()
-    expect(mockLiquidityBridgeContract.registerPegin).not.toHaveBeenCalled()
+    expect(mockLiquidityBridgeContract.pegInContract.registerPegin).not.toHaveBeenCalled()
   })
 
   test('return isRefundable false when transaction does not have enough confirmations', async () => {
@@ -228,7 +230,7 @@ describe('isPeginRefundable function should', () => {
       }
     }
 
-    jest.spyOn(mockLiquidityBridgeContract, 'registerPegin').mockImplementation(async () => { throw new BridgeError(mockError) })
+    jest.spyOn(mockLiquidityBridgeContract.pegInContract, 'registerPegin').mockImplementation(async () => { throw new BridgeError(mockError) })
 
     const result = await isPeginRefundable(params, mockFlyoverContext)
 
@@ -246,7 +248,7 @@ describe('isPeginRefundable function should', () => {
 
     expect(mockBtcDataSource.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
-    expect(mockLiquidityBridgeContract.registerPegin).toHaveBeenCalledWith(
+    expect(mockLiquidityBridgeContract.pegInContract.registerPegin).toHaveBeenCalledWith(
       {
         quote: mockQuote,
         signature: MOCK_PROVIDER_SIGNATURE,
@@ -271,7 +273,7 @@ describe('isPeginRefundable function should', () => {
       }
     }
 
-    jest.spyOn(mockLiquidityBridgeContract, 'registerPegin').mockImplementation(async () => { throw new BridgeError(mockError) })
+    jest.spyOn(mockLiquidityBridgeContract.pegInContract, 'registerPegin').mockImplementation(async () => { throw new BridgeError(mockError) })
 
     const result = await isPeginRefundable(params, mockFlyoverContext)
 
@@ -292,7 +294,7 @@ describe('isPeginRefundable function should', () => {
 
     expect(mockBtcDataSource.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
-    expect(mockLiquidityBridgeContract.registerPegin).toHaveBeenCalledWith(
+    expect(mockLiquidityBridgeContract.pegInContract.registerPegin).toHaveBeenCalledWith(
       {
         quote: mockQuote,
         signature: MOCK_PROVIDER_SIGNATURE,
@@ -306,7 +308,7 @@ describe('isPeginRefundable function should', () => {
 
   test('return isRefundable false when registerPegin fails with unknown error structure', async () => {
     const MOCK_ERROR_MESSAGE = 'Unknown error'
-    jest.spyOn(mockLiquidityBridgeContract, 'registerPegin').mockImplementation(async () => { throw new Error(MOCK_ERROR_MESSAGE) })
+    jest.spyOn(mockLiquidityBridgeContract.pegInContract, 'registerPegin').mockImplementation(async () => { throw new Error(MOCK_ERROR_MESSAGE) })
 
     const result = await isPeginRefundable(params, mockFlyoverContext)
 
@@ -327,7 +329,7 @@ describe('isPeginRefundable function should', () => {
 
     expect(mockBtcDataSource.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
-    expect(mockLiquidityBridgeContract.registerPegin).toHaveBeenCalledWith(
+    expect(mockLiquidityBridgeContract.pegInContract.registerPegin).toHaveBeenCalledWith(
       {
         quote: mockQuote,
         signature: MOCK_PROVIDER_SIGNATURE,

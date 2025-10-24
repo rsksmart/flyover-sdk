@@ -45,6 +45,9 @@ import { acceptAuthenticatedPegoutQuote } from './acceptAuthenticatedPegoutQuote
 import { signQuote } from './signQuote'
 import { estimateRecommendedPegin, RecommendedPeginExtraArgs } from './recommendedPegin'
 import { estimateRecommendedPegout, RecommendedPegoutExtraArgs } from './recommendedPegout'
+import { PegInContract } from '../blockchain/pegin'
+import { PegOutContract } from '../blockchain/pegout'
+import { DiscoveryContract } from '../blockchain/discovery'
 
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
@@ -388,7 +391,11 @@ export class Flyover implements Bridge {
     if (this.config.rskConnection === undefined) {
       throw new Error('Not connected to RSK')
     } else if (this.liquidityBridgeContract === undefined) {
-      this.liquidityBridgeContract = new LiquidityBridgeContract(this.config.rskConnection, this.config)
+      this.liquidityBridgeContract = {
+        pegInContract:  new PegInContract(this.config.rskConnection, this.config),
+        pegOutContract:  new PegOutContract(this.config.rskConnection, this.config),
+        discoveryContract: new DiscoveryContract(this.config.rskConnection, this.config)
+      }
     }
   }
 
@@ -659,13 +666,13 @@ export class Flyover implements Bridge {
   async hashPeginQuote (quote: Quote): Promise<string> {
     this.checkLbc()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.liquidityBridgeContract!.hashPeginQuote(quote)
+    return this.liquidityBridgeContract!.pegInContract.hashPeginQuote(quote)
   }
 
   async hashPegoutQuote (quote: PegoutQuote): Promise<string> {
     this.checkLbc()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.liquidityBridgeContract!.hashPegoutQuote(quote)
+    return this.liquidityBridgeContract!.pegOutContract.hashPegoutQuote(quote)
   }
 
   /**

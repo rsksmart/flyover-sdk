@@ -85,7 +85,12 @@ const peginQuoteMock: Quote = {
 }
 
 const lbcMock = {
-  getProductFeePercentage: async () => Promise.resolve(2)
+  pegInContract: {
+    getProductFeePercentage: async () => Promise.resolve(2)
+  },
+  pegOutContract: {
+    getProductFeePercentage: async () => Promise.resolve(3)
+  },
 } as LiquidityBridgeContract
 
 describe('getMetadata function should', () => {
@@ -140,7 +145,7 @@ describe('getMetadata function should', () => {
           description: 'Liquidity provider percentage fee. It is a percentage of the pegged value.'
         },
         {
-          amount: 2,
+          amount: 3,
           decimals: 0,
           type: 'Percental',
           description: 'Fee to be paid to the network. Its a percentage of the pegged value'

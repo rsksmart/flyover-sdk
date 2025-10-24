@@ -25,7 +25,7 @@ import {
         signature: acceptedQuote.signature
       })
     }
-    const isValidAddress = await lbc.validatePeginDepositAddress(quote, acceptedQuote.bitcoinDepositAddressHash)
+    const isValidAddress = await lbc.pegInContract.validatePeginDepositAddress(quote, acceptedQuote.bitcoinDepositAddressHash)
     if (!isValidAddress) {
       throw FlyoverError.untrustedBtcAddressError({
         serverUrl: provider.apiBaseUrl,
