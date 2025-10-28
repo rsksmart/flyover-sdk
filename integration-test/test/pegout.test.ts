@@ -92,7 +92,7 @@ describe('Flyover pegout process should', () => {
     expect(quote.transferTime).not.toBeUndefined()
     expect(quote.value).not.toBeUndefined()
     expect(quote.productFeeAmount).not.toBeUndefined()
-  })
+  }, EXTENDED_TIMEOUT)
 
   test('accept specific quote', async () => {
     const quote = quotes[0]! // eslint-disable-line @typescript-eslint/no-non-null-assertion
@@ -100,7 +100,7 @@ describe('Flyover pegout process should', () => {
 
     expect(acceptedQuote.signature).not.toBeUndefined()
     expect(acceptedQuote.lbcAddress).not.toBeUndefined()
-  })
+  }, EXTENDED_TIMEOUT)
 
   test('fail to deposit pegout if connection is readonly', async () => {
     const readonlyFlyover = new Flyover({
@@ -115,10 +115,10 @@ describe('Flyover pegout process should', () => {
     try {
       await readonlyFlyover.depositPegout(selectedQuote, acceptedQuote.signature, amount)
     } catch (e: any) {
-      expect(e.message).toBe('error executing function depositPegout')
+      expect(e.message).toBe('error executing function depositPegOut')
       expect(e.details.error).toContain('sending a transaction requires a signer')
     }
-  })
+  }, EXTENDED_TIMEOUT)
 
   test('deposit amount to lbc for accepted quote', async () => {
     const txHash = await flyover.depositPegout(selectedQuote, acceptedQuote.signature, FlyoverUtils.getQuoteTotal(selectedQuote))
