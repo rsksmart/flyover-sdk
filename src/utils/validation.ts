@@ -12,3 +12,5 @@ export function validateRskChecksum (config: FlyoverConfig, ...addresses: string
     throw FlyoverError.checksumError(invalidAddresses)
   }
 }
+
+export const isHex = (value: string) => /^(0x)?([0-9A-Fa-f]{2})*$/.test(value)

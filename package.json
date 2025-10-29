@@ -1,6 +1,6 @@
 {
     "name": "@rsksmart/flyover-sdk",
-    "version": "1.7.0",
+    "version": "1.8.0",
     "description": "SDK that simplifies interaction between Flyover's Liquidity Provider Server and client applications",
     "main": "lib/index.js",
     "private": false,
