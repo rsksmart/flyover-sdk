@@ -13,12 +13,12 @@ export async function isPegoutRefundable (
   assertTruthy(lbc, 'Missing Liquidity Bridge Contract')
   assertTruthy(rskConnection, 'Missing RSK connection')
 
-  const quoteHash = await lbc.hashPegoutQuote(quote)
+  const quoteHash = await lbc.pegOutContract.hashPegoutQuote(quote)
   const result = await isPegoutQuotePaid(quoteHash, context)
   if (result.isPaid) {
     return { isRefundable: false, error: FlyoverErrors.PEG_OUT_REFUND_ALREADY_PAID }
   }
-  const isCompleted = await lbc.isPegOutQuoteCompleted(quoteHash)
+  const isCompleted = await lbc.pegOutContract.isPegOutQuoteCompleted(quoteHash)
   if (isCompleted) {
     return { isRefundable: false, error: FlyoverErrors.PEG_OUT_REFUND_ALREADY_COMPLETED }
   }
@@ -61,7 +61,7 @@ async function isExpiredByBlocks (rsk: Connection, quote: PegoutQuoteDetail): Pr
 
 async function verifyRefundExecution (lbc: LiquidityBridgeContract, quote: PegoutQuote): Promise<Error | null> {
   try {
-    await lbc.refundPegout(quote, 'staticCall')
+    await lbc.pegOutContract.refundPegout(quote, 'staticCall')
     return null
   } catch (error) {
     return error as Error

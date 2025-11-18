@@ -37,7 +37,9 @@ const quoteMock: PegoutQuote = {
 const successfulResultMock = { successful: true, txHash: '0x9fafb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' }
 
 const lbcMock = jest.mocked({
-  refundPegout: async (_quote: PegoutQuote, _signature: string) => Promise.resolve(successfulResultMock)
+  pegOutContract: {
+    refundPegout: async (_quote: PegoutQuote, _signature: string) => Promise.resolve(successfulResultMock)
+  },
 } as LiquidityBridgeContract, { shallow: true })
 
 const mockFlyoverContext: FlyoverSDKContext = {
@@ -70,10 +72,10 @@ describe('refundPegout function should', () => {
   })
 
   test('execute LBC refundPegout correctly', async () => {
-    jest.spyOn(lbcMock, 'refundPegout').mockResolvedValue(successfulResultMock)
+    jest.spyOn(lbcMock.pegOutContract, 'refundPegout').mockResolvedValue(successfulResultMock)
     await refundPegout(quoteMock, mockFlyoverContext)
-    expect(lbcMock.refundPegout).toBeCalledTimes(1)
-    expect(lbcMock.refundPegout).lastCalledWith(quoteMock)
+    expect(lbcMock.pegOutContract.refundPegout).toBeCalledTimes(1)
+    expect(lbcMock.pegOutContract.refundPegout).lastCalledWith(quoteMock)
   })
 
   test('return txHash on successful execution', async () => {
@@ -82,7 +84,7 @@ describe('refundPegout function should', () => {
   })
 
   test('throw FlyoverError on non successful execution (tx returned ok but with status 0)', async () => {
-    jest.spyOn(lbcMock, 'refundPegout').mockResolvedValue({ successful: false, txHash: '0x8fbfb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' })
+    jest.spyOn(lbcMock.pegOutContract, 'refundPegout').mockResolvedValue({ successful: false, txHash: '0x8fbfb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' })
     expect.assertions(2)
     await refundPegout(quoteMock, mockFlyoverContext).catch(e => {
       expect(e).toBeInstanceOf(BridgeError)

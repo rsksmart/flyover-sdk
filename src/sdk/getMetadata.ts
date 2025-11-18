@@ -51,15 +51,18 @@ export async function getMetadata (
     ]
   }
 
-  const productFee = await lbc.getProductFeePercentage()
-  const productFeeMetadata: Fee = {
-    amount: BigInt(productFee),
+  const peginProductFee = await lbc.pegInContract.getProductFeePercentage()
+  const pegoutProductFee = await lbc.pegOutContract.getProductFeePercentage()
+  const peginProductFeeMetadata: Fee = {
+    amount: BigInt(peginProductFee),
     decimals: 0,
     type: 'Percental',
     description: 'Fee to be paid to the network. Its a percentage of the pegged value'
   }
-  peginMetadata.fees.push(productFeeMetadata)
-  pegoutMetadata.fees.push(productFeeMetadata)
+  const pegoutProductFeeMetadata: Fee = structuredClone(peginProductFeeMetadata)
+  pegoutProductFeeMetadata.amount = BigInt(pegoutProductFee)
+  peginMetadata.fees.push(peginProductFeeMetadata)
+  pegoutMetadata.fees.push(pegoutProductFeeMetadata)
 
   const serviceFeeDescription = 'Service fee. Pays for the cost of making transactions on behalf of the user'
   if (lastPeginQuote !== null) {

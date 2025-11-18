@@ -2,7 +2,7 @@ import { getPeginStatus } from './getPeginStatus'
 import { assertTruthy, type HttpClient } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type PeginQuoteStatus } from '../api'
 import { FlyoverErrors } from '../constants/errors'
-import { parseLBCLogs } from '../blockchain/parsing'
+import { parsePegInContractLogs } from '../blockchain/parsing'
 import { type ContractReceipt } from 'ethers'
 import { type FlyoverSDKContext, type IsQuotePaidResponse } from '../utils/interfaces'
 
@@ -64,7 +64,7 @@ export async function isPeginQuotePaid (
   }
 
   // Parse the logs
-  const parsedLogs = await parseLBCLogs(receipt)
+  const parsedLogs = await parsePegInContractLogs(receipt)
 
   // Find CallForUser event and check if quoteHash matches
   const normalizedQuoteHash = quoteHash.toLowerCase().replace('0x', '')

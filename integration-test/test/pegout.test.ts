@@ -92,7 +92,7 @@ describe('Flyover pegout process should', () => {
     expect(quote.transferTime).not.toBeUndefined()
     expect(quote.value).not.toBeUndefined()
     expect(quote.productFeeAmount).not.toBeUndefined()
-  })
+  }, EXTENDED_TIMEOUT)
 
   test('accept specific quote', async () => {
     const quote = quotes[0]! // eslint-disable-line @typescript-eslint/no-non-null-assertion
@@ -100,7 +100,7 @@ describe('Flyover pegout process should', () => {
 
     expect(acceptedQuote.signature).not.toBeUndefined()
     expect(acceptedQuote.lbcAddress).not.toBeUndefined()
-  })
+  }, EXTENDED_TIMEOUT)
 
   test('fail to deposit pegout if connection is readonly', async () => {
     const readonlyFlyover = new Flyover({
@@ -115,10 +115,10 @@ describe('Flyover pegout process should', () => {
     try {
       await readonlyFlyover.depositPegout(selectedQuote, acceptedQuote.signature, amount)
     } catch (e: any) {
-      expect(e.message).toBe('error executing function depositPegout')
+      expect(e.message).toBe('error executing function depositPegOut')
       expect(e.details.error).toContain('sending a transaction requires a signer')
     }
-  })
+  }, EXTENDED_TIMEOUT)
 
   test('deposit amount to lbc for accepted quote', async () => {
     const txHash = await flyover.depositPegout(selectedQuote, acceptedQuote.signature, FlyoverUtils.getQuoteTotal(selectedQuote))
@@ -166,6 +166,17 @@ describe('Flyover pegout process should', () => {
     expect(creationData.gasPrice).not.toBeUndefined()
     expect(creationData.feePercentage).not.toBeUndefined()
     expect(creationData.feeRate).not.toBeUndefined()
+  }, EXTENDED_TIMEOUT)
+
+  test('get recommended value for quote total', async () => {
+    const result = await flyover.estimateRecommendedPegout(
+      FlyoverUtils.getQuoteTotal(selectedQuote),
+      { destinationAddressType: 'p2pkh' }
+    );
+    expect(result.estimatedCallFee.toString()).toEqual(selectedQuote.quote.callFee.toString());
+    expect(result.estimatedGasFee.toString()).toEqual(selectedQuote.quote.gasFee.toString());
+    expect(result.estimatedProductFee.toString()).toEqual(selectedQuote.quote.productFeeAmount.toString());
+    expect(result.recommendedQuoteValue.toString()).toEqual(selectedQuote.quote.value.toString());
   }, EXTENDED_TIMEOUT)
 
   test.skip('[DISABLED: until we have a way to force a quote expiration] execute refungPegout to get back amount', async () => {

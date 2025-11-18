@@ -10,19 +10,27 @@ import { deepFreeze } from '@rsksmart/bridges-core-sdk'
  */
 export const FlyoverNetworks = deepFreeze({
   Mainnet: {
-    lbcAddress: '0xAA9cAf1e3967600578727F975F283446A3Da6612',
+    pegInContractAddress: '0x9957A338858bc941dA9D0ED2ACBCa4F16116B836',
+    pegOutContractAddress: '0x9f84F92d952f90027618089F6F2a3481f1a3fa0F',
+    discoveryAddress: '0x24307fAF57D235783582F1912Ef6A384ab456568',
     chainId: 30
   },
   Testnet: {
-    lbcAddress: '0xc2A630c053D12D63d32b025082f6Ba268db18300',
+    pegInContractAddress: '0x9957A338858bc941dA9D0ED2ACBCa4F16116B836',
+    pegOutContractAddress: '0x9f84F92d952f90027618089F6F2a3481f1a3fa0F',
+    discoveryAddress: '0x24307fAF57D235783582F1912Ef6A384ab456568',
     chainId: 31
   },
   Development: {
-    lbcAddress: '0x18D8212bC00106b93070123f325021C723D503a3',
+    pegInContractAddress: '0x9957A338858bc941dA9D0ED2ACBCa4F16116B836',
+    pegOutContractAddress: '0x9f84F92d952f90027618089F6F2a3481f1a3fa0F',
+    discoveryAddress: '0x24307fAF57D235783582F1912Ef6A384ab456568',
     chainId: 31
   },
   Regtest: {
-    lbcAddress: '0x7557fcE0BbFAe81a9508FF469D481f2c72a8B5f3',
+    pegInContractAddress: '0x79bbC6403708C6578B0896bF1d1a91D2BB2AAa1c',
+    pegOutContractAddress: '0xA66939ac57893C2E65425a5D66099Bc20C76D4CD',
+    discoveryAddress: '0xdac5481925A298B95Bf5b54c35b68FC6fc2eF423',
     chainId: 33
   }
 } as const)

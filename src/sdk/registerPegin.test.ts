@@ -102,7 +102,7 @@ describe('registerPegin function should', () => {
   } as unknown as BitcoinDataSource
 
   const MOCK_LIQUIDITY_BRIDGE_CONTRACT: LiquidityBridgeContract = {
-    registerPegin: jest.fn()
+    pegInContract: { registerPegin: jest.fn() }
   } as unknown as LiquidityBridgeContract
 
   const MOCK_FLYOVER_CONTEXT: FlyoverSDKContext = {
@@ -129,7 +129,7 @@ describe('registerPegin function should', () => {
     }))
     mockedIsPeginRefundable.mockResolvedValue({ isRefundable: true })
     mockedGetRawTxWithoutWitnesses.mockResolvedValue(MOCK_BTC_TRANSACTION_HEX_WITHOUT_WITNESSES)
-    jest.spyOn(MOCK_LIQUIDITY_BRIDGE_CONTRACT, 'registerPegin').mockImplementation(async () => Promise.resolve({ txHash: MOCK_TX_HASH } as unknown as TxResult))
+    jest.spyOn(MOCK_LIQUIDITY_BRIDGE_CONTRACT.pegInContract, 'registerPegin').mockImplementation(async () => Promise.resolve({ txHash: MOCK_TX_HASH } as unknown as TxResult))
   })
 
   test('successfully register a pegin and return transaction hash', async () => {
@@ -149,7 +149,7 @@ describe('registerPegin function should', () => {
 
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
 
-    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
+    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.pegInContract.registerPegin).toHaveBeenCalledWith(
       {
         quote: MOCK_QUOTE,
         signature: MOCK_PROVIDER_SIGNATURE,
@@ -187,13 +187,13 @@ describe('registerPegin function should', () => {
 
     expect(mockedGetRawTxWithoutWitnesses).not.toHaveBeenCalled()
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).not.toHaveBeenCalled()
-    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).not.toHaveBeenCalled()
+    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.pegInContract.registerPegin).not.toHaveBeenCalled()
   })
 
   test('throw error when registerPegin fails', async () => {
     const MOCK_ERROR = new Error('Registration failed')
 
-    jest.spyOn(MOCK_LIQUIDITY_BRIDGE_CONTRACT, 'registerPegin').mockImplementation(async () => {
+    jest.spyOn(MOCK_LIQUIDITY_BRIDGE_CONTRACT.pegInContract, 'registerPegin').mockImplementation(async () => {
       throw MOCK_ERROR
     })
 
@@ -211,7 +211,7 @@ describe('registerPegin function should', () => {
 
     expect(mockedGetRawTxWithoutWitnesses).toHaveBeenCalledWith(MOCK_BTC_TX_HASH, MOCK_BTC_DATA_SOURCE)
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
-    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).toHaveBeenCalledWith(
+    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.pegInContract.registerPegin).toHaveBeenCalledWith(
       {
         quote: MOCK_QUOTE,
         signature: MOCK_PROVIDER_SIGNATURE,
@@ -244,7 +244,7 @@ describe('registerPegin function should', () => {
 
     expect(mockedGetRawTxWithoutWitnesses).toHaveBeenCalledWith(MOCK_BTC_TX_HASH, MOCK_BTC_DATA_SOURCE)
     expect(MOCK_BTC_DATA_SOURCE.getBlockFromTransaction).toHaveBeenCalledWith(MOCK_BTC_TX_HASH)
-    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.registerPegin).not.toHaveBeenCalled()
+    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.pegInContract.registerPegin).not.toHaveBeenCalled()
   })
 
   test('throw error when btcConnection in context is missing', async () => {

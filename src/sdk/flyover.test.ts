@@ -27,6 +27,11 @@ import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
 import { isPegoutRefundable } from './isPegoutRefundable'
 import { isPeginRefundable, type IsPeginRefundableParams } from './isPeginRefundable'
 import { signQuote } from './signQuote'
+import { estimateRecommendedPegin } from './recommendedPegin'
+import { estimateRecommendedPegout, RecommendedPegoutExtraArgs } from './recommendedPegout'
+import { PegOutContract } from '../blockchain/pegout'
+import { PegInContract } from '../blockchain/pegin'
+import { DiscoveryContract } from '../blockchain/discovery'
 
 jest.mock('ethers')
 
@@ -50,6 +55,8 @@ jest.mock('./isPeginQuotePaid')
 jest.mock('./isPegoutQuotePaid')
 jest.mock('./isPegoutRefundable')
 jest.mock('./isPeginRefundable')
+jest.mock('./recommendedPegin')
+jest.mock('./recommendedPegout')
 jest.mock('./signQuote')
 
 const mockedGetQuote = getQuote as jest.Mock<typeof getQuote>
@@ -443,7 +450,16 @@ describe('Flyover object should', () => {
     await flyover.depositPegout(pegoutQuoteMock, signatureMock, amount)
 
     expect(depositPegout).toBeCalledTimes(1)
-    expect(depositPegout).toBeCalledWith(pegoutQuoteMock, signatureMock, amount, expect.any(LiquidityBridgeContract))
+    expect(depositPegout).toBeCalledWith(
+      pegoutQuoteMock,
+      signatureMock,
+      amount,
+      expect.objectContaining({
+        pegOutContract: expect.any(PegOutContract),
+        pegInContract: expect.any(PegInContract),
+        discoveryContract: expect.any(DiscoveryContract)
+      }),
+    )
   })
 
   test('create LBC instance during depositPegout if not created before', async () => {
@@ -639,7 +655,11 @@ describe('Flyover object should', () => {
             allowInsecureConnections: true
           }),
           bridge: expect.any(RskBridge),
-          lbc: expect.any(LiquidityBridgeContract),
+          lbc: expect.objectContaining({
+            pegOutContract: expect.any(PegOutContract),
+            pegInContract: expect.any(PegInContract),
+            discoveryContract: expect.any(DiscoveryContract)
+          }),
           provider: providerMock
         }),
         params,
@@ -810,7 +830,11 @@ describe('Flyover object should', () => {
         pegoutQuoteMock,
         expect.objectContaining({
           config: expect.anything(),
-          lbc: expect.any(LiquidityBridgeContract),
+          lbc: expect.objectContaining({
+            pegInContract: expect.any(PegInContract),
+            pegOutContract: expect.any(PegOutContract),
+            discoveryContract: expect.any(DiscoveryContract)
+          }),
           provider: providerMock,
           httpClient: expect.anything(),
           rskConnection: rskConnectionMock
@@ -1028,13 +1052,15 @@ describe('Flyover object should', () => {
     const MOCK_HASH = 'mocked-hash-value'
 
     const mockLiquidityBridgeContract: LiquidityBridgeContract = {
-      hashPeginQuote: jest.fn()
+      pegInContract: {
+        hashPeginQuote: jest.fn()
+      }
     } as unknown as LiquidityBridgeContract
 
     beforeEach(() => {
       jest.clearAllMocks()
 
-      jest.spyOn(mockLiquidityBridgeContract, 'hashPeginQuote').mockImplementation(async () => Promise.resolve(MOCK_HASH))
+      jest.spyOn(mockLiquidityBridgeContract.pegInContract, 'hashPeginQuote').mockImplementation(async () => Promise.resolve(MOCK_HASH))
       ;(flyover as any).liquidityBridgeContract = mockLiquidityBridgeContract
     })
 
@@ -1043,13 +1069,13 @@ describe('Flyover object should', () => {
 
       const result = await flyover.hashPeginQuote(quoteMock)
 
-      expect(mockLiquidityBridgeContract.hashPeginQuote).toHaveBeenCalledWith(quoteMock)
+      expect(mockLiquidityBridgeContract.pegInContract.hashPeginQuote).toHaveBeenCalledWith(quoteMock)
       expect(result).toBe(MOCK_HASH)
     })
 
     test('return the hash computed by the LBC contract', async () => {
       await flyover.connectToRsk(rskConnectionMock)
-      jest.spyOn(LiquidityBridgeContract.prototype, 'hashPeginQuote').mockResolvedValue(MOCK_HASH)
+      jest.spyOn(PegInContract.prototype, 'hashPeginQuote').mockResolvedValue(MOCK_HASH)
 
       const result = await flyover.hashPeginQuote(quoteMock)
 
@@ -1084,13 +1110,15 @@ describe('Flyover object should', () => {
     const MOCK_HASH = 'mocked-pegout-hash-value'
 
     const mockLiquidityBridgeContract: LiquidityBridgeContract = {
-      hashPegoutQuote: jest.fn()
+      pegOutContract: {
+        hashPegoutQuote: jest.fn()
+      }
     } as unknown as LiquidityBridgeContract
 
     beforeEach(() => {
       jest.clearAllMocks()
 
-      jest.spyOn(mockLiquidityBridgeContract, 'hashPegoutQuote').mockImplementation(async () => Promise.resolve(MOCK_HASH))
+      jest.spyOn(mockLiquidityBridgeContract.pegOutContract, 'hashPegoutQuote').mockImplementation(async () => Promise.resolve(MOCK_HASH))
       ;(flyover as any).liquidityBridgeContract = mockLiquidityBridgeContract
     })
 
@@ -1099,13 +1127,13 @@ describe('Flyover object should', () => {
 
       const result = await flyover.hashPegoutQuote(pegoutQuoteMock)
 
-      expect(mockLiquidityBridgeContract.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
+      expect(mockLiquidityBridgeContract.pegOutContract.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
       expect(result).toBe(MOCK_HASH)
     })
 
     test('return the hash computed by the LBC contract', async () => {
       await flyover.connectToRsk(rskConnectionMock)
-      jest.spyOn(LiquidityBridgeContract.prototype, 'hashPegoutQuote').mockResolvedValue(MOCK_HASH)
+      jest.spyOn(PegOutContract.prototype, 'hashPegoutQuote').mockResolvedValue(MOCK_HASH)
 
       const result = await flyover.hashPegoutQuote(pegoutQuoteMock)
 
@@ -1147,7 +1175,11 @@ describe('Flyover object should', () => {
           network: 'Regtest',
           allowInsecureConnections: true
         }),
-        expect.any(LiquidityBridgeContract),
+        expect.objectContaining({
+          pegInContract: expect.any(PegInContract),
+          pegOutContract: expect.any(PegOutContract),
+          discoveryContract: expect.any(DiscoveryContract)
+        }),
         providerMock,
         quoteMock,
       )
@@ -1162,6 +1194,49 @@ describe('Flyover object should', () => {
       expect(flyover).not.toHaveProperty('liquidityBridgeContract')
       await flyover.signQuote(quoteMock)
       expect(flyover).not.toHaveProperty('liquidityBridgeContract', undefined)
+    })
+  })
+
+  describe('estimateRecommendedPegin method should', () => {
+    const amount = BigInt(100)
+    const extraArgs = { data: '0x1122', destinationAddress: '0x03f23ae1917722d5a27a2ea0bcc98725a2a2a49a' }
+    test('invoke correctly estimateRecommendedPegin', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      await flyover.estimateRecommendedPegin(amount, extraArgs)
+      expect(estimateRecommendedPegin).toBeCalledTimes(1)
+      expect(estimateRecommendedPegin).toBeCalledWith(
+        expect.objectContaining({
+          httpClient: expect.anything(),
+          provider: providerMock,
+        }),
+        amount,
+        extraArgs
+      )
+    })
+    test('fail if LP has not been selected', async () => {
+      await expect(flyover.estimateRecommendedPegin(amount, extraArgs)).rejects.toThrow('You need to select a provider to do this operation')
+    })
+  })
+
+  describe('estimateRecommendedPegout method should', () => {
+    const amount = BigInt(100)
+    const extraArgs: RecommendedPegoutExtraArgs = { destinationAddressType: 'p2tr' }
+    test('invoke correctly estimateRecommendedPegout', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.estimateRecommendedPegout(amount, extraArgs)
+      expect(estimateRecommendedPegout).toBeCalledTimes(1)
+      expect(estimateRecommendedPegout).toBeCalledWith(
+        expect.objectContaining({
+          httpClient: expect.anything(),
+          provider: providerMock,
+        }),
+        amount,
+        extraArgs
+      )
+    })
+    test('fail if LP has not been selected', async () => {
+      await expect(flyover.estimateRecommendedPegout(amount, extraArgs)).rejects.toThrow('You need to select a provider to do this operation')
     })
   })
 })

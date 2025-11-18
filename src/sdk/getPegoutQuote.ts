@@ -31,7 +31,7 @@ export async function getPegoutQuote (
 }
 
 async function validateQuoteHash (lbc: LiquidityBridgeContract, quote: PegoutQuote): Promise<boolean> {
-  const hash = await lbc.hashPegoutQuote(quote)
+  const hash = await lbc.pegOutContract.hashPegoutQuote(quote)
   return hash === quote.quoteHash
 }
 

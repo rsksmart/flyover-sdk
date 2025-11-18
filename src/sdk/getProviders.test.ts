@@ -56,7 +56,9 @@ const providersMock: LiquidityProviderBase[] = [
 ]
 
 const lbcMock = {
-  getProviders: async () => Promise.resolve(providersMock)
+  discoveryContract: {
+    getProviders: async () => Promise.resolve(providersMock)
+  }
 } as LiquidityBridgeContract
 
 describe('getProviders function should', () => {
@@ -68,7 +70,7 @@ describe('getProviders function should', () => {
   })
 
   test('call getProviders', async () => {
-    const spy = jest.spyOn(lbcMock, 'getProviders')
+    const spy = jest.spyOn(lbcMock.discoveryContract, 'getProviders')
     await getProviders(mockClient, lbcMock)
     expect(spy).toHaveBeenCalledTimes(1)
   })
