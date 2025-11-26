@@ -21,7 +21,7 @@ export class PegInContract {
   }
 
   async getAddress (): Promise<string> {
-    return this.peginContract.getAddress()
+    return this.peginContract.address
   }
 
   async validatePeginDepositAddress (quote: PeginQuote, depositAddress: string): Promise<boolean> {

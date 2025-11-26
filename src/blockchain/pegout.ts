@@ -19,7 +19,7 @@ export class PegOutContract {
   }
 
   async getAddress (): Promise<string> {
-    return this.pegoutContract.getAddress()
+    return this.pegoutContract.address
   }
 
   async getProductFeePercentage (): Promise<number> {
