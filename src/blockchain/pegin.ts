@@ -6,6 +6,7 @@ import { ensureHexPrefix } from '../utils/format'
 import { Quotes } from "./bindings/Pegin"
 import { type Quote as PeginQuote, type QuoteDetail as PeginQuoteDetail } from '../api'
 import { FlyoverNetworks, FlyoverSupportedNetworks } from "../constants/networks"
+import { validateNotPaused } from "./lbc"
 
 export class PegInContract {
   private readonly peginContract: Contract
@@ -34,6 +35,7 @@ export class PegInContract {
     action: 'staticCall' | 'execution' = 'execution'
   ): Promise<TxResult> {
     const { quote, signature, btcRawTransaction, partialMerkleTree, height } = params
+    await validateNotPaused(this.peginContract)
 
     const signatureBytes = utils.arrayify(ensureHexPrefix(signature))
     const rawTxBytes = utils.arrayify(ensureHexPrefix(btcRawTransaction))

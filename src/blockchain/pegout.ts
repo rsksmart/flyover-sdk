@@ -4,6 +4,7 @@ import { callContractFunction, Connection, decodeBtcAddress, executeContractFunc
 import { Quotes } from "./bindings/Pegout"
 import { type PegoutQuoteDetail, type PegoutQuote } from '../api'
 import { FlyoverNetworks, FlyoverSupportedNetworks } from "../constants/networks"
+import { validateNotPaused } from "./lbc"
 
 export class PegOutContract {
   private readonly pegoutContract: Contract
@@ -32,6 +33,7 @@ export class PegOutContract {
    * @returns { TxResult | null } If operationType is 'execution' returns the transaction result, otherwise returns null
    */
   async refundPegout (quote: PegoutQuote, operationType: 'staticCall' | 'execution' = 'execution'): Promise<TxResult | null> {
+    await validateNotPaused(this.pegoutContract)
     const hashBytes = utils.arrayify('0x' + quote.quoteHash)
     if (operationType === 'execution') {
       return executeContractFunction(this.pegoutContract, 'refundUserPegOut', hashBytes)
@@ -50,6 +52,7 @@ export class PegOutContract {
   }
 
   async depositPegout (quote: PegoutQuote, signature: string, weiAmount: bigint): Promise<TxResult> {
+    await validateNotPaused(this.pegoutContract)
     const detail: PegoutQuoteDetail = quote.quote
     const signatureBytes = utils.arrayify('0x' + signature)
     const lbcPegoutQuote: Quotes.PegOutQuoteStruct = this.toContractPegoutQuote(detail)
