@@ -100,10 +100,16 @@ export interface PeginInterface extends utils.Interface {
     "callForUser((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
     "deposit()": FunctionFragment;
     "getBalance(address)": FunctionFragment;
+    "getCurrentContribution()": FunctionFragment;
+    "getFeeCollector()": FunctionFragment;
+    "getFeePercentage()": FunctionFragment;
     "getMinPegIn()": FunctionFragment;
     "getQuoteStatus(bytes32)": FunctionFragment;
     "hashPegInQuote((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
+    "pause(string)": FunctionFragment;
+    "pauseStatus()": FunctionFragment;
     "registerPegIn((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes,bytes,bytes,uint256)": FunctionFragment;
+    "unpause()": FunctionFragment;
     "validatePegInDepositAddress((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes)": FunctionFragment;
     "withdraw(uint256)": FunctionFragment;
   };
@@ -113,10 +119,16 @@ export interface PeginInterface extends utils.Interface {
       | "callForUser"
       | "deposit"
       | "getBalance"
+      | "getCurrentContribution"
+      | "getFeeCollector"
+      | "getFeePercentage"
       | "getMinPegIn"
       | "getQuoteStatus"
       | "hashPegInQuote"
+      | "pause"
+      | "pauseStatus"
       | "registerPegIn"
+      | "unpause"
       | "validatePegInDepositAddress"
       | "withdraw"
   ): FunctionFragment;
@@ -127,6 +139,18 @@ export interface PeginInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "deposit", values?: undefined): string;
   encodeFunctionData(functionFragment: "getBalance", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "getCurrentContribution",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFeeCollector",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFeePercentage",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "getMinPegIn",
     values?: undefined
@@ -139,6 +163,11 @@ export interface PeginInterface extends utils.Interface {
     functionFragment: "hashPegInQuote",
     values: [Quotes.PegInQuoteStruct]
   ): string;
+  encodeFunctionData(functionFragment: "pause", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "pauseStatus",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "registerPegIn",
     values: [
@@ -149,6 +178,7 @@ export interface PeginInterface extends utils.Interface {
       BigNumberish
     ]
   ): string;
+  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "validatePegInDepositAddress",
     values: [Quotes.PegInQuoteStruct, BytesLike]
@@ -165,6 +195,18 @@ export interface PeginInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getBalance", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "getCurrentContribution",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFeeCollector",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFeePercentage",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getMinPegIn",
     data: BytesLike
   ): Result;
@@ -176,10 +218,16 @@ export interface PeginInterface extends utils.Interface {
     functionFragment: "hashPegInQuote",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "pauseStatus",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "registerPegIn",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "validatePegInDepositAddress",
     data: BytesLike
@@ -328,6 +376,12 @@ export interface Pegin extends BaseContract {
 
     getBalance(addr: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    getCurrentContribution(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getFeeCollector(overrides?: CallOverrides): Promise<[string]>;
+
+    getFeePercentage(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getMinPegIn(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getQuoteStatus(
@@ -340,12 +394,31 @@ export interface Pegin extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    pause(
+      reason: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    pauseStatus(
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, string, BigNumber] & {
+        isPaused: boolean;
+        reason: string;
+        since: BigNumber;
+      }
+    >;
+
     registerPegIn(
       quote: Quotes.PegInQuoteStruct,
       signature: BytesLike,
       btcRawTransaction: BytesLike,
       partialMerkleTree: BytesLike,
       height: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    unpause(
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
@@ -372,6 +445,12 @@ export interface Pegin extends BaseContract {
 
   getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+  getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getFeeCollector(overrides?: CallOverrides): Promise<string>;
+
+  getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
+
   getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
   getQuoteStatus(
@@ -384,12 +463,31 @@ export interface Pegin extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  pause(
+    reason: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  pauseStatus(
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, string, BigNumber] & {
+      isPaused: boolean;
+      reason: string;
+      since: BigNumber;
+    }
+  >;
+
   registerPegIn(
     quote: Quotes.PegInQuoteStruct,
     signature: BytesLike,
     btcRawTransaction: BytesLike,
     partialMerkleTree: BytesLike,
     height: BigNumberish,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  unpause(
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
@@ -414,6 +512,12 @@ export interface Pegin extends BaseContract {
 
     getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+    getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getFeeCollector(overrides?: CallOverrides): Promise<string>;
+
+    getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
+
     getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
     getQuoteStatus(
@@ -426,6 +530,18 @@ export interface Pegin extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    pause(reason: string, overrides?: CallOverrides): Promise<void>;
+
+    pauseStatus(
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, string, BigNumber] & {
+        isPaused: boolean;
+        reason: string;
+        since: BigNumber;
+      }
+    >;
+
     registerPegIn(
       quote: Quotes.PegInQuoteStruct,
       signature: BytesLike,
@@ -434,6 +550,8 @@ export interface Pegin extends BaseContract {
       height: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    unpause(overrides?: CallOverrides): Promise<void>;
 
     validatePegInDepositAddress(
       quote: Quotes.PegInQuoteStruct,
@@ -535,6 +653,12 @@ export interface Pegin extends BaseContract {
 
     getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+    getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getFeeCollector(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
+
     getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
     getQuoteStatus(
@@ -547,6 +671,13 @@ export interface Pegin extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    pause(
+      reason: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    pauseStatus(overrides?: CallOverrides): Promise<BigNumber>;
+
     registerPegIn(
       quote: Quotes.PegInQuoteStruct,
       signature: BytesLike,
@@ -555,6 +686,8 @@ export interface Pegin extends BaseContract {
       height: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
+
+    unpause(overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
     validatePegInDepositAddress(
       quote: Quotes.PegInQuoteStruct,
@@ -583,6 +716,14 @@ export interface Pegin extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getCurrentContribution(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getFeeCollector(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getFeePercentage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getMinPegIn(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getQuoteStatus(
@@ -595,12 +736,23 @@ export interface Pegin extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    pause(
+      reason: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    pauseStatus(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     registerPegIn(
       quote: Quotes.PegInQuoteStruct,
       signature: BytesLike,
       btcRawTransaction: BytesLike,
       partialMerkleTree: BytesLike,
       height: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    unpause(
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 

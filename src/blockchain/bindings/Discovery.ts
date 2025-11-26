@@ -59,8 +59,11 @@ export interface DiscoveryInterface extends utils.Interface {
     "getProviders()": FunctionFragment;
     "getProvidersId()": FunctionFragment;
     "isOperational(uint8,address)": FunctionFragment;
+    "pause(string)": FunctionFragment;
+    "pauseStatus()": FunctionFragment;
     "register(string,string,bool,uint8)": FunctionFragment;
     "setProviderStatus(uint256,bool)": FunctionFragment;
+    "unpause()": FunctionFragment;
     "updateProvider(string,string)": FunctionFragment;
   };
 
@@ -70,8 +73,11 @@ export interface DiscoveryInterface extends utils.Interface {
       | "getProviders"
       | "getProvidersId"
       | "isOperational"
+      | "pause"
+      | "pauseStatus"
       | "register"
       | "setProviderStatus"
+      | "unpause"
       | "updateProvider"
   ): FunctionFragment;
 
@@ -88,6 +94,11 @@ export interface DiscoveryInterface extends utils.Interface {
     functionFragment: "isOperational",
     values: [BigNumberish, string]
   ): string;
+  encodeFunctionData(functionFragment: "pause", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "pauseStatus",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "register",
     values: [string, string, boolean, BigNumberish]
@@ -96,6 +107,7 @@ export interface DiscoveryInterface extends utils.Interface {
     functionFragment: "setProviderStatus",
     values: [BigNumberish, boolean]
   ): string;
+  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "updateProvider",
     values: [string, string]
@@ -117,11 +129,17 @@ export interface DiscoveryInterface extends utils.Interface {
     functionFragment: "isOperational",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "pauseStatus",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "register", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setProviderStatus",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "updateProvider",
     data: BytesLike
@@ -218,6 +236,21 @@ export interface Discovery extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    pause(
+      reason: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    pauseStatus(
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, string, BigNumber] & {
+        isPaused: boolean;
+        reason: string;
+        since: BigNumber;
+      }
+    >;
+
     register(
       name: string,
       apiBaseUrl: string,
@@ -229,6 +262,10 @@ export interface Discovery extends BaseContract {
     setProviderStatus(
       providerId: BigNumberish,
       status: boolean,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    unpause(
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
@@ -256,6 +293,21 @@ export interface Discovery extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  pause(
+    reason: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  pauseStatus(
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, string, BigNumber] & {
+      isPaused: boolean;
+      reason: string;
+      since: BigNumber;
+    }
+  >;
+
   register(
     name: string,
     apiBaseUrl: string,
@@ -267,6 +319,10 @@ export interface Discovery extends BaseContract {
   setProviderStatus(
     providerId: BigNumberish,
     status: boolean,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  unpause(
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
@@ -294,6 +350,18 @@ export interface Discovery extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    pause(reason: string, overrides?: CallOverrides): Promise<void>;
+
+    pauseStatus(
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, string, BigNumber] & {
+        isPaused: boolean;
+        reason: string;
+        since: BigNumber;
+      }
+    >;
+
     register(
       name: string,
       apiBaseUrl: string,
@@ -307,6 +375,8 @@ export interface Discovery extends BaseContract {
       status: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    unpause(overrides?: CallOverrides): Promise<void>;
 
     updateProvider(
       name: string,
@@ -364,6 +434,13 @@ export interface Discovery extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    pause(
+      reason: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    pauseStatus(overrides?: CallOverrides): Promise<BigNumber>;
+
     register(
       name: string,
       apiBaseUrl: string,
@@ -377,6 +454,8 @@ export interface Discovery extends BaseContract {
       status: boolean,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
+
+    unpause(overrides?: Overrides & { from?: string }): Promise<BigNumber>;
 
     updateProvider(
       name: string,
@@ -401,6 +480,13 @@ export interface Discovery extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    pause(
+      reason: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    pauseStatus(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     register(
       name: string,
       apiBaseUrl: string,
@@ -412,6 +498,10 @@ export interface Discovery extends BaseContract {
     setProviderStatus(
       providerId: BigNumberish,
       status: boolean,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    unpause(
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 

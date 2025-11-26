@@ -4,6 +4,7 @@ import { PegOutContract } from './pegout'
 import { PegoutQuote } from '../api'
 import JSONbig from 'json-bigint'
 import { Quotes } from './bindings/Pegout'
+import { FlyoverError } from '../client/httpClient'
 
 jest.mock('ethers')
 
@@ -98,6 +99,7 @@ describe('PegOutContract class should', () => {
   test('execute depositPegout correctly', async () => {
     const receiptMock = { status: 1, hash: '0x9fafb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' }
     const contractMock = {
+      pauseStatus: jest.fn().mockImplementation(async () => Promise.resolve([false, '', BigInt(0)])),
       depositPegOut: jest.fn().mockImplementation(async () => {
         return Promise.resolve(
           {
@@ -138,6 +140,7 @@ describe('PegOutContract class should', () => {
 
   test('throw FlyoverError on depositPegout error', async () => {
     const contractMock = {
+      pauseStatus: jest.fn().mockImplementation(async () => Promise.resolve([false, '', BigInt(0)])),
       depositPegOut: jest.fn().mockImplementation(async () => {
         throw new Error('some error')
       })
@@ -155,6 +158,27 @@ describe('PegOutContract class should', () => {
     await lbc.depositPegout(pegoutQuoteMock, signature, amount).catch(e => {
       expect(e).toBeInstanceOf(BridgeError)
       expect(e.message).toBe('error executing function depositPegOut')
+    })
+  })
+
+  test('throw FlyoverError on contract paused', async () => {
+    const pausedMock = {
+      pauseStatus: jest.fn().mockImplementationOnce(async () => Promise.resolve([true, 'maintenance', BigInt(123456)]))
+    }
+    const contractClassMock = jest.mocked(ethers.Contract)
+    contractClassMock.mockImplementation(() => pausedMock as any)
+
+    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+    const lbc = new PegOutContract(connectionMock, config)
+    const amount = BigInt(500)
+    const signature = '8cf4893bc89a84486e6f5c57d3d3881796f6eda5d217dfa2a6c49f4c5781d9c6'
+
+    expect.assertions(4)
+    await lbc.depositPegout(pegoutQuoteMock, signature, amount).catch(e => {
+      expect(e).toBeInstanceOf(FlyoverError)
+      expect(e.message).toBe('Protocol paused')
+      expect(e.details.reason).toBe('maintenance')
+      expect(e.details.timestamp).toBe(123456)
     })
   })
 
@@ -179,6 +203,7 @@ describe('PegOutContract class should', () => {
   describe('execute refundPegout', () => {
     const receiptMock = { status: 1, transactionHash: '0x9fafb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' }
     const contractMock = {
+      pauseStatus: jest.fn().mockImplementation(async () => Promise.resolve([false, '', BigInt(0)])),
       refundUserPegOut: jest.fn().mockImplementation(async () => {
         return Promise.resolve(
           {
@@ -254,8 +279,28 @@ describe('PegOutContract class should', () => {
     })
   })
 
+  test('throw FlyoverError on contract paused', async () => {
+    const pausedMock = {
+      pauseStatus: jest.fn().mockImplementationOnce(async () => Promise.resolve([true, 'maintenance', BigInt(123456)]))
+    }
+    const contractClassMock = jest.mocked(ethers.Contract)
+    contractClassMock.mockImplementation(() => pausedMock as any)
+
+    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+    const lbc = new PegOutContract(connectionMock, config)
+
+    expect.assertions(4)
+    await lbc.refundPegout(pegoutQuoteMock).catch(e => {
+      expect(e).toBeInstanceOf(FlyoverError)
+      expect(e.message).toBe('Protocol paused')
+      expect(e.details.reason).toBe('maintenance')
+      expect(e.details.timestamp).toBe(123456)
+    })
+  })
+
   test('throw FlyoverError on refundUserPegOut error', async () => {
     const contractMock = {
+      pauseStatus: jest.fn().mockImplementation(async () => Promise.resolve([false, '', BigInt(0)])),
       refundUserPegOut: jest.fn().mockImplementation(async () => {
         throw new Error('some error')
       })

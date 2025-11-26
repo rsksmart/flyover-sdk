@@ -95,24 +95,48 @@ export declare namespace Quotes {
 export interface PegoutInterface extends utils.Interface {
   functions: {
     "depositPegOut((uint256,uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes),bytes)": FunctionFragment;
+    "getCurrentContribution()": FunctionFragment;
+    "getFeeCollector()": FunctionFragment;
+    "getFeePercentage()": FunctionFragment;
     "hashPegOutQuote((uint256,uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes))": FunctionFragment;
     "isQuoteCompleted(bytes32)": FunctionFragment;
+    "pause(string)": FunctionFragment;
+    "pauseStatus()": FunctionFragment;
     "refundPegOut(bytes32,bytes,bytes32,uint256,bytes32[])": FunctionFragment;
     "refundUserPegOut(bytes32)": FunctionFragment;
+    "unpause()": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "depositPegOut"
+      | "getCurrentContribution"
+      | "getFeeCollector"
+      | "getFeePercentage"
       | "hashPegOutQuote"
       | "isQuoteCompleted"
+      | "pause"
+      | "pauseStatus"
       | "refundPegOut"
       | "refundUserPegOut"
+      | "unpause"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "depositPegOut",
     values: [Quotes.PegOutQuoteStruct, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getCurrentContribution",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFeeCollector",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFeePercentage",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "hashPegOutQuote",
@@ -122,6 +146,11 @@ export interface PegoutInterface extends utils.Interface {
     functionFragment: "isQuoteCompleted",
     values: [BytesLike]
   ): string;
+  encodeFunctionData(functionFragment: "pause", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "pauseStatus",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "refundPegOut",
     values: [BytesLike, BytesLike, BytesLike, BigNumberish, BytesLike[]]
@@ -130,9 +159,22 @@ export interface PegoutInterface extends utils.Interface {
     functionFragment: "refundUserPegOut",
     values: [BytesLike]
   ): string;
+  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
 
   decodeFunctionResult(
     functionFragment: "depositPegOut",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getCurrentContribution",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFeeCollector",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFeePercentage",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -143,6 +185,11 @@ export interface PegoutInterface extends utils.Interface {
     functionFragment: "isQuoteCompleted",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "pauseStatus",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "refundPegOut",
     data: BytesLike
@@ -151,6 +198,7 @@ export interface PegoutInterface extends utils.Interface {
     functionFragment: "refundUserPegOut",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
 
   events: {
     "PegOutChangePaid(bytes32,address,uint256)": EventFragment;
@@ -247,6 +295,12 @@ export interface Pegout extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<ContractTransaction>;
 
+    getCurrentContribution(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getFeeCollector(overrides?: CallOverrides): Promise<[string]>;
+
+    getFeePercentage(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
       overrides?: CallOverrides
@@ -256,6 +310,21 @@ export interface Pegout extends BaseContract {
       quoteHash: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    pause(
+      reason: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    pauseStatus(
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, string, BigNumber] & {
+        isPaused: boolean;
+        reason: string;
+        since: BigNumber;
+      }
+    >;
 
     refundPegOut(
       quoteHash: BytesLike,
@@ -270,6 +339,10 @@ export interface Pegout extends BaseContract {
       quoteHash: BytesLike,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
+
+    unpause(
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
   };
 
   depositPegOut(
@@ -277,6 +350,12 @@ export interface Pegout extends BaseContract {
     signature: BytesLike,
     overrides?: PayableOverrides & { from?: string }
   ): Promise<ContractTransaction>;
+
+  getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getFeeCollector(overrides?: CallOverrides): Promise<string>;
+
+  getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
 
   hashPegOutQuote(
     quote: Quotes.PegOutQuoteStruct,
@@ -287,6 +366,21 @@ export interface Pegout extends BaseContract {
     quoteHash: BytesLike,
     overrides?: CallOverrides
   ): Promise<boolean>;
+
+  pause(
+    reason: string,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  pauseStatus(
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, string, BigNumber] & {
+      isPaused: boolean;
+      reason: string;
+      since: BigNumber;
+    }
+  >;
 
   refundPegOut(
     quoteHash: BytesLike,
@@ -302,12 +396,22 @@ export interface Pegout extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
+  unpause(
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     depositPegOut(
       quote: Quotes.PegOutQuoteStruct,
       signature: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getFeeCollector(overrides?: CallOverrides): Promise<string>;
+
+    getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
 
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
@@ -318,6 +422,18 @@ export interface Pegout extends BaseContract {
       quoteHash: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    pause(reason: string, overrides?: CallOverrides): Promise<void>;
+
+    pauseStatus(
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, string, BigNumber] & {
+        isPaused: boolean;
+        reason: string;
+        since: BigNumber;
+      }
+    >;
 
     refundPegOut(
       quoteHash: BytesLike,
@@ -332,6 +448,8 @@ export interface Pegout extends BaseContract {
       quoteHash: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    unpause(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -383,6 +501,12 @@ export interface Pegout extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<BigNumber>;
 
+    getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getFeeCollector(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
+
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
       overrides?: CallOverrides
@@ -392,6 +516,13 @@ export interface Pegout extends BaseContract {
       quoteHash: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    pause(
+      reason: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    pauseStatus(overrides?: CallOverrides): Promise<BigNumber>;
 
     refundPegOut(
       quoteHash: BytesLike,
@@ -406,6 +537,8 @@ export interface Pegout extends BaseContract {
       quoteHash: BytesLike,
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
+
+    unpause(overrides?: Overrides & { from?: string }): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -415,6 +548,14 @@ export interface Pegout extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
+    getCurrentContribution(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getFeeCollector(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getFeePercentage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
       overrides?: CallOverrides
@@ -424,6 +565,13 @@ export interface Pegout extends BaseContract {
       quoteHash: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    pause(
+      reason: string,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    pauseStatus(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     refundPegOut(
       quoteHash: BytesLike,
@@ -436,6 +584,10 @@ export interface Pegout extends BaseContract {
 
     refundUserPegOut(
       quoteHash: BytesLike,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    unpause(
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
   };

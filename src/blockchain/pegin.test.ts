@@ -6,6 +6,7 @@ import { Quote as PeginQuote } from '../api'
 import JSONbig from 'json-bigint'
 import { RegisterPeginLbcParams } from '../sdk/registerPegin'
 import { readFile } from 'fs/promises'
+import { FlyoverError } from '../client/httpClient'
 
 jest.mock('ethers')
 
@@ -116,6 +117,7 @@ describe('PegInContract class should', () => {
           }
         )
       }),
+      pauseStatus: jest.fn().mockImplementation(async () => Promise.resolve([false, '', BigInt(0)])),
       callStatic: {
         registerPegIn: jest.fn().mockImplementation(async () => Promise.resolve(FAKE_RECEIPT))
       }
@@ -228,6 +230,23 @@ describe('PegInContract class should', () => {
         expect(e).toBeInstanceOf(BridgeError)
         expect(e.message).toBe('error executing function registerPegIn')
         expect(e.details.error).toBe(FAKE_ERROR_MESSAGE)
+      })
+    })
+
+    test('throw FlyoverError on registerPegin contract paused', async () => {
+      const pausedMock = {
+        pauseStatus: jest.fn().mockImplementationOnce(async () => Promise.resolve([true, 'maintenance', BigInt(123456)]))
+      }
+      const contractClassMock = jest.mocked(ethers.Contract)
+      contractClassMock.mockImplementation(() => pausedMock as any)
+      const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+      const liquidityBridgeContract = new PegInContract(connectionMock, config)
+      expect.assertions(4)
+      await liquidityBridgeContract.registerPegin(registerPeginParams, 'execution').catch(e => {
+        expect(e).toBeInstanceOf(FlyoverError)
+        expect(e.message).toBe('Protocol paused')
+        expect(e.details.reason).toBe('maintenance')
+        expect(e.details.timestamp).toBe(123456)
       })
     })
 

@@ -283,6 +283,42 @@ const _abi = [
     inputs: [
       {
         internalType: "string",
+        name: "reason",
+        type: "string",
+      },
+    ],
+    name: "pause",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "pauseStatus",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "isPaused",
+        type: "bool",
+      },
+      {
+        internalType: "string",
+        name: "reason",
+        type: "string",
+      },
+      {
+        internalType: "uint64",
+        name: "since",
+        type: "uint64",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
         name: "name",
         type: "string",
       },
@@ -327,6 +363,13 @@ const _abi = [
       },
     ],
     name: "setProviderStatus",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "unpause",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
