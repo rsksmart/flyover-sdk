@@ -1,19 +1,14 @@
 version: 2
 
 updates:
-  # npm - Minor and Patch updates
+  # npm - Version and Security updates
   - package-ecosystem: "npm"
     directory: "/"
-    target-branch: QA-Test
+    target-branch: master
     schedule:
       interval: "weekly"
-    # Wait at least 10 days after a new version is released before opening a PR
     cooldown:
-      default-days: 10
-    labels:
-      - "dependencies"
-      - "npm"
-    # one PR per week that groups BOTH minor + patch updates
+      default-days: 7
     groups:
       npm-updates:
         applies-to: version-updates
@@ -22,40 +17,19 @@ updates:
         update-types:
           - minor
           - patch
-
-  # npm - Security updates
-  - package-ecosystem: "npm"
-    directory: "/"
-    target-branch: master
-    schedule:
-      interval: "daily"
-    # Wait at least 1 day after a security update is released before opening a PR
-    cooldown:
-      default-days: 1
-    labels:
-      - "dependencies"
-      - "npm"
-      - "security"
-    # one PR that groups security updates
-    groups:
       security:
         applies-to: security-updates
         patterns:
           - "*"
 
-  # GitHub Actions - Minor and Patch updates
+  # GitHub Actions - Version and Security updates
   - package-ecosystem: "github-actions"
     directory: "/"
-    target-branch: QA-Test
+    target-branch: master
     schedule:
       interval: "weekly"
-    # Wait at least 10 days after a new version is released before opening a PR
     cooldown:
-      default-days: 10
-    labels:
-      - "dependencies"
-      - "github_actions"
-    # one PR per week that groups BOTH minor + patch updates
+      default-days: 7
     groups:
       actions-updates:
         applies-to: version-updates
@@ -64,22 +38,6 @@ updates:
         update-types:
           - minor
           - patch
-
-  # GitHub Actions - Security updates
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    target-branch: master
-    schedule:
-      interval: "daily"
-    # Wait at least 1 day after a security update is released before opening a PR
-    cooldown:
-      default-days: 1
-    labels:
-      - "dependencies"
-      - "github_actions"
-      - "security"
-    # one PR that groups security updates
-    groups:
       security:
         applies-to: security-updates
         patterns:
