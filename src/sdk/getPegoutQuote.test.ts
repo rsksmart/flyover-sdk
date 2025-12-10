@@ -85,7 +85,9 @@ const configMock: FlyoverConfig = {
 }
 
 const lbcMock = {
-  hashPegoutQuote: async (quote: PegoutQuote) => Promise.resolve(quote.quoteHash)
+  pegOutContract: {
+    hashPegoutQuote: async (quote: PegoutQuote) => Promise.resolve(quote.quoteHash)
+  }
 } as LiquidityBridgeContract
 
 describe('getPegoutQuote function should', () => {
@@ -239,14 +241,14 @@ describe('getPegoutQuote function should', () => {
   })
 
   test('validate quote hash', async () => {
-    const original = lbcMock.hashPegoutQuote
-    lbcMock.hashPegoutQuote = async (_: PegoutQuote) => Promise.resolve('fake hash')
+    const original = lbcMock.pegOutContract.hashPegoutQuote
+    lbcMock.pegOutContract.hashPegoutQuote = async (_: PegoutQuote) => Promise.resolve('fake hash')
     expect.assertions(2)
     await getPegoutQuote(configMock, getMockClient(), lbcMock, providerMock, quoteRequestMock).catch(e => {
       expect(e).toBeInstanceOf(FlyoverError)
       expect(e.message).toBe('Quote hash mismatch')
     })
-    lbcMock.hashPegoutQuote = original
+    lbcMock.pegOutContract.hashPegoutQuote = original
   })
 
   test('validate response fields', async () => {

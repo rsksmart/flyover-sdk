@@ -78,7 +78,7 @@ async function validateAddress (
   const { lbc, provider } = context
   assertTruthy(lbc, 'Missing Liquidity Bridge Contract')
   assertTruthy(provider, 'Missing Liquidity Provider')
-  const isValidAddress = await lbc.validatePeginDepositAddress(params.quoteInfo, params.acceptInfo.bitcoinDepositAddressHash)
+  const isValidAddress = await lbc.pegInContract.validatePeginDepositAddress(params.quoteInfo, params.acceptInfo.bitcoinDepositAddressHash)
   if (!isValidAddress) {
     return FlyoverError.untrustedBtcAddressError({
       serverUrl: provider.apiBaseUrl,

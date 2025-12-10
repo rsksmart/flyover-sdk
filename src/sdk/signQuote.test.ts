@@ -161,36 +161,38 @@ const pegoutCases: {quote: PegoutQuote, signer: string, signature: string, conne
 ]
 
 describe("signQuote", () => {
-    const peginQuote = peginCases[0]?.quote
-    let connections: {connection:BlockchainConnection, address:string}[]
+  const peginQuote = peginCases[0]?.quote
+  let connections: {connection:BlockchainConnection, address:string}[]
 
-    beforeAll(async () => {
-        connections = [
-            {
-                connection:  await BlockchainConnection.createUsingEncryptedJson(
-                    TEST_ACCOUNT_ONE.keystore,
-                    TEST_ACCOUNT_ONE.password,
-                ), address: '0x'+TEST_ACCOUNT_ONE.keystore.address,
-            },
-                        {
-                connection:  await BlockchainConnection.createUsingEncryptedJson(
-                    TEST_ACCOUNT_TWO.keystore,
-                    TEST_ACCOUNT_TWO.password,
-                ), address: '0x'+TEST_ACCOUNT_TWO.keystore.address,
-            }
-        ]
-        peginCases.forEach((peginCase) => {
-            peginCase.connection = connections.find((c) => c.address.toLowerCase() === peginCase.signer.toLowerCase())?.connection
-        })
-        pegoutCases.forEach((pegoutCase) => {
-            pegoutCase.connection = connections.find((c) => c.address.toLowerCase() === pegoutCase.signer.toLowerCase())?.connection
-        })
-    }, 50_000);
+  beforeAll(async () => {
+      connections = [
+        {
+          connection:  await BlockchainConnection.createUsingEncryptedJson(
+            TEST_ACCOUNT_ONE.keystore,
+            TEST_ACCOUNT_ONE.password,
+          ), address: '0x'+TEST_ACCOUNT_ONE.keystore.address,
+        },
+        {
+          connection:  await BlockchainConnection.createUsingEncryptedJson(
+            TEST_ACCOUNT_TWO.keystore,
+            TEST_ACCOUNT_TWO.password,
+          ), address: '0x'+TEST_ACCOUNT_TWO.keystore.address,
+        }
+      ]
+    peginCases.forEach((peginCase) => {
+        peginCase.connection = connections.find((c) => c.address.toLowerCase() === peginCase.signer.toLowerCase())?.connection
+    })
+    pegoutCases.forEach((pegoutCase) => {
+        pegoutCase.connection = connections.find((c) => c.address.toLowerCase() === pegoutCase.signer.toLowerCase())?.connection
+    })
+  }, 50_000);
 
   test("signs a valid pegin quote", async () => {
     for (const peginCase of peginCases) {
         const lbcMock = {
-            hashPeginQuote: jest.fn<() => Promise<string>>().mockResolvedValue(peginCase.quote.quoteHash),
+            pegInContract: {
+                hashPeginQuote: jest.fn<() => Promise<string>>().mockResolvedValue(peginCase.quote.quoteHash),
+            }
         }
 
         const signature = await signQuote(
@@ -201,7 +203,7 @@ describe("signQuote", () => {
         );
         const checksummedSigner = ethers.utils.getAddress(peginCase.signer);
 
-        expect(lbcMock.hashPeginQuote).toHaveBeenCalledWith(peginCase.quote);
+        expect(lbcMock.pegInContract.hashPeginQuote).toHaveBeenCalledWith(peginCase.quote);
         expect(signature).toBe(peginCase.signature);
         await expect(isValidSignature(checksummedSigner, peginCase.quote.quoteHash, signature)).toBe(true);
     }
@@ -210,7 +212,9 @@ describe("signQuote", () => {
     test("signs a valid pegout quote", async () => {
             for (const pegoutCase of pegoutCases) {
         const lbcMock = {
-            hashPegoutQuote: jest.fn<() => Promise<string>>().mockResolvedValue(pegoutCase.quote.quoteHash),
+            pegOutContract: {
+                hashPegoutQuote: jest.fn<() => Promise<string>>().mockResolvedValue(pegoutCase.quote.quoteHash),
+            }
         }
 
         const signature = await signQuote(
@@ -221,7 +225,7 @@ describe("signQuote", () => {
         );
         const checksummedSigner = ethers.utils.getAddress(pegoutCase.signer);
 
-        expect(lbcMock.hashPegoutQuote).toHaveBeenCalledWith(pegoutCase.quote);
+        expect(lbcMock.pegOutContract.hashPegoutQuote).toHaveBeenCalledWith(pegoutCase.quote);
         expect(signature).toBe(pegoutCase.signature);
         await expect(isValidSignature(checksummedSigner, pegoutCase.quote.quoteHash, signature)).toBe(true);
     }
@@ -251,7 +255,9 @@ describe("signQuote", () => {
     test("throws if quote hash does not match", async () => {
         assertTruthy(peginQuote)
         const lbcMock = {
-            hashPeginQuote: jest.fn<() => Promise<string>>().mockResolvedValue('not a hash'),
+            pegInContract: {
+                hashPeginQuote: jest.fn<() => Promise<string>>().mockResolvedValue('not a hash'),
+            }
         }
         const config: FlyoverConfig = { rskConnection: { signer: 'something' } } as unknown as FlyoverConfig;
         await expect(signQuote(

@@ -30,5 +30,5 @@ function canSign(connection: Connection): asserts connection is BlockchainConnec
 }
 
 function hashQuote(lbc: LiquidityBridgeContract, quote: Quote|PegoutQuote): Promise<string> {
-    return isPeginQuote(quote) ? lbc.hashPeginQuote(quote) : lbc.hashPegoutQuote(quote)
+    return isPeginQuote(quote) ? lbc.pegInContract.hashPeginQuote(quote) : lbc.pegOutContract.hashPegoutQuote(quote)
 }

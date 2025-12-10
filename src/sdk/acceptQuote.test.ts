@@ -72,7 +72,9 @@ const providerMock: LiquidityProvider = {
 }
 
 const lbcMock = {
-  validatePeginDepositAddress: async (_quote: Quote, _depositAddress: string) => Promise.resolve(true)
+  pegInContract: {
+    validatePeginDepositAddress: async (_quote: Quote, _depositAddress: string) => Promise.resolve(true)
+  }
 } as LiquidityBridgeContract
 
 describe('acceptQuote function should', () => {
@@ -115,13 +117,13 @@ describe('acceptQuote function should', () => {
   })
 
   test('fail if address is not valid', async () => {
-    const original = lbcMock.validatePeginDepositAddress
-    lbcMock.validatePeginDepositAddress = async (_quote: Quote, _address: string) => Promise.resolve(false)
+    const original = lbcMock.pegInContract.validatePeginDepositAddress
+    lbcMock.pegInContract.validatePeginDepositAddress = async (_quote: Quote, _address: string) => Promise.resolve(false)
     expect.assertions(2)
     await acceptQuote(mockClient, lbcMock, providerMock, quoteMock).catch(e => {
       expect(e).toBeInstanceOf(FlyoverError)
       expect(e.message).toBe('Invalid BTC address')
     })
-    lbcMock.validatePeginDepositAddress = original
+    lbcMock.pegInContract.validatePeginDepositAddress = original
   })
 })

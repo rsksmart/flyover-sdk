@@ -79,7 +79,9 @@ const quoteMock: Quote = {
 const signatureMock = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
 
 const lbcMock = {
-  validatePeginDepositAddress: async (_quote: Quote, _depositAddress: string) => Promise.resolve(true),
+  pegInContract: {
+    validatePeginDepositAddress: async (_quote: Quote, _depositAddress: string) => Promise.resolve(true),
+  }
 } as unknown as LiquidityBridgeContract
 
 describe('acceptAuthenticatedQuote function should', () => {
@@ -127,8 +129,10 @@ describe('acceptAuthenticatedQuote function should', () => {
   test('fail when deposit address is invalid', async () => {
     jest.spyOn(bridgesCoreSdk, 'isValidSignature').mockReturnValue(true)
     const lbcWithInvalidAddress = {
-      ...lbcMock,
-      validatePeginDepositAddress: async () => Promise.resolve(false)
+      pegInContract: {
+        ...lbcMock.pegInContract,
+        validatePeginDepositAddress: async () => Promise.resolve(false)
+      }
     } as unknown as LiquidityBridgeContract
 
     await expect(async () => {

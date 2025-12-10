@@ -31,7 +31,9 @@ const quoteMock: PegoutQuote = {
 const successfulResultMock = { successful: true, txHash: '0x9fafb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' }
 
 const lbcMock = jest.mocked({
-  depositPegout: async (_quote: PegoutQuote, _signature: string, _amount: bigint) => Promise.resolve(successfulResultMock)
+  pegOutContract: {
+    depositPegout: async (_quote: PegoutQuote, _signature: string, _amount: bigint) => Promise.resolve(successfulResultMock)
+  },
 } as LiquidityBridgeContract, { shallow: true })
 
 describe('depositPegout function should', () => {
@@ -63,10 +65,10 @@ describe('depositPegout function should', () => {
   test('execute LBC depositPegout correctly', async () => {
     const amount = BigInt(500)
     const signature = '0x1234'
-    jest.spyOn(lbcMock, 'depositPegout').mockResolvedValue(successfulResultMock)
+    jest.spyOn(lbcMock.pegOutContract, 'depositPegout').mockResolvedValue(successfulResultMock)
     await depositPegout(quoteMock, signature, amount, lbcMock)
-    expect(lbcMock.depositPegout).toBeCalledTimes(1)
-    expect(lbcMock.depositPegout).lastCalledWith(quoteMock, signature, amount)
+    expect(lbcMock.pegOutContract.depositPegout).toBeCalledTimes(1)
+    expect(lbcMock.pegOutContract.depositPegout).lastCalledWith(quoteMock, signature, amount)
   })
 
   test('return txHash on successful execution', async () => {
@@ -76,7 +78,7 @@ describe('depositPegout function should', () => {
     expect(txHash).toEqual(successfulResultMock.txHash)
   })
   test('throw FlyoverError on non successful execution (tx returned ok but with status 0)', async () => {
-    jest.spyOn(lbcMock, 'depositPegout').mockResolvedValue({ successful: false, txHash: '0x8fbfb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' })
+    jest.spyOn(lbcMock.pegOutContract, 'depositPegout').mockResolvedValue({ successful: false, txHash: '0x8fbfb16acfcc8533a6b249daa01111e381a1d386f7f46fd1932c3cd86b6eb320' })
     const amount = BigInt(500)
     const signature = '0x1234'
     expect.assertions(2)
