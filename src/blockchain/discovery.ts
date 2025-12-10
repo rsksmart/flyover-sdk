@@ -18,7 +18,7 @@ export class DiscoveryContract {
   }
 
   async getAddress (): Promise<string> {
-    return this.discoveryContract.getAddress()
+    return this.discoveryContract.address
   }
 
   async getProviders (): Promise<LiquidityProviderBase[]> {
