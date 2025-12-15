@@ -27,6 +27,8 @@ import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
 import { isPegoutRefundable } from './isPegoutRefundable'
 import { isPeginRefundable, type IsPeginRefundableParams } from './isPeginRefundable'
 import { signQuote } from './signQuote'
+import { estimateRecommendedPegin } from './recommendedPegin'
+import { estimateRecommendedPegout, RecommendedPegoutExtraArgs } from './recommendedPegout'
 
 jest.mock('ethers')
 
@@ -50,6 +52,8 @@ jest.mock('./isPeginQuotePaid')
 jest.mock('./isPegoutQuotePaid')
 jest.mock('./isPegoutRefundable')
 jest.mock('./isPeginRefundable')
+jest.mock('./recommendedPegin')
+jest.mock('./recommendedPegout')
 jest.mock('./signQuote')
 
 const mockedGetQuote = getQuote as jest.Mock<typeof getQuote>
@@ -1162,6 +1166,49 @@ describe('Flyover object should', () => {
       expect(flyover).not.toHaveProperty('liquidityBridgeContract')
       await flyover.signQuote(quoteMock)
       expect(flyover).not.toHaveProperty('liquidityBridgeContract', undefined)
+    })
+  })
+
+  describe('estimateRecommendedPegin method should', () => {
+    const amount = BigInt(100)
+    const extraArgs = { data: '0x1122', destinationAddress: '0x03f23ae1917722d5a27a2ea0bcc98725a2a2a49a' }
+    test('invoke correctly estimateRecommendedPegin', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      await flyover.estimateRecommendedPegin(amount, extraArgs)
+      expect(estimateRecommendedPegin).toBeCalledTimes(1)
+      expect(estimateRecommendedPegin).toBeCalledWith(
+        expect.objectContaining({
+          httpClient: expect.anything(),
+          provider: providerMock,
+        }),
+        amount,
+        extraArgs
+      )
+    })
+    test('fail if LP has not been selected', async () => {
+      await expect(flyover.estimateRecommendedPegin(amount, extraArgs)).rejects.toThrow('You need to select a provider to do this operation')
+    })
+  })
+
+  describe('estimateRecommendedPegout method should', () => {
+    const amount = BigInt(100)
+    const extraArgs: RecommendedPegoutExtraArgs = { destinationAddressType: 'p2tr' }
+    test('invoke correctly estimateRecommendedPegout', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.estimateRecommendedPegout(amount, extraArgs)
+      expect(estimateRecommendedPegout).toBeCalledTimes(1)
+      expect(estimateRecommendedPegout).toBeCalledWith(
+        expect.objectContaining({
+          httpClient: expect.anything(),
+          provider: providerMock,
+        }),
+        amount,
+        extraArgs
+      )
+    })
+    test('fail if LP has not been selected', async () => {
+      await expect(flyover.estimateRecommendedPegout(amount, extraArgs)).rejects.toThrow('You need to select a provider to do this operation')
     })
   })
 })

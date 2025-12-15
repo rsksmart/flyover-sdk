@@ -168,6 +168,17 @@ describe('Flyover pegout process should', () => {
     expect(creationData.feeRate).not.toBeUndefined()
   }, EXTENDED_TIMEOUT)
 
+  test('get recommended value for quote total', async () => {
+    const result = await flyover.estimateRecommendedPegout(
+      FlyoverUtils.getQuoteTotal(selectedQuote),
+      { destinationAddressType: 'p2pkh' }
+    );
+    expect(result.estimatedCallFee.toString()).toEqual(selectedQuote.quote.callFee.toString());
+    expect(result.estimatedGasFee.toString()).toEqual(selectedQuote.quote.gasFee.toString());
+    expect(result.estimatedProductFee.toString()).toEqual(selectedQuote.quote.productFeeAmount.toString());
+    expect(result.recommendedQuoteValue.toString()).toEqual(selectedQuote.quote.value.toString());
+  }, EXTENDED_TIMEOUT)
+
   test.skip('[DISABLED: until we have a way to force a quote expiration] execute refungPegout to get back amount', async () => {
     const txHash = await flyover.refundPegout(selectedQuote)
     expect([null, undefined, '']).not.toContain(txHash)
