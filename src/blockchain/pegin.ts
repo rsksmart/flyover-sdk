@@ -60,10 +60,6 @@ export class PegInContract {
     return result.startsWith('0x') ? result.slice(2) : result
   }
 
-  async getProductFeePercentage (): Promise<number> {
-    return executeContractView<number>(this.peginContract, 'getFeePercentage')
-  }
-
   private toContractPeginQuote (detail: PeginQuoteDetail): Quotes.PegInQuoteStruct {
     detail.data ||= '0x'
     return {
@@ -85,7 +81,6 @@ export class PegInContract {
       callTime: detail.lpCallTime,
       depositConfirmations: detail.confirmations,
       callOnRegister: detail.callOnRegister,
-      productFeeAmount: detail.productFeeAmount,
       gasFee: detail.gasFee
     }
   }

@@ -63,7 +63,6 @@ const peginCases: {quote: Quote, signer: string, signature: string, connection?:
             confirmations: 3,
             callOnRegister: false,
             gasFee: BigInt("102071097248"),
-            productFeeAmount: BigInt(0)
             },
             quoteHash: 'bad965e00a5b1085cb2d4d448e2cdb7fd06b8875583055620f08516b18ee899f'
         },
@@ -92,7 +91,6 @@ const peginCases: {quote: Quote, signer: string, signature: string, connection?:
                 confirmations: 3,
                 callOnRegister: false,
                 gasFee: BigInt("547794649600"),
-                productFeeAmount: BigInt(0)
             },
             quoteHash: 'adf549ecbc1a4e734fa90b2985495732b1c1c9e84235fe77584c5eeedf4dbf3f'
         },
@@ -123,7 +121,6 @@ const pegoutCases: {quote: PegoutQuote, signer: string, signature: string, conne
             expireDate: 1748262660,
             expireBlocks: 6430650,
             gasFee: BigInt("2690000000000"),
-            productFeeAmount: BigInt(0)
         },
         quoteHash: 'cd0540da2550bdecd0721c09f16dde85832d1553a378bd090f8716a688e94cf6'
     },
@@ -151,7 +148,6 @@ const pegoutCases: {quote: PegoutQuote, signer: string, signature: string, conne
                 expireDate: 1748264172,
                 expireBlocks: 6430725,
                 gasFee: BigInt("4170000000000"),
-                productFeeAmount: BigInt(0)
         },
             quoteHash: 'b2e14c87f0cd6e0074bdd7f7617f4c206cb7a48abe572f7862ada5f265d4d1d6'
         },

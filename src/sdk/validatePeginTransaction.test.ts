@@ -28,7 +28,6 @@ const mainnetSignedInvalidAmountParams: ValidatePeginTransactionParams = {
       confirmations: 2,
       callOnRegister: false,
       gasFee: BigInt('1341211956000'),
-      productFeeAmount: BigInt(0)
     },
     quoteHash: 'some-hash'
   },
@@ -61,7 +60,6 @@ const regtestSingedInvalidUtxoParams: ValidatePeginTransactionParams = {
       confirmations: 10,
       callOnRegister: false,
       gasFee: BigInt('0'),
-      productFeeAmount: BigInt(0)
     },
     quoteHash: '9bf66366ea7a20d55365549213caddf2b156f9eb432dc55b7a8c87d684549113'
   },
@@ -94,7 +92,6 @@ const regtestUnsignedInvalidAmountParams: ValidatePeginTransactionParams = {
       confirmations: 10,
       callOnRegister: false,
       gasFee: BigInt(0),
-      productFeeAmount: BigInt(0)
     },
     quoteHash: '65f1199e7a1f46469339d94d64d0c8fd933811313230f032b8198c0afead1645'
   },
@@ -127,7 +124,6 @@ const regtestUnsingedInvalidUtxoParams: ValidatePeginTransactionParams = {
       confirmations: 10,
       callOnRegister: false,
       gasFee: BigInt(0),
-      productFeeAmount: BigInt(0)
     },
     quoteHash: 'd24d8c6ffce10f06f5f99e30f78b689356f5a4b7bdea1be87cb2aba54b5993f1'
   },
@@ -160,7 +156,6 @@ const regtestSignedValidParams: ValidatePeginTransactionParams = {
       confirmations: 10,
       callOnRegister: false,
       gasFee: BigInt(0),
-      productFeeAmount: BigInt(0)
     },
     quoteHash: 'a1e4682de734710a08461bc40b4c42b0ed821342903f11e8a0d71e9a76c698a2'
   },
@@ -193,7 +188,6 @@ const regtestUnsignedValidParams: ValidatePeginTransactionParams = {
       confirmations: 10,
       callOnRegister: false,
       gasFee: BigInt(0),
-      productFeeAmount: BigInt(0)
     },
     quoteHash: 'e0eb23644710c5ef8f218d9fa7dd4416471655660f2a2ba6b559059486c50ebb'
   },

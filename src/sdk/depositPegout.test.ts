@@ -23,8 +23,7 @@ const quoteMock: PegoutQuote = {
     rskRefundAddress: 'any address',
     transferConfirmations: 1,
     transferTime: 1,
-    value: BigInt(1),
-    productFeeAmount: BigInt(50000000000000)
+    value: BigInt(1)
   },
   quoteHash: 'any hash'
 }

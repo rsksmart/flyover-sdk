@@ -30,7 +30,6 @@ const quoteMock: PegoutQuote = {
     transferConfirmations: 1,
     transferTime: 1,
     value: BigInt(1),
-    productFeeAmount: BigInt(50000000000000)
   },
   quoteHash: 'any hash'
 }

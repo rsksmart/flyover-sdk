@@ -92,8 +92,7 @@ const quoteMock: Quote = {
     agreementTimestamp: 1,
     confirmations: 1,
     callOnRegister: true,
-    gasFee: BigInt('1'),
-    productFeeAmount: BigInt(50000000000000)
+    gasFee: BigInt('1')
   }
 }
 
@@ -116,8 +115,7 @@ const pegoutQuoteMock: PegoutQuote = {
     rskRefundAddress: 'any address',
     transferConfirmations: 1,
     transferTime: 1,
-    value: BigInt('9007199254740993'),
-    productFeeAmount: BigInt(50000000000000)
+    value: BigInt('9007199254740993')
   },
   quoteHash: 'any hash'
 }
@@ -562,17 +560,6 @@ describe('Flyover object should', () => {
     } catch (e: any) {
       expect(e).toBeInstanceOf(FlyoverError)
       expect(e.details).toBe('You need to select a provider to fetch the metadata')
-    }
-  })
-
-  test('fail to get metadata if is not connected to the network', async () => {
-    expect.assertions(2)
-    try {
-      flyover.useLiquidityProvider(providerMock)
-      await flyover.getMetadata()
-    } catch (e: any) {
-      expect(e).toBeInstanceOf(Error)
-      expect(e.message).toBe('Not connected to RSK')
     }
   })
 

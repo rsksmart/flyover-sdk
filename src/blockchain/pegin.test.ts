@@ -42,7 +42,6 @@ const peginQuoteMock: PeginQuote = {
     confirmations: 10,
     callOnRegister: false,
     gasFee: BigInt(600000000000000),
-    productFeeAmount: BigInt(600000000000000000)
   },
   quoteHash: '20be065f497b9b7250a13641f829f1f5466a9c1036d5843e46cb90e278b45f9b'
 }
@@ -78,7 +77,6 @@ const parsedPeginQuoteMock: Quotes.PegInQuoteStruct = {
   callTime: 7200,
   depositConfirmations: 10,
   callOnRegister: false,
-  productFeeAmount: BigInt(600000000000000000),
   gasFee: BigInt(600000000000000)
 }
 
@@ -384,23 +382,6 @@ describe('PegInContract class should', () => {
       expect(e).toBeInstanceOf(BridgeError)
       expect(e.message).toBe('error executing view validatePegInDepositAddress')
     })
-  })
-
-  test('get productFeePercentage correctly', async () => {
-    const contractMock = {
-      getFeePercentage: jest.fn().mockImplementation(async () => Promise.resolve(2))
-    }
-
-    const contractClassMock = jest.mocked(ethers.Contract)
-    contractClassMock.mockImplementation(() => contractMock as any)
-
-    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
-    const lbc = new PegInContract(connectionMock, config)
-
-    const result = await lbc.getProductFeePercentage()
-
-    expect(contractMock.getFeePercentage).toBeCalledTimes(1)
-    expect(result).toEqual(2)
   })
 
   test('normalize 0x prefix when parsing pegin quote', async () => {

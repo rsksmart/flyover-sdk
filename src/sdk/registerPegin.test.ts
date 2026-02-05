@@ -90,7 +90,6 @@ describe('registerPegin function should', () => {
       confirmations: 10,
       callOnRegister: false,
       gasFee: BigInt(0),
-      productFeeAmount: BigInt(0)
     },
     quoteHash: MOCK_QUOTE_HASH
   }
