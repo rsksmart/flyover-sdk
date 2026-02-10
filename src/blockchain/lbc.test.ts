@@ -1,5 +1,5 @@
 import { Contract } from "ethers";
-import { validateNotPaused } from "./lbc";
+import { getEip712Domain, validateNotPaused } from "./lbc";
 import { describe, test, jest, expect } from '@jest/globals'
 
 
@@ -25,5 +25,19 @@ describe("validateNotPaused", () => {
             timestamp: expect.any(Number),
             recoverable: true,
         });
+    });
+});
+
+describe("getEip712Domain", () => {
+    test("returns the EIP712 domain from the contract", async () => {
+        const name = "LiquidityBridge";
+        const version = "1.0";
+        const chainId = BigInt(1);
+        const verifyingContract = "0x1234567890123456789012345678901234567890";
+        const mockContract = {
+            eip712Domain: jest.fn().mockImplementation(async () => Promise.resolve(['', name, version, chainId, verifyingContract, '', []])),
+        } as unknown as Contract;
+        const result = await getEip712Domain(mockContract);
+        expect(result).toEqual({ name, version, chainId, verifyingContract });
     });
 });

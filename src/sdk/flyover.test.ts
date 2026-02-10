@@ -268,6 +268,7 @@ describe('Flyover object should', () => {
 
   test('invoke correctly acceptPegoutQuote', async () => {
     flyover.useLiquidityProvider(providerMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.acceptPegoutQuote(pegoutQuoteMock)
     expect(acceptPegoutQuote).toBeCalledTimes(1)
   })
@@ -280,6 +281,7 @@ describe('Flyover object should', () => {
       expect(acceptAuthenticatedPegoutQuote).toBeCalledTimes(1)
       expect(acceptAuthenticatedPegoutQuote).toBeCalledWith(
         (flyover as any).httpClient,
+        (flyover as any).liquidityBridgeContract,
         providerMock,
         pegoutQuoteMock,
         signatureMock

@@ -131,6 +131,49 @@ const _abi = [
   },
   {
     type: "function",
+    name: "eip712Domain",
+    inputs: [],
+    outputs: [
+      {
+        name: "fields",
+        type: "bytes1",
+        internalType: "bytes1",
+      },
+      {
+        name: "name",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "version",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "chainId",
+        type: "uint256",
+        internalType: "uint256",
+      },
+      {
+        name: "verifyingContract",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "salt",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+      {
+        name: "extensions",
+        type: "uint256[]",
+        internalType: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "getBalance",
     inputs: [
       {
@@ -183,6 +226,122 @@ const _abi = [
   {
     type: "function",
     name: "hashPegInQuote",
+    inputs: [
+      {
+        name: "quote",
+        type: "tuple",
+        internalType: "struct Quotes.PegInQuote",
+        components: [
+          {
+            name: "callFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "penaltyFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "gasFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "fedBtcAddress",
+            type: "bytes20",
+            internalType: "bytes20",
+          },
+          {
+            name: "lbcAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "liquidityProviderRskAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "contractAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "rskRefundAddress",
+            type: "address",
+            internalType: "address payable",
+          },
+          {
+            name: "nonce",
+            type: "int64",
+            internalType: "int64",
+          },
+          {
+            name: "gasLimit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "agreementTimestamp",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "timeForDeposit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "callTime",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "callOnRegister",
+            type: "bool",
+            internalType: "bool",
+          },
+          {
+            name: "btcRefundAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "liquidityProviderBtcAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "data",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "hashPegInQuoteEIP712",
     inputs: [
       {
         name: "quote",
@@ -713,6 +872,12 @@ const _abi = [
         internalType: "bool",
       },
     ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "EIP712DomainChanged",
+    inputs: [],
     anonymous: false,
   },
   {

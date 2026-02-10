@@ -17,7 +17,8 @@ export async function acceptQuote (httpClient: HttpClient, lbc: LiquidityBridgeC
     { QuoteHash: quote.quoteHash },
     { includeCaptcha: true }
   )
-  if (!isValidSignature(provider.provider, quote.quoteHash, acceptedQuote.signature)) {
+  const eip712Hash = await lbc.pegInContract.hashPeginQuoteEIP712(quote)
+  if (!isValidSignature(provider.provider, eip712Hash, acceptedQuote.signature)) {
     throw FlyoverError.invalidSignatureError({
       serverUrl: provider.apiBaseUrl,
       address: quote.quote.lpRSKAddr,

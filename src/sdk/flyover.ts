@@ -217,8 +217,9 @@ export class Flyover implements Bridge {
      */
   async acceptPegoutQuote (quote: PegoutQuote): Promise<AcceptedPegoutQuote> {
     this.checkLiquidityProvider()
+    this.checkLbc()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return acceptPegoutQuote(this.httpClient, this.liquidityProvider!, quote)
+    return acceptPegoutQuote(this.httpClient, this.liquidityBridgeContract!,this.liquidityProvider!, quote)
   }
 
   /**
@@ -242,7 +243,7 @@ export class Flyover implements Bridge {
     this.checkLiquidityProvider()
     this.checkLbc()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return acceptAuthenticatedPegoutQuote(this.httpClient, this.liquidityProvider!, quote, signature)
+    return acceptAuthenticatedPegoutQuote(this.httpClient, this.liquidityBridgeContract!,this.liquidityProvider!, quote, signature)
   }
 
   /**

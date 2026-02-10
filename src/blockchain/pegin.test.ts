@@ -404,4 +404,50 @@ describe('PegInContract class should', () => {
     expect(serializer.stringify(contractMock.hashPegInQuote.mock.calls[0]?.[0])).toBe(serializer.stringify(parsedPeginQuoteMock))
     expect(serializer.stringify(contractMock.hashPegInQuote.mock.calls[1]?.[0])).toBe(serializer.stringify(parsedPeginQuoteMock))
   })
+
+  describe('hashPeginQuoteEIP712 function should', () => {
+    const contractMock = {
+      hashPegInQuoteEIP712: jest.fn().mockReturnValue(Promise.resolve('0x010507'))
+    }
+    const contractClassMock = jest.mocked(ethers.Contract)
+    contractClassMock.mockImplementation(() => contractMock as any)
+    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+    const lbc = new PegInContract(connectionMock, config)
+
+    test('hash pegin quote using standard 712 correctly', async () => {
+      await expect(lbc.hashPeginQuoteEIP712(peginQuoteMock)).resolves.toBe('010507')
+      expect(serializer.stringify(contractMock.hashPegInQuoteEIP712.mock.calls[0]?.[0])).toBe(serializer.stringify(parsedPeginQuoteMock))
+    })
+
+    test('normalize 0x prefix when hashing pegin quote', async () => {
+      const prefixedMock = peginQuoteMock
+      const notPrefixedMock = structuredClone(peginQuoteMock)
+      notPrefixedMock.quote.data = notPrefixedMock.quote.data.slice(2)
+      await expect(lbc.hashPeginQuoteEIP712(prefixedMock)).resolves.toBe('010507')
+      await expect(lbc.hashPeginQuoteEIP712(notPrefixedMock)).resolves.toBe('010507')
+      expect(serializer.stringify(contractMock.hashPegInQuoteEIP712.mock.calls[0]?.[0])).toBe(serializer.stringify(parsedPeginQuoteMock))
+      expect(serializer.stringify(contractMock.hashPegInQuoteEIP712.mock.calls[1]?.[0])).toBe(serializer.stringify(parsedPeginQuoteMock))
+    })
+  })
+
+  describe('getEip712Domain function should', () => {
+    const contractMock = {
+      eip712Domain: jest.fn()
+        .mockImplementation(async () => Promise.resolve(['', 'Flyover PegIn', '1', 1234, '0x1234567890abcdef1234567890abcdef12345678'])),
+    }
+    const contractClassMock = jest.mocked(ethers.Contract)
+    contractClassMock.mockImplementation(() => contractMock as any)
+    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+    const lbc = new PegInContract(connectionMock, config)
+
+    test('return correct domain', async () => {
+      const domain = await lbc.getEip712Domain()
+      expect(serializer.stringify(domain)).toEqual(serializer.stringify({
+        name: 'Flyover PegIn',
+        version: '1',
+        chainId: 1234,
+        verifyingContract: '0x1234567890abcdef1234567890abcdef12345678'
+      }))
+    })
+  })
 })

@@ -92,7 +92,9 @@ export declare namespace Quotes {
 export interface PegoutInterface extends utils.Interface {
   functions: {
     "depositPegOut((uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes),bytes)": FunctionFragment;
+    "eip712Domain()": FunctionFragment;
     "hashPegOutQuote((uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes))": FunctionFragment;
+    "hashPegOutQuoteEIP712((uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes))": FunctionFragment;
     "isQuoteCompleted(bytes32)": FunctionFragment;
     "pause(string)": FunctionFragment;
     "pauseStatus()": FunctionFragment;
@@ -105,7 +107,9 @@ export interface PegoutInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "depositPegOut"
+      | "eip712Domain"
       | "hashPegOutQuote"
+      | "hashPegOutQuoteEIP712"
       | "isQuoteCompleted"
       | "pause"
       | "pauseStatus"
@@ -120,7 +124,15 @@ export interface PegoutInterface extends utils.Interface {
     values: [Quotes.PegOutQuoteStruct, BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "eip712Domain",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "hashPegOutQuote",
+    values: [Quotes.PegOutQuoteStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "hashPegOutQuoteEIP712",
     values: [Quotes.PegOutQuoteStruct]
   ): string;
   encodeFunctionData(
@@ -151,7 +163,15 @@ export interface PegoutInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "eip712Domain",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "hashPegOutQuote",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "hashPegOutQuoteEIP712",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -178,17 +198,28 @@ export interface PegoutInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "EIP712DomainChanged()": EventFragment;
     "PegOutChangePaid(bytes32,address,uint256)": EventFragment;
     "PegOutDeposit(bytes32,address,uint256,uint256)": EventFragment;
     "PegOutRefunded(bytes32)": EventFragment;
     "PegOutUserRefunded(bytes32,address,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "EIP712DomainChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PegOutChangePaid"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PegOutDeposit"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PegOutRefunded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PegOutUserRefunded"): EventFragment;
 }
+
+export interface EIP712DomainChangedEventObject {}
+export type EIP712DomainChangedEvent = TypedEvent<
+  [],
+  EIP712DomainChangedEventObject
+>;
+
+export type EIP712DomainChangedEventFilter =
+  TypedEventFilter<EIP712DomainChangedEvent>;
 
 export interface PegOutChangePaidEventObject {
   quoteHash: string;
@@ -272,7 +303,26 @@ export interface Pegout extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<ContractTransaction>;
 
+    eip712Domain(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, BigNumber, string, string, BigNumber[]] & {
+        fields: string;
+        name: string;
+        version: string;
+        chainId: BigNumber;
+        verifyingContract: string;
+        salt: string;
+        extensions: BigNumber[];
+      }
+    >;
+
     hashPegOutQuote(
+      quote: Quotes.PegOutQuoteStruct,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    hashPegOutQuoteEIP712(
       quote: Quotes.PegOutQuoteStruct,
       overrides?: CallOverrides
     ): Promise<[string]>;
@@ -332,7 +382,26 @@ export interface Pegout extends BaseContract {
     overrides?: PayableOverrides & { from?: string }
   ): Promise<ContractTransaction>;
 
+  eip712Domain(
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string, BigNumber, string, string, BigNumber[]] & {
+      fields: string;
+      name: string;
+      version: string;
+      chainId: BigNumber;
+      verifyingContract: string;
+      salt: string;
+      extensions: BigNumber[];
+    }
+  >;
+
   hashPegOutQuote(
+    quote: Quotes.PegOutQuoteStruct,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  hashPegOutQuoteEIP712(
     quote: Quotes.PegOutQuoteStruct,
     overrides?: CallOverrides
   ): Promise<string>;
@@ -388,7 +457,26 @@ export interface Pegout extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    eip712Domain(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, BigNumber, string, string, BigNumber[]] & {
+        fields: string;
+        name: string;
+        version: string;
+        chainId: BigNumber;
+        verifyingContract: string;
+        salt: string;
+        extensions: BigNumber[];
+      }
+    >;
+
     hashPegOutQuote(
+      quote: Quotes.PegOutQuoteStruct,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    hashPegOutQuoteEIP712(
       quote: Quotes.PegOutQuoteStruct,
       overrides?: CallOverrides
     ): Promise<string>;
@@ -434,6 +522,9 @@ export interface Pegout extends BaseContract {
   };
 
   filters: {
+    "EIP712DomainChanged()"(): EIP712DomainChangedEventFilter;
+    EIP712DomainChanged(): EIP712DomainChangedEventFilter;
+
     "PegOutChangePaid(bytes32,address,uint256)"(
       quoteHash?: BytesLike | null,
       userAddress?: string | null,
@@ -482,7 +573,14 @@ export interface Pegout extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<BigNumber>;
 
+    eip712Domain(overrides?: CallOverrides): Promise<BigNumber>;
+
     hashPegOutQuote(
+      quote: Quotes.PegOutQuoteStruct,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    hashPegOutQuoteEIP712(
       quote: Quotes.PegOutQuoteStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -529,7 +627,14 @@ export interface Pegout extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
+    eip712Domain(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     hashPegOutQuote(
+      quote: Quotes.PegOutQuoteStruct,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    hashPegOutQuoteEIP712(
       quote: Quotes.PegOutQuoteStruct,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
