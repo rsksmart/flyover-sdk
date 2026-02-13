@@ -28,6 +28,7 @@ import type {
 
 export declare namespace Quotes {
   export type PegOutQuoteStruct = {
+    chainId: BigNumberish;
     callFee: BigNumberish;
     penaltyFee: BigNumberish;
     value: BigNumberish;
@@ -53,6 +54,7 @@ export declare namespace Quotes {
     BigNumber,
     BigNumber,
     BigNumber,
+    BigNumber,
     string,
     string,
     string,
@@ -68,6 +70,7 @@ export declare namespace Quotes {
     string,
     string
   ] & {
+    chainId: BigNumber;
     callFee: BigNumber;
     penaltyFee: BigNumber;
     value: BigNumber;
@@ -91,10 +94,10 @@ export declare namespace Quotes {
 
 export interface PegoutInterface extends utils.Interface {
   functions: {
-    "depositPegOut((uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes),bytes)": FunctionFragment;
+    "depositPegOut((uint256,uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes),bytes)": FunctionFragment;
     "eip712Domain()": FunctionFragment;
-    "hashPegOutQuote((uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes))": FunctionFragment;
-    "hashPegOutQuoteEIP712((uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes))": FunctionFragment;
+    "hashPegOutQuote((uint256,uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes))": FunctionFragment;
+    "hashPegOutQuoteEIP712((uint256,uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes))": FunctionFragment;
     "isQuoteCompleted(bytes32)": FunctionFragment;
     "pause(string)": FunctionFragment;
     "pauseStatus()": FunctionFragment;

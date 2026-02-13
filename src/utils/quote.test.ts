@@ -23,6 +23,7 @@ import { type QuoteDetail, type PegoutQuote, type Quote } from '../api'
         lpCallTime: 8,
         confirmations: 9,
         callOnRegister: true,
+        chainId: 31,
       },
       quoteHash: 'a hash'
     }
@@ -46,6 +47,7 @@ import { type QuoteDetail, type PegoutQuote, type Quote } from '../api'
         transferTime: 3,
         expireDate: 2,
         expireBlocks: 1,
+        chainId: 31,
       },
       quoteHash: 'a hash'
     }

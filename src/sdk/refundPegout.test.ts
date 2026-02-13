@@ -30,6 +30,7 @@ const quoteMock: PegoutQuote = {
     transferConfirmations: 1,
     transferTime: 1,
     value: BigInt(1),
+    chainId: 31,
   },
   quoteHash: 'any hash'
 }

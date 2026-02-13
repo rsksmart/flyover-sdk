@@ -39,6 +39,7 @@ const pegoutQuoteMock: PegoutQuote = {
     transferTime: 3600,
     expireDate: 1683118898,
     expireBlocks: 5023,
+    chainId: 31,
   },
   quoteHash: 'c73b616363ef74017a085c60acb96de88b57268708d06ed6a5d21fbf5f08b69b'
 }
@@ -75,7 +76,8 @@ const parsedPegoutQuoteMock: Quotes.PegOutQuoteStruct = {
   transferTime: 3600,
   expireDate: 1683118898,
   expireBlock: 5023,
-  gasFee: BigInt(44000)
+  gasFee: BigInt(44000),
+  chainId: 31,
 }
 
 describe('PegOutContract class should', () => {

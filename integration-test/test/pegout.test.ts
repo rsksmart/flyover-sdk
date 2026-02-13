@@ -91,6 +91,7 @@ describe('Flyover pegout process should', () => {
     expect(quote.transferConfirmations).not.toBeUndefined()
     expect(quote.transferTime).not.toBeUndefined()
     expect(quote.value).not.toBeUndefined()
+    expect(quote.chainId).not.toBeUndefined()
   }, EXTENDED_TIMEOUT)
 
   test('accept specific quote', async () => {
@@ -149,6 +150,7 @@ describe('Flyover pegout process should', () => {
     expect(detail.transferConfirmations).not.toBeUndefined()
     expect(detail.transferTime).not.toBeUndefined()
     expect(detail.value).not.toBeUndefined()
+    expect(detail.chainId).not.toBeUndefined()
 
     expect(status.bridgeRefundTxHash).not.toBeUndefined()
     expect(status.depositAddress).not.toBeUndefined()

@@ -341,6 +341,8 @@ export interface PeginQuoteDTO {
   callFee: bigint;
   /** A boolean value indicating whether the callForUser can be called on registerPegIn */
   callOnRegister: boolean;
+  /** Chain ID of the RSK network where the quote is valid */
+  chainId: number;
   /** The number of confirmations that the LP requires before making the call */
   confirmations: number;
   /** The destination address of the peg-in */
@@ -393,6 +395,7 @@ export const PeginQuoteDtoRequiredFields: string[] = [
   "confirmations",
   "callOnRegister",
   "gasFee",
+  "chainId",
 ];
 
 export interface PeginQuoteRequest {
@@ -469,6 +472,8 @@ export interface PegoutQuoteDTO {
   agreementTimestamp: number;
   btcRefundAddress: string;
   callFee: bigint;
+  /** Chain ID of the RSK network where the quote is valid */
+  chainId: number;
   depositAddr: string;
   depositConfirmations: number;
   depositDateLimit: number;
@@ -506,6 +511,7 @@ export const PegoutQuoteDtoRequiredFields: string[] = [
   "expireDate",
   "expireBlocks",
   "gasFee",
+  "chainId",
 ];
 
 export interface PegoutQuoteRequest {

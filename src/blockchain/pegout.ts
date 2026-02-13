@@ -89,7 +89,8 @@ export class PegOutContract {
       transferTime: detail.transferTime,
       expireDate: detail.expireDate,
       expireBlock: detail.expireBlocks,
-      gasFee: detail.gasFee
+      gasFee: detail.gasFee,
+      chainId: detail.chainId
     }
   }
 }

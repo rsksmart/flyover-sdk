@@ -42,6 +42,7 @@ const peginQuoteMock: PeginQuote = {
     confirmations: 10,
     callOnRegister: false,
     gasFee: BigInt(600000000000000),
+    chainId: 31,
   },
   quoteHash: '20be065f497b9b7250a13641f829f1f5466a9c1036d5843e46cb90e278b45f9b'
 }
@@ -77,7 +78,8 @@ const parsedPeginQuoteMock: Quotes.PegInQuoteStruct = {
   callTime: 7200,
   depositConfirmations: 10,
   callOnRegister: false,
-  gasFee: BigInt(600000000000000)
+  gasFee: BigInt(600000000000000),
+  chainId: 31,
 }
 
 describe('PegInContract class should', () => {

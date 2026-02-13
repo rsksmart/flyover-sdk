@@ -28,6 +28,7 @@ import type {
 
 export declare namespace Quotes {
   export type PegInQuoteStruct = {
+    chainId: BigNumberish;
     callFee: BigNumberish;
     penaltyFee: BigNumberish;
     value: BigNumberish;
@@ -54,6 +55,7 @@ export declare namespace Quotes {
     BigNumber,
     BigNumber,
     BigNumber,
+    BigNumber,
     string,
     string,
     string,
@@ -70,6 +72,7 @@ export declare namespace Quotes {
     string,
     string
   ] & {
+    chainId: BigNumber;
     callFee: BigNumber;
     penaltyFee: BigNumber;
     value: BigNumber;
@@ -94,19 +97,19 @@ export declare namespace Quotes {
 
 export interface PeginInterface extends utils.Interface {
   functions: {
-    "callForUser((uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
+    "callForUser((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
     "deposit()": FunctionFragment;
     "eip712Domain()": FunctionFragment;
     "getBalance(address)": FunctionFragment;
     "getMinPegIn()": FunctionFragment;
     "getQuoteStatus(bytes32)": FunctionFragment;
-    "hashPegInQuote((uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
-    "hashPegInQuoteEIP712((uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
+    "hashPegInQuote((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
+    "hashPegInQuoteEIP712((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
     "pause(string)": FunctionFragment;
     "pauseStatus()": FunctionFragment;
-    "registerPegIn((uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes,bytes,bytes,uint256)": FunctionFragment;
+    "registerPegIn((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes,bytes,bytes,uint256)": FunctionFragment;
     "unpause()": FunctionFragment;
-    "validatePegInDepositAddress((uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes)": FunctionFragment;
+    "validatePegInDepositAddress((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes)": FunctionFragment;
     "withdraw(uint256)": FunctionFragment;
   };
 

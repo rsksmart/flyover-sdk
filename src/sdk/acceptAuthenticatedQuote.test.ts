@@ -72,6 +72,7 @@ const quoteMock: Quote = {
     confirmations: 1,
     callOnRegister: true,
     gasFee: BigInt('1'),
+    chainId: 31,
   }
 }
 

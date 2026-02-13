@@ -85,7 +85,8 @@ const quoteResponseMock: Quote =
       lpCallTime: 1,
       confirmations: 1,
       callOnRegister: true,
-      gasFee: BigInt(1)
+      gasFee: BigInt(1),
+      chainId: 31,
     },
     quoteHash: 'any hash'
   }
@@ -112,6 +113,7 @@ const quoteResponseSanitizedMock: Quote =
       confirmations: 1,
       callOnRegister: true,
       gasFee: BigInt(1),
+      chainId: 31,
     },
     quoteHash: 'any hash'
   }

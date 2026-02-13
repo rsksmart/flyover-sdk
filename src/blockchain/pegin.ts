@@ -91,7 +91,8 @@ export class PegInContract {
       callTime: detail.lpCallTime,
       depositConfirmations: detail.confirmations,
       callOnRegister: detail.callOnRegister,
-      gasFee: detail.gasFee
+      gasFee: detail.gasFee,
+      chainId: detail.chainId,
     }
   }
 }

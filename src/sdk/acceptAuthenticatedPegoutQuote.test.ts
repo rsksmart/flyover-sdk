@@ -75,6 +75,7 @@ const pegoutQuoteMock: PegoutQuote = {
     transferConfirmations: 1,
     transferTime: 1,
     value: BigInt('9007199254740993'),
+    chainId: 31,
   }
 }
 

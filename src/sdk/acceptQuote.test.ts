@@ -39,6 +39,7 @@ const quoteMock: Quote = {
     lpCallTime: 1,
     confirmations: 1,
     callOnRegister: true,
+    chainId: 31,
   },
   quoteHash: 'a1a6210bc03964779067d5acf23e5076639e4621a500f8ef3f87861eaabdb6e7'
 }

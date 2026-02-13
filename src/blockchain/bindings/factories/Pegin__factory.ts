@@ -16,6 +16,11 @@ const _abi = [
         internalType: "struct Quotes.PegInQuote",
         components: [
           {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
             name: "callFee",
             type: "uint256",
             internalType: "uint256",
@@ -233,6 +238,11 @@ const _abi = [
         internalType: "struct Quotes.PegInQuote",
         components: [
           {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
             name: "callFee",
             type: "uint256",
             internalType: "uint256",
@@ -348,6 +358,11 @@ const _abi = [
         type: "tuple",
         internalType: "struct Quotes.PegInQuote",
         components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
           {
             name: "callFee",
             type: "uint256",
@@ -501,6 +516,11 @@ const _abi = [
         internalType: "struct Quotes.PegInQuote",
         components: [
           {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
             name: "callFee",
             type: "uint256",
             internalType: "uint256",
@@ -643,6 +663,11 @@ const _abi = [
         type: "tuple",
         internalType: "struct Quotes.PegInQuote",
         components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
           {
             name: "callFee",
             type: "uint256",
