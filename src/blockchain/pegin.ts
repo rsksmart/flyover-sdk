@@ -6,7 +6,7 @@ import { ensureHexPrefix } from '../utils/format'
 import { Quotes } from "./bindings/Pegin"
 import { type Quote as PeginQuote, type QuoteDetail as PeginQuoteDetail } from '../api'
 import { FlyoverNetworks, FlyoverSupportedNetworks } from "../constants/networks"
-import { validateNotPaused } from "./lbc"
+import { getEip712Domain, validateNotPaused } from "./lbc"
 
 export class PegInContract {
   private readonly peginContract: Contract
@@ -60,6 +60,16 @@ export class PegInContract {
     return result.startsWith('0x') ? result.slice(2) : result
   }
 
+  async hashPeginQuoteEIP712 (quote: PeginQuote): Promise<string> {
+    const bytes = await executeContractView<BytesLike>(this.peginContract, 'hashPegInQuoteEIP712', this.toContractPeginQuote(quote.quote))
+    const result = utils.hexlify(bytes)
+    return result.startsWith('0x') ? result.slice(2) : result
+  }
+
+  async getEip712Domain (): Promise<{ name: string, version: string, chainId: bigint, verifyingContract: string }> {
+    return getEip712Domain(this.peginContract)
+  }
+
   private toContractPeginQuote (detail: PeginQuoteDetail): Quotes.PegInQuoteStruct {
     detail.data ||= '0x'
     return {
@@ -81,7 +91,8 @@ export class PegInContract {
       callTime: detail.lpCallTime,
       depositConfirmations: detail.confirmations,
       callOnRegister: detail.callOnRegister,
-      gasFee: detail.gasFee
+      gasFee: detail.gasFee,
+      chainId: detail.chainId,
     }
   }
 }

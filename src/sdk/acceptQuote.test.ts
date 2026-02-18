@@ -11,7 +11,7 @@ const mockClient: HttpClient = {
   },
   async post<T>(_url: string, _body: object) {
     return Promise.resolve({
-      signature: '02e620159216c49acb29a0f32ba6e190fab648667aab4027de41c134665f6c2b103065818178c108ab9a0603d16ae10c57e974151b057c3276a4c9a646a3559a1b',
+      signature: '1d246d9e91d1b372d266678f9ce915522912d88c5ce918364b442702a0ef591274083f4af0f483a794a965e74cfcf76ace04067c0ffbf14862acbb5ab0a8ad5d1b',
       bitcoinDepositAddressHash: 'any address hash'
     } as T)
   },
@@ -39,13 +39,14 @@ const quoteMock: Quote = {
     lpCallTime: 1,
     confirmations: 1,
     callOnRegister: true,
+    chainId: 31,
   },
   quoteHash: 'a1a6210bc03964779067d5acf23e5076639e4621a500f8ef3f87861eaabdb6e7'
 }
 
 const providerMock: LiquidityProvider = {
   id: 1,
-  provider: '0x9D93929A9099be4355fC2389FbF253982F9dF47c',
+  provider: '0x57f9F71E683E2A8ff3d2f394aE45C58b2d913A35',
   apiBaseUrl: 'http://localhost:8081',
   name: 'any name',
   status: true,
@@ -72,7 +73,8 @@ const providerMock: LiquidityProvider = {
 
 const lbcMock = {
   pegInContract: {
-    validatePeginDepositAddress: async (_quote: Quote, _depositAddress: string) => Promise.resolve(true)
+    validatePeginDepositAddress: async (_quote: Quote, _depositAddress: string) => Promise.resolve(true),
+    hashPeginQuoteEIP712: async (_quote: Quote) => Promise.resolve('0x85702c9a2cf27cda92c407fa8a495d489b4f06ff537bd576d67af802e289b3bb')
   }
 } as LiquidityBridgeContract
 

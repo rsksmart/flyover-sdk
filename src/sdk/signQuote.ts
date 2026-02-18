@@ -4,6 +4,8 @@ import { FlyoverError } from "../client/httpClient";
 import { LiquidityBridgeContract } from "../blockchain/lbc";
 import { isPeginQuote } from "../utils/quote";
 import { remove0x } from "../utils/parsing";
+import { TypedDataSigner } from "@ethersproject/abstract-signer";
+import { ensureHexPrefix } from "../utils/format";
 
 export async function signQuote (
     config: FlyoverConfig, // TODO replace with FlyoverSDKContext when refund feature is merged to master
@@ -14,12 +16,7 @@ export async function signQuote (
     const connection = config.rskConnection
     assertTruthy(connection, 'Rsk connection is not set')
     canSign(connection)
-    const hash = await hashQuote(lbc, quote)
-    if (hash !== quote.quoteHash) {
-        throw FlyoverError.invalidQuoteHashError(lp.apiBaseUrl)
-    }
-    const hashBytes = Buffer.from(quote.quoteHash, 'hex')
-    const signature = await connection.signer.signMessage(hashBytes)
+    const signature = await requestSignature(connection.signer as unknown as TypedDataSigner, lp, lbc, quote)
     return remove0x(signature)
 }
 
@@ -29,6 +26,64 @@ function canSign(connection: Connection): asserts connection is BlockchainConnec
     }
 }
 
-function hashQuote(lbc: LiquidityBridgeContract, quote: Quote|PegoutQuote): Promise<string> {
-    return isPeginQuote(quote) ? lbc.pegInContract.hashPeginQuote(quote) : lbc.pegOutContract.hashPegoutQuote(quote)
+function requestSignature(
+    signer: TypedDataSigner,
+    lp: LiquidityProvider,
+    lbc: LiquidityBridgeContract,
+    quote: Quote|PegoutQuote,
+): Promise<string> {
+    return isPeginQuote(quote) ? signPeginQuote(signer, lp, lbc, quote) : signPegoutQuote(signer, lp, lbc, quote)
+}
+
+async function signPeginQuote(
+    signer: TypedDataSigner,
+    lp: LiquidityProvider,
+    lbc: LiquidityBridgeContract,
+    quote: Quote,
+): Promise<string> {
+    const quoteHash = await lbc.pegInContract.hashPeginQuote(quote)
+    if (quoteHash !== quote.quoteHash) {
+        throw FlyoverError.invalidQuoteHashError(lp.apiBaseUrl)
+    }
+    const domain = await lbc.pegInContract.getEip712Domain()
+    return signer._signTypedData(
+        domain,
+        {
+            PegInQuote: [
+                { name: 'liquidityProvider', type: 'address' },
+                { name: 'quoteHash', type: 'bytes32' },
+            ]
+        },
+        {
+            liquidityProvider: quote.quote.lpRSKAddr,
+            quoteHash: ensureHexPrefix(quoteHash),
+        }
+    )
+}
+
+async function signPegoutQuote(
+    signer: TypedDataSigner,
+    lp: LiquidityProvider,
+    lbc: LiquidityBridgeContract,
+    quote: PegoutQuote,
+): Promise<string> {
+    const quoteHash = await lbc.pegOutContract.hashPegoutQuote(quote)
+    if (quoteHash !== quote.quoteHash) {
+        throw FlyoverError.invalidQuoteHashError(lp.apiBaseUrl)
+    }
+    const domain = await lbc.pegOutContract.getEip712Domain()
+    const signature = await signer._signTypedData(
+        domain,
+        {
+            PegOutQuote: [
+                { name: 'liquidityProvider', type: 'address' },
+                { name: 'quoteHash', type: 'bytes32' },
+            ]
+        },
+        {
+            liquidityProvider: quote.quote.liquidityProviderRskAddress,
+            quoteHash: ensureHexPrefix(quoteHash),
+        }
+    )
+    return signature
 }

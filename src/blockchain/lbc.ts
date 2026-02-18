@@ -21,3 +21,16 @@ export async function validateNotPaused(contract: Contract): Promise<void> {
         throw FlyoverError.protocolPaused({ reason, timestamp: Number(since) })
     }
 }
+
+export async function getEip712Domain(contract: Contract): Promise<{ name: string, version: string, chainId: bigint, verifyingContract: string }> {
+    const [
+        ,
+        name,
+        version,
+        chainId,
+        verifyingContract,
+    ] = await executeContractView<
+        [string, string, string, BigNumberish, string, string, BigNumberish[]]
+    >(contract, 'eip712Domain')
+    return { name, version, chainId: BigInt(chainId.toString()), verifyingContract }
+}

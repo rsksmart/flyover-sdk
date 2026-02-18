@@ -28,9 +28,9 @@ export const FlyoverNetworks = deepFreeze({
     chainId: 31
   },
   Regtest: {
-    pegInContractAddress: '0x79bbC6403708C6578B0896bF1d1a91D2BB2AAa1c',
-    pegOutContractAddress: '0xA66939ac57893C2E65425a5D66099Bc20C76D4CD',
-    discoveryAddress: '0xdac5481925A298B95Bf5b54c35b68FC6fc2eF423',
+    pegInContractAddress: '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318',
+    pegOutContractAddress: '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e',
+    discoveryAddress: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853',
     chainId: 33
   }
 } as const)

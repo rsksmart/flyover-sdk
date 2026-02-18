@@ -119,7 +119,8 @@ const mockPeginQuoteDTO: QuoteDetail = {
   penaltyFee: BigInt(1000),
   rskRefundAddr: '0xrefund',
   timeForDeposit: 3600,
-  value: BigInt(600000000000000000)
+  value: BigInt(600000000000000000),
+  chainId: 31,
 }
 
 const mockPeginQuoteStatusWithCallForUserTxHash: PeginQuoteStatusDetail = {

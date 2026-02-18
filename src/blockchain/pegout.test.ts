@@ -39,6 +39,7 @@ const pegoutQuoteMock: PegoutQuote = {
     transferTime: 3600,
     expireDate: 1683118898,
     expireBlocks: 5023,
+    chainId: 31,
   },
   quoteHash: 'c73b616363ef74017a085c60acb96de88b57268708d06ed6a5d21fbf5f08b69b'
 }
@@ -75,7 +76,8 @@ const parsedPegoutQuoteMock: Quotes.PegOutQuoteStruct = {
   transferTime: 3600,
   expireDate: 1683118898,
   expireBlock: 5023,
-  gasFee: BigInt(44000)
+  gasFee: BigInt(44000),
+  chainId: 31,
 }
 
 describe('PegOutContract class should', () => {
@@ -313,6 +315,47 @@ describe('PegOutContract class should', () => {
     await lbc.refundPegout(pegoutQuoteMock).catch(e => {
       expect(e).toBeInstanceOf(BridgeError)
       expect(e.message).toBe('error executing function refundUserPegOut')
+    })
+  })
+
+
+  describe('hashPegoutQuoteEIP712 function should', () => {
+    const contractMock = {
+      hashPegOutQuoteEIP712: jest.fn().mockReturnValue(Promise.resolve('0x010507'))
+    }
+    jest.spyOn(ethers.utils, 'hexlify').mockImplementation((arg) => {
+      const { utils } = jest.requireActual<typeof ethers>('ethers')
+      return utils.hexlify(arg)
+    })
+    const contractClassMock = jest.mocked(ethers.Contract)
+    contractClassMock.mockImplementation(() => contractMock as any)
+    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+    const lbc = new PegOutContract(connectionMock, config)
+
+    test('hash pegout quote using standard 712 correctly', async () => {
+      await expect(lbc.hashPegoutQuoteEIP712(pegoutQuoteMock)).resolves.toBe('010507')
+      expect(serializer.stringify(contractMock.hashPegOutQuoteEIP712.mock.calls[0]?.[0])).toBe(serializer.stringify(parsedPegoutQuoteMock))
+    })
+  })
+
+  describe('getEip712Domain function should', () => {
+    const contractMock = {
+      eip712Domain: jest.fn()
+        .mockImplementation(async () => Promise.resolve(['', 'Flyover PegOut', '1', 1234, '0x1234567890abcdef1234567890abcdef12345678'])),
+    }
+    const contractClassMock = jest.mocked(ethers.Contract)
+    contractClassMock.mockImplementation(() => contractMock as any)
+    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+    const lbc = new PegOutContract(connectionMock, config)
+
+    test('return correct domain', async () => {
+      const domain = await lbc.getEip712Domain()
+      expect(serializer.stringify(domain)).toEqual(serializer.stringify({
+        name: 'Flyover PegOut',
+        version: '1',
+        chainId: 1234,
+        verifyingContract: '0x1234567890abcdef1234567890abcdef12345678'
+      }))
     })
   })
 })

@@ -90,6 +90,7 @@ describe('Flyover pegin process should', () => {
     expect(quote.lpCallTime).not.toBeUndefined()
     expect(quote.confirmations).not.toBeUndefined()
     expect(quote.callOnRegister).not.toBeUndefined()
+    expect(quote.chainId).not.toBeUndefined()
   })
 
   // TODO we need to find a way to test functions with external dependency inside SDK
@@ -130,6 +131,7 @@ describe('Flyover pegin process should', () => {
     expect(detail.rskRefundAddr).not.toBeUndefined()
     expect(detail.timeForDeposit).not.toBeUndefined()
     expect(detail.value).not.toBeUndefined()
+    expect(detail.chainId).not.toBeUndefined()
 
     expect(status.callForUserTxHash).not.toBeUndefined()
     expect(status.depositAddress).not.toBeUndefined()

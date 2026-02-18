@@ -16,6 +16,11 @@ const _abi = [
         internalType: "struct Quotes.PegOutQuote",
         components: [
           {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
             name: "callFee",
             type: "uint256",
             internalType: "uint256",
@@ -118,6 +123,49 @@ const _abi = [
   },
   {
     type: "function",
+    name: "eip712Domain",
+    inputs: [],
+    outputs: [
+      {
+        name: "fields",
+        type: "bytes1",
+        internalType: "bytes1",
+      },
+      {
+        name: "name",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "version",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "chainId",
+        type: "uint256",
+        internalType: "uint256",
+      },
+      {
+        name: "verifyingContract",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "salt",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+      {
+        name: "extensions",
+        type: "uint256[]",
+        internalType: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "hashPegOutQuote",
     inputs: [
       {
@@ -125,6 +173,127 @@ const _abi = [
         type: "tuple",
         internalType: "struct Quotes.PegOutQuote",
         components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "callFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "penaltyFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "gasFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "lbcAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "lpRskAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "rskRefundAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "nonce",
+            type: "int64",
+            internalType: "int64",
+          },
+          {
+            name: "agreementTimestamp",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositDateLimit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "transferTime",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "expireDate",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "expireBlock",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "transferConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "depositAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "btcRefundAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "lpBtcAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "hashPegOutQuoteEIP712",
+    inputs: [
+      {
+        name: "quote",
+        type: "tuple",
+        internalType: "struct Quotes.PegOutQuote",
+        components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
           {
             name: "callFee",
             type: "uint256",
@@ -357,6 +526,11 @@ const _abi = [
         internalType: "struct Quotes.PegOutQuote",
         components: [
           {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
             name: "callFee",
             type: "uint256",
             internalType: "uint256",
@@ -450,6 +624,12 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+  },
+  {
+    type: "event",
+    name: "EIP712DomainChanged",
+    inputs: [],
+    anonymous: false,
   },
   {
     type: "event",

@@ -73,6 +73,7 @@ const quoteResponseMock: PegoutQuote = {
     transferConfirmations: 1,
     transferTime: 1,
     value: quoteRequestMock.valueToTransfer,
+    chainId: 31,
   },
   quoteHash: 'any hash'
 }

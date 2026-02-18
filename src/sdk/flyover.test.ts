@@ -92,7 +92,8 @@ const quoteMock: Quote = {
     agreementTimestamp: 1,
     confirmations: 1,
     callOnRegister: true,
-    gasFee: BigInt('1')
+    gasFee: BigInt('1'),
+    chainId: 31,
   }
 }
 
@@ -115,7 +116,8 @@ const pegoutQuoteMock: PegoutQuote = {
     rskRefundAddress: 'any address',
     transferConfirmations: 1,
     transferTime: 1,
-    value: BigInt('9007199254740993')
+    value: BigInt('9007199254740993'),
+    chainId: 31,
   },
   quoteHash: 'any hash'
 }
@@ -268,6 +270,7 @@ describe('Flyover object should', () => {
 
   test('invoke correctly acceptPegoutQuote', async () => {
     flyover.useLiquidityProvider(providerMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.acceptPegoutQuote(pegoutQuoteMock)
     expect(acceptPegoutQuote).toBeCalledTimes(1)
   })
@@ -280,6 +283,7 @@ describe('Flyover object should', () => {
       expect(acceptAuthenticatedPegoutQuote).toBeCalledTimes(1)
       expect(acceptAuthenticatedPegoutQuote).toBeCalledWith(
         (flyover as any).httpClient,
+        (flyover as any).liquidityBridgeContract,
         providerMock,
         pegoutQuoteMock,
         signatureMock
