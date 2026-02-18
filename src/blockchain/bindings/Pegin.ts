@@ -31,7 +31,6 @@ export declare namespace Quotes {
     callFee: BigNumberish;
     penaltyFee: BigNumberish;
     value: BigNumberish;
-    productFeeAmount: BigNumberish;
     gasFee: BigNumberish;
     fedBtcAddress: BytesLike;
     lbcAddress: string;
@@ -55,7 +54,6 @@ export declare namespace Quotes {
     BigNumber,
     BigNumber,
     BigNumber,
-    BigNumber,
     string,
     string,
     string,
@@ -75,7 +73,6 @@ export declare namespace Quotes {
     callFee: BigNumber;
     penaltyFee: BigNumber;
     value: BigNumber;
-    productFeeAmount: BigNumber;
     gasFee: BigNumber;
     fedBtcAddress: string;
     lbcAddress: string;
@@ -97,20 +94,17 @@ export declare namespace Quotes {
 
 export interface PeginInterface extends utils.Interface {
   functions: {
-    "callForUser((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
+    "callForUser((uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
     "deposit()": FunctionFragment;
     "getBalance(address)": FunctionFragment;
-    "getCurrentContribution()": FunctionFragment;
-    "getFeeCollector()": FunctionFragment;
-    "getFeePercentage()": FunctionFragment;
     "getMinPegIn()": FunctionFragment;
     "getQuoteStatus(bytes32)": FunctionFragment;
-    "hashPegInQuote((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
+    "hashPegInQuote((uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
     "pause(string)": FunctionFragment;
     "pauseStatus()": FunctionFragment;
-    "registerPegIn((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes,bytes,bytes,uint256)": FunctionFragment;
+    "registerPegIn((uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes,bytes,bytes,uint256)": FunctionFragment;
     "unpause()": FunctionFragment;
-    "validatePegInDepositAddress((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes)": FunctionFragment;
+    "validatePegInDepositAddress((uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes)": FunctionFragment;
     "withdraw(uint256)": FunctionFragment;
   };
 
@@ -119,9 +113,6 @@ export interface PeginInterface extends utils.Interface {
       | "callForUser"
       | "deposit"
       | "getBalance"
-      | "getCurrentContribution"
-      | "getFeeCollector"
-      | "getFeePercentage"
       | "getMinPegIn"
       | "getQuoteStatus"
       | "hashPegInQuote"
@@ -139,18 +130,6 @@ export interface PeginInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "deposit", values?: undefined): string;
   encodeFunctionData(functionFragment: "getBalance", values: [string]): string;
-  encodeFunctionData(
-    functionFragment: "getCurrentContribution",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getFeeCollector",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getFeePercentage",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "getMinPegIn",
     values?: undefined
@@ -194,18 +173,6 @@ export interface PeginInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getBalance", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getCurrentContribution",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getFeeCollector",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getFeePercentage",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "getMinPegIn",
     data: BytesLike
@@ -376,12 +343,6 @@ export interface Pegin extends BaseContract {
 
     getBalance(addr: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    getCurrentContribution(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<[string]>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     getMinPegIn(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getQuoteStatus(
@@ -445,12 +406,6 @@ export interface Pegin extends BaseContract {
 
   getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
-
-  getFeeCollector(overrides?: CallOverrides): Promise<string>;
-
-  getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
-
   getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
   getQuoteStatus(
@@ -511,12 +466,6 @@ export interface Pegin extends BaseContract {
     deposit(overrides?: CallOverrides): Promise<void>;
 
     getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<string>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
 
     getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -653,12 +602,6 @@ export interface Pegin extends BaseContract {
 
     getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
-
     getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
     getQuoteStatus(
@@ -715,14 +658,6 @@ export interface Pegin extends BaseContract {
       addr: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    getCurrentContribution(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getMinPegIn(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

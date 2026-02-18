@@ -39,7 +39,6 @@ const pegoutQuoteMock: PegoutQuote = {
     transferTime: 3600,
     expireDate: 1683118898,
     expireBlocks: 5023,
-    productFeeAmount: BigInt(600000000000000000)
   },
   quoteHash: 'c73b616363ef74017a085c60acb96de88b57268708d06ed6a5d21fbf5f08b69b'
 }
@@ -76,7 +75,6 @@ const parsedPegoutQuoteMock: Quotes.PegOutQuoteStruct = {
   transferTime: 3600,
   expireDate: 1683118898,
   expireBlock: 5023,
-  productFeeAmount: BigInt(600000000000000000),
   gasFee: BigInt(44000)
 }
 
@@ -316,22 +314,5 @@ describe('PegOutContract class should', () => {
       expect(e).toBeInstanceOf(BridgeError)
       expect(e.message).toBe('error executing function refundUserPegOut')
     })
-  })
-
-  test('get productFeePercentage correctly', async () => {
-    const contractMock = {
-      getFeePercentage: jest.fn().mockImplementation(async () => Promise.resolve(2))
-    }
-
-    const contractClassMock = jest.mocked(ethers.Contract)
-    contractClassMock.mockImplementation(() => contractMock as any)
-
-    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
-    const lbc = new PegOutContract(connectionMock, config)
-
-    const result = await lbc.getProductFeePercentage()
-
-    expect(contractMock.getFeePercentage).toBeCalledTimes(1)
-    expect(result).toEqual(2)
   })
 })

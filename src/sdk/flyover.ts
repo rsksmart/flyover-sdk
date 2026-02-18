@@ -430,9 +430,7 @@ export class Flyover implements Bridge {
     if (this.liquidityProvider == null) {
       throw FlyoverError.withReason('You need to select a provider to fetch the metadata')
     }
-    this.checkLbc()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return getMetadata(this.liquidityProvider, this.liquidityBridgeContract!, this.lastPeginQuote, this.lastPegoutQuote)
+    return getMetadata(this.liquidityProvider, this.lastPeginQuote, this.lastPegoutQuote)
   }
 
   supportsNetwork (chainId: number): boolean {

@@ -23,7 +23,6 @@ import { type QuoteDetail, type PegoutQuote, type Quote } from '../api'
         lpCallTime: 8,
         confirmations: 9,
         callOnRegister: true,
-        productFeeAmount: BigInt('3000000000000000000')
       },
       quoteHash: 'a hash'
     }
@@ -47,7 +46,6 @@ import { type QuoteDetail, type PegoutQuote, type Quote } from '../api'
         transferTime: 3,
         expireDate: 2,
         expireBlocks: 1,
-        productFeeAmount: BigInt('1000000000000000000')
       },
       quoteHash: 'a hash'
     }
@@ -62,15 +60,14 @@ describe('getQuoteTotal function should', () => {
     expect(() => { getQuoteTotal({} as PegoutQuote) }).toThrow('empty quote detail')
   })
   test('sum properly quote value', () => {
-    expect(getQuoteTotal(peginQuote)).toBe(BigInt('9000000001234567890'))
-    expect(getQuoteTotal(pegoutQuote)).toBe(BigInt('13500000000000000000'))
+    expect(getQuoteTotal(peginQuote)).toBe(BigInt('6000000001234567890'))
+    expect(getQuoteTotal(pegoutQuote)).toBe(BigInt('12500000000000000000'))
   })
   test('replace missing values with 0', () => {
     const quotes: any[] = [
       { quote: { callFee: 5 } },
       { quote: { value: 5 } },
       { quote: { gasFee: 5 } },
-      { quote: { productFeeAmount: 5 } }
     ]
     quotes.forEach(quote => { expect(getQuoteTotal(quote)).toBe(BigInt(5)) })
   })

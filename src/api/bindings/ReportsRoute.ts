@@ -9,11 +9,11 @@
  * ---------------------------------------------------------------
  */
 
-import { GetTransactionsResponse, SummaryResultDTO } from "./data-contracts";
+import { GetAssetsReportResponse, GetTransactionsResponse } from "./data-contracts";
 
 export namespace Reports {
   /**
-   * @description  Get the asset information for the LPS.
+   * @description  Get the asset information for the LPS including BTC and RBTC balances, locations, and allocations.
    * @name AssetsList
    * @summary Get asset Reports
    * @request GET:/reports/assets
@@ -23,7 +23,7 @@ export namespace Reports {
     export type RequestQuery = {};
     export type RequestBody = never;
     export type RequestHeaders = {};
-    export type ResponseBody = void;
+    export type ResponseBody = GetAssetsReportResponse;
   }
 
   export const AssetsListPath = "/reports/assets";
@@ -110,28 +110,28 @@ export namespace Reports {
   export const RevenueListPath = "/reports/revenue";
 
   /**
-   * @description  Returns financial data for a given period
+   * @description  Get the summary data for the specified period including total quotes, accepted, paid, and refunded statistics.
    * @name SummariesList
-   * @summary Summaries
+   * @summary Get summaries Reports
    * @request GET:/reports/summaries
    */
   export namespace SummariesList {
     export type RequestParams = {};
     export type RequestQuery = {
       /**
-       * Start date in YYYY-MM-DD format
+       * Start date for the report. Supports YYYY-MM-DD (expands to full day) or ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)
        * @format string
        */
       startDate: string;
       /**
-       * End date in YYYY-MM-DD format
+       * End date for the report. Supports YYYY-MM-DD (expands to end of day) or ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)
        * @format string
        */
       endDate: string;
     };
     export type RequestBody = never;
     export type RequestHeaders = {};
-    export type ResponseBody = SummaryResultDTO;
+    export type ResponseBody = void;
   }
 
   export const SummariesListPath = "/reports/summaries";

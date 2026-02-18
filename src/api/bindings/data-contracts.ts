@@ -98,6 +98,59 @@ export interface AvailableLiquidityDTO {
 
 export const AvailableLiquidityDtoRequiredFields: string[] = ["peginLiquidityAmount", "pegoutLiquidityAmount"];
 
+export interface BtcAssetAllocationDTO {
+  /**
+   * BTC available for new pegout quotes
+   * @example "43200000"
+   */
+  available?: any;
+  /**
+   * BTC reserved for users (accepted pegout quotes)
+   * @example "4500000"
+   */
+  reservedForUsers?: any;
+  /**
+   * BTC waiting to be refunded to the LP
+   * @example "19800000"
+   */
+  waitingForRefund?: any;
+}
+
+export interface BtcAssetLocationDTO {
+  /**
+   * BTC in the LP's Bitcoin wallet
+   * @example "50000000"
+   */
+  btcWallet?: any;
+  /**
+   * BTC in the federation (rebalancing or waiting for refund)
+   * @example "5000000"
+   */
+  federation?: any;
+  /**
+   * BTC represented as RBTC locked in the Liquidity Bridge Contract
+   * @example "5300000"
+   */
+  lbc?: any;
+  /**
+   * BTC represented as RBTC in the RSK wallet (waiting for rebalancing)
+   * @example "6500000"
+   */
+  rskWallet?: any;
+}
+
+export interface BtcAssetReportDTO {
+  /** BTC allocation by usage/purpose */
+  allocation?: BtcAssetAllocationDTO;
+  /** BTC distribution across different locations */
+  location?: BtcAssetLocationDTO;
+  /**
+   * Total BTC assets under LP control
+   * @example "67500000"
+   */
+  total?: any;
+}
+
 export interface ChangeStatusRequest {
   status?: boolean;
 }
@@ -138,6 +191,13 @@ export interface GeneralConfigurationDTO {
 
 export interface GeneralConfigurationRequest {
   configuration?: GeneralConfigurationDTO;
+}
+
+export interface GetAssetsReportResponse {
+  /** Detailed BTC asset report */
+  btcAssetReport?: BtcAssetReportDTO;
+  /** Detailed RBTC asset report */
+  rbtcAssetReport?: RbtcAssetReportDTO;
 }
 
 export interface GetCollateralResponse {
@@ -289,7 +349,7 @@ export interface PeginQuoteDTO {
   data: string;
   /** The BTC address of the PowPeg */
   fedBTCAddr: string;
-  /** Fee to pay for the gas of every call done during the pegin (call on behalf of the user and call to the dao fee collector) */
+  /** Fee to pay for the gas of every call done during the pegin (call on behalf of the user) */
   gasFee: bigint;
   /** The gas limit */
   gasLimit: number;
@@ -305,8 +365,6 @@ export interface PeginQuoteDTO {
   nonce: bigint;
   /** The penalty fee that the LP pays if it fails to deliver the service */
   penaltyFee: bigint;
-  /** The DAO Fee amount */
-  productFeeAmount: bigint;
   /** A User RSK refund address */
   rskRefundAddr: string;
   /** The time (in seconds) that the user has to achieve one confirmation on the BTC deposit */
@@ -335,7 +393,6 @@ export const PeginQuoteDtoRequiredFields: string[] = [
   "confirmations",
   "callOnRegister",
   "gasFee",
-  "productFeeAmount",
 ];
 
 export interface PeginQuoteRequest {
@@ -417,15 +474,13 @@ export interface PegoutQuoteDTO {
   depositDateLimit: number;
   expireBlocks: number;
   expireDate: number;
-  /** Fee to pay for the gas of every call done during the pegout (call on behalf of the user in Bitcoin network and call to the dao fee collector in Rootstock) */
+  /** Fee to pay for the gas of every call done during the pegout (call on behalf of the user in Bitcoin network) */
   gasFee: bigint;
   lbcAddress: string;
   liquidityProviderRskAddress: string;
   lpBtcAddr: string;
   nonce: bigint;
   penaltyFee: bigint;
-  /** The DAO fee amount */
-  productFeeAmount: bigint;
   rskRefundAddress: string;
   transferConfirmations: number;
   transferTime: number;
@@ -451,7 +506,6 @@ export const PegoutQuoteDtoRequiredFields: string[] = [
   "expireDate",
   "expireBlocks",
   "gasFee",
-  "productFeeAmount",
 ];
 
 export interface PegoutQuoteRequest {
@@ -510,6 +564,54 @@ export interface ProviderDetailResponse {
 
 export const ProviderDetailResponseRequiredFields: string[] = ["siteKey", "liquidityCheckEnabled", "pegin", "pegout"];
 
+export interface RbtcAssetAllocationDTO {
+  /**
+   * RBTC available for new pegin quotes
+   * @example "12000000000000000000"
+   */
+  available?: any;
+  /**
+   * RBTC reserved for users (accepted pegin quotes)
+   * @example "3000000000000000000"
+   */
+  reservedForUsers?: any;
+  /**
+   * RBTC waiting to be refunded to the LP
+   * @example "2000000000000000000"
+   */
+  waitingForRefund?: any;
+}
+
+export interface RbtcAssetLocationDTO {
+  /**
+   * RBTC in the federation (waiting for refund)
+   * @example "2000000000000000000"
+   */
+  federation?: any;
+  /**
+   * RBTC locked in the Liquidity Bridge Contract
+   * @example "5000000000000000000"
+   */
+  lbc?: any;
+  /**
+   * RBTC in the LP's RSK wallet
+   * @example "10000000000000000000"
+   */
+  rskWallet?: any;
+}
+
+export interface RbtcAssetReportDTO {
+  /** RBTC allocation by usage/purpose */
+  allocation?: RbtcAssetAllocationDTO;
+  /** RBTC distribution across different locations */
+  location?: RbtcAssetLocationDTO;
+  /**
+   * Total RBTC assets under LP control
+   * @example "17000000000000000000"
+   */
+  total?: any;
+}
+
 export interface RecommendedOperationDTO {
   /**
    * Estimated call fee if a quote is created with the recommended amount
@@ -522,11 +624,6 @@ export interface RecommendedOperationDTO {
    */
   estimatedGasFee: bigint;
   /**
-   * Estimated product fee if a quote is created with the recommended amount
-   * @example "100000"
-   */
-  estimatedProductFee: bigint;
-  /**
    * Recommended quote value for the input amount
    * @example "100000"
    */
@@ -537,7 +634,6 @@ export const RecommendedOperationDtoRequiredFields: string[] = [
   "recommendedQuoteValue",
   "estimatedCallFee",
   "estimatedGasFee",
-  "estimatedProductFee",
 ];
 
 export interface RetainedPeginQuoteDTO {
@@ -644,23 +740,6 @@ export interface Services {
   rsk?: string;
 }
 
-export interface SummaryDataDTO {
-  acceptedQuotesCount?: number;
-  lpEarnings?: Type;
-  paidQuotesAmount?: bigint;
-  paidQuotesCount?: number;
-  refundedQuotesCount?: number;
-  totalAcceptedQuotedAmount?: bigint;
-  totalFeesCollected?: bigint;
-  totalPenaltyAmount?: bigint;
-  totalQuotesCount?: number;
-}
-
-export interface SummaryResultDTO {
-  peginSummary?: SummaryDataDTO;
-  pegoutSummary?: SummaryDataDTO;
-}
-
 export interface TrustedAccountRequest {
   address?: string;
   btcLockingCap?: Type;
@@ -759,11 +838,6 @@ export interface PkgRecommendedOperationDTO {
    */
   estimatedGasFee: bigint;
   /**
-   * Estimated product fee if a quote is created with the recommended amount
-   * @example "100000"
-   */
-  estimatedProductFee: bigint;
-  /**
    * Recommended quote value for the input amount
    * @example "100000"
    */
@@ -774,7 +848,6 @@ export const PkgRecommendedOperationDtoRequiredFields: string[] = [
   "recommendedQuoteValue",
   "estimatedCallFee",
   "estimatedGasFee",
-  "estimatedProductFee",
 ];
 
 export interface PkgTrustedAccountRequest {

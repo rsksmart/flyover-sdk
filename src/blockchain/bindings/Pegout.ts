@@ -31,7 +31,6 @@ export declare namespace Quotes {
     callFee: BigNumberish;
     penaltyFee: BigNumberish;
     value: BigNumberish;
-    productFeeAmount: BigNumberish;
     gasFee: BigNumberish;
     lbcAddress: string;
     lpRskAddress: string;
@@ -54,7 +53,6 @@ export declare namespace Quotes {
     BigNumber,
     BigNumber,
     BigNumber,
-    BigNumber,
     string,
     string,
     string,
@@ -73,7 +71,6 @@ export declare namespace Quotes {
     callFee: BigNumber;
     penaltyFee: BigNumber;
     value: BigNumber;
-    productFeeAmount: BigNumber;
     gasFee: BigNumber;
     lbcAddress: string;
     lpRskAddress: string;
@@ -94,25 +91,20 @@ export declare namespace Quotes {
 
 export interface PegoutInterface extends utils.Interface {
   functions: {
-    "depositPegOut((uint256,uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes),bytes)": FunctionFragment;
-    "getCurrentContribution()": FunctionFragment;
-    "getFeeCollector()": FunctionFragment;
-    "getFeePercentage()": FunctionFragment;
-    "hashPegOutQuote((uint256,uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes))": FunctionFragment;
+    "depositPegOut((uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes),bytes)": FunctionFragment;
+    "hashPegOutQuote((uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes))": FunctionFragment;
     "isQuoteCompleted(bytes32)": FunctionFragment;
     "pause(string)": FunctionFragment;
     "pauseStatus()": FunctionFragment;
     "refundPegOut(bytes32,bytes,bytes32,uint256,bytes32[])": FunctionFragment;
     "refundUserPegOut(bytes32)": FunctionFragment;
     "unpause()": FunctionFragment;
+    "validatePegout(bytes32,bytes)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "depositPegOut"
-      | "getCurrentContribution"
-      | "getFeeCollector"
-      | "getFeePercentage"
       | "hashPegOutQuote"
       | "isQuoteCompleted"
       | "pause"
@@ -120,23 +112,12 @@ export interface PegoutInterface extends utils.Interface {
       | "refundPegOut"
       | "refundUserPegOut"
       | "unpause"
+      | "validatePegout"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "depositPegOut",
     values: [Quotes.PegOutQuoteStruct, BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getCurrentContribution",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getFeeCollector",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getFeePercentage",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "hashPegOutQuote",
@@ -160,21 +141,13 @@ export interface PegoutInterface extends utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "validatePegout",
+    values: [BytesLike, BytesLike]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "depositPegOut",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getCurrentContribution",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getFeeCollector",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getFeePercentage",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -199,6 +172,10 @@ export interface PegoutInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "validatePegout",
+    data: BytesLike
+  ): Result;
 
   events: {
     "PegOutChangePaid(bytes32,address,uint256)": EventFragment;
@@ -295,12 +272,6 @@ export interface Pegout extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    getCurrentContribution(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<[string]>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
       overrides?: CallOverrides
@@ -343,6 +314,16 @@ export interface Pegout extends BaseContract {
     unpause(
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
+
+    validatePegout(
+      quoteHash: BytesLike,
+      btcTx: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<
+      [Quotes.PegOutQuoteStructOutput] & {
+        quote: Quotes.PegOutQuoteStructOutput;
+      }
+    >;
   };
 
   depositPegOut(
@@ -350,12 +331,6 @@ export interface Pegout extends BaseContract {
     signature: BytesLike,
     overrides?: PayableOverrides & { from?: string }
   ): Promise<ContractTransaction>;
-
-  getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
-
-  getFeeCollector(overrides?: CallOverrides): Promise<string>;
-
-  getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
 
   hashPegOutQuote(
     quote: Quotes.PegOutQuoteStruct,
@@ -400,18 +375,18 @@ export interface Pegout extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
+  validatePegout(
+    quoteHash: BytesLike,
+    btcTx: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<Quotes.PegOutQuoteStructOutput>;
+
   callStatic: {
     depositPegOut(
       quote: Quotes.PegOutQuoteStruct,
       signature: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<string>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
 
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
@@ -450,6 +425,12 @@ export interface Pegout extends BaseContract {
     ): Promise<void>;
 
     unpause(overrides?: CallOverrides): Promise<void>;
+
+    validatePegout(
+      quoteHash: BytesLike,
+      btcTx: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<Quotes.PegOutQuoteStructOutput>;
   };
 
   filters: {
@@ -501,12 +482,6 @@ export interface Pegout extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<BigNumber>;
 
-    getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
-
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
       overrides?: CallOverrides
@@ -539,6 +514,12 @@ export interface Pegout extends BaseContract {
     ): Promise<BigNumber>;
 
     unpause(overrides?: Overrides & { from?: string }): Promise<BigNumber>;
+
+    validatePegout(
+      quoteHash: BytesLike,
+      btcTx: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -547,14 +528,6 @@ export interface Pegout extends BaseContract {
       signature: BytesLike,
       overrides?: PayableOverrides & { from?: string }
     ): Promise<PopulatedTransaction>;
-
-    getCurrentContribution(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
@@ -589,6 +562,12 @@ export interface Pegout extends BaseContract {
 
     unpause(
       overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    validatePegout(
+      quoteHash: BytesLike,
+      btcTx: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -22,10 +22,6 @@ export class PegOutContract {
     return this.pegoutContract.address
   }
 
-  async getProductFeePercentage (): Promise<number> {
-    return executeContractView<number>(this.pegoutContract, 'getFeePercentage')
-  }
-
   /**
    * Executes the refundUserPegOut function in the LiquidityBridge contract
    * @param quote the pegout quote to refund
@@ -83,7 +79,6 @@ export class PegOutContract {
       transferTime: detail.transferTime,
       expireDate: detail.expireDate,
       expireBlock: detail.expireBlocks,
-      productFeeAmount: detail.productFeeAmount,
       gasFee: detail.gasFee
     }
   }
