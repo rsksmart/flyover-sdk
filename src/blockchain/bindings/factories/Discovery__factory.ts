@@ -7,390 +7,390 @@ import type { Discovery, DiscoveryInterface } from "../Discovery";
 
 const _abi = [
   {
+    type: "function",
+    name: "getProvider",
     inputs: [
       {
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-    ],
-    name: "AlreadyRegistered",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "InsufficientCollateral",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "name",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "apiBaseUrl",
-        type: "string",
-      },
-    ],
-    name: "InvalidProviderData",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "enum Flyover.ProviderType",
-        name: "providerType",
-        type: "uint8",
-      },
-    ],
-    name: "InvalidProviderType",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-    ],
-    name: "NotAuthorized",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-    ],
-    name: "NotEOA",
-    type: "error",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-      {
-        indexed: true,
-        internalType: "bool",
-        name: "status",
-        type: "bool",
-      },
-    ],
-    name: "ProviderStatusSet",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "name",
-        type: "string",
-      },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "apiBaseUrl",
-        type: "string",
-      },
-    ],
-    name: "ProviderUpdate",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "Register",
-    type: "event",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
         name: "providerAddress",
         type: "address",
+        internalType: "address",
       },
     ],
-    name: "getProvider",
     outputs: [
       {
-        components: [
-          {
-            internalType: "uint256",
-            name: "id",
-            type: "uint256",
-          },
-          {
-            internalType: "address",
-            name: "providerAddress",
-            type: "address",
-          },
-          {
-            internalType: "bool",
-            name: "status",
-            type: "bool",
-          },
-          {
-            internalType: "enum Flyover.ProviderType",
-            name: "providerType",
-            type: "uint8",
-          },
-          {
-            internalType: "string",
-            name: "name",
-            type: "string",
-          },
-          {
-            internalType: "string",
-            name: "apiBaseUrl",
-            type: "string",
-          },
-        ],
-        internalType: "struct Flyover.LiquidityProvider",
         name: "",
         type: "tuple",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getProviders",
-    outputs: [
-      {
+        internalType: "struct Flyover.LiquidityProvider",
         components: [
           {
-            internalType: "uint256",
             name: "id",
             type: "uint256",
+            internalType: "uint256",
           },
           {
-            internalType: "address",
             name: "providerAddress",
             type: "address",
+            internalType: "address",
           },
           {
-            internalType: "bool",
             name: "status",
             type: "bool",
+            internalType: "bool",
           },
           {
-            internalType: "enum Flyover.ProviderType",
             name: "providerType",
             type: "uint8",
+            internalType: "enum Flyover.ProviderType",
           },
           {
-            internalType: "string",
             name: "name",
             type: "string",
+            internalType: "string",
           },
           {
-            internalType: "string",
             name: "apiBaseUrl",
             type: "string",
+            internalType: "string",
           },
         ],
-        internalType: "struct Flyover.LiquidityProvider[]",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getProviders",
+    inputs: [],
+    outputs: [
+      {
         name: "",
         type: "tuple[]",
+        internalType: "struct Flyover.LiquidityProvider[]",
+        components: [
+          {
+            name: "id",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "providerAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "status",
+            type: "bool",
+            internalType: "bool",
+          },
+          {
+            name: "providerType",
+            type: "uint8",
+            internalType: "enum Flyover.ProviderType",
+          },
+          {
+            name: "name",
+            type: "string",
+            internalType: "string",
+          },
+          {
+            name: "apiBaseUrl",
+            type: "string",
+            internalType: "string",
+          },
+        ],
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
-    inputs: [],
+    type: "function",
     name: "getProvidersId",
+    inputs: [],
     outputs: [
       {
-        internalType: "uint256",
         name: "",
         type: "uint256",
+        internalType: "uint256",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "isOperational",
     inputs: [
       {
-        internalType: "enum Flyover.ProviderType",
         name: "providerType",
         type: "uint8",
+        internalType: "enum Flyover.ProviderType",
       },
       {
-        internalType: "address",
         name: "addr",
         type: "address",
+        internalType: "address",
       },
     ],
-    name: "isOperational",
     outputs: [
       {
-        internalType: "bool",
         name: "",
         type: "bool",
+        internalType: "bool",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "pause",
     inputs: [
       {
-        internalType: "string",
         name: "reason",
         type: "string",
+        internalType: "string",
       },
     ],
-    name: "pause",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
-    inputs: [],
+    type: "function",
     name: "pauseStatus",
+    inputs: [],
     outputs: [
       {
-        internalType: "bool",
         name: "isPaused",
         type: "bool",
+        internalType: "bool",
       },
       {
-        internalType: "string",
         name: "reason",
         type: "string",
+        internalType: "string",
       },
       {
-        internalType: "uint64",
         name: "since",
         type: "uint64",
+        internalType: "uint64",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "register",
     inputs: [
       {
-        internalType: "string",
         name: "name",
         type: "string",
+        internalType: "string",
       },
       {
-        internalType: "string",
         name: "apiBaseUrl",
         type: "string",
+        internalType: "string",
       },
       {
-        internalType: "bool",
         name: "status",
         type: "bool",
+        internalType: "bool",
       },
       {
-        internalType: "enum Flyover.ProviderType",
         name: "providerType",
         type: "uint8",
+        internalType: "enum Flyover.ProviderType",
       },
     ],
-    name: "register",
     outputs: [
       {
-        internalType: "uint256",
         name: "",
         type: "uint256",
+        internalType: "uint256",
       },
     ],
     stateMutability: "payable",
-    type: "function",
   },
   {
+    type: "function",
+    name: "setProviderStatus",
     inputs: [
       {
-        internalType: "uint256",
         name: "providerId",
         type: "uint256",
+        internalType: "uint256",
       },
       {
-        internalType: "bool",
         name: "status",
         type: "bool",
+        internalType: "bool",
       },
     ],
-    name: "setProviderStatus",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
-    inputs: [],
+    type: "function",
     name: "unpause",
+    inputs: [],
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
+    type: "function",
+    name: "updateProvider",
     inputs: [
       {
-        internalType: "string",
         name: "name",
         type: "string",
+        internalType: "string",
       },
       {
-        internalType: "string",
         name: "apiBaseUrl",
         type: "string",
+        internalType: "string",
       },
     ],
-    name: "updateProvider",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
+  },
+  {
+    type: "event",
+    name: "ProviderStatusSet",
+    inputs: [
+      {
+        name: "id",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+      {
+        name: "status",
+        type: "bool",
+        indexed: true,
+        internalType: "bool",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "ProviderUpdate",
+    inputs: [
+      {
+        name: "from",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "name",
+        type: "string",
+        indexed: false,
+        internalType: "string",
+      },
+      {
+        name: "apiBaseUrl",
+        type: "string",
+        indexed: false,
+        internalType: "string",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "Register",
+    inputs: [
+      {
+        name: "id",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+      {
+        name: "from",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "amount",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "error",
+    name: "AlreadyRegistered",
+    inputs: [
+      {
+        name: "from",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "InsufficientCollateral",
+    inputs: [
+      {
+        name: "amount",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "InvalidProviderData",
+    inputs: [
+      {
+        name: "name",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "apiBaseUrl",
+        type: "string",
+        internalType: "string",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "InvalidProviderType",
+    inputs: [
+      {
+        name: "providerType",
+        type: "uint8",
+        internalType: "enum Flyover.ProviderType",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "NotAuthorized",
+    inputs: [
+      {
+        name: "from",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "NotEOA",
+    inputs: [
+      {
+        name: "from",
+        type: "address",
+        internalType: "address",
+      },
+    ],
   },
 ] as const;
 

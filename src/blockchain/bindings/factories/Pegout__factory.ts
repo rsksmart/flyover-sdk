@@ -7,606 +7,853 @@ import type { Pegout, PegoutInterface } from "../Pegout";
 
 const _abi = [
   {
+    type: "function",
+    name: "depositPegOut",
     inputs: [
       {
-        internalType: "bytes",
-        name: "expected",
-        type: "bytes",
-      },
-      {
-        internalType: "bytes",
-        name: "actual",
-        type: "bytes",
-      },
-    ],
-    name: "InvalidDestination",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "expected",
-        type: "bytes32",
-      },
-      {
-        internalType: "bytes32",
-        name: "actual",
-        type: "bytes32",
-      },
-    ],
-    name: "InvalidQuoteHash",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes",
-        name: "outputScript",
-        type: "bytes",
-      },
-    ],
-    name: "MalformedTransaction",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "int256",
-        name: "required",
-        type: "int256",
-      },
-      {
-        internalType: "int256",
-        name: "current",
-        type: "int256",
-      },
-    ],
-    name: "NotEnoughConfirmations",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-    ],
-    name: "QuoteAlreadyCompleted",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-    ],
-    name: "QuoteAlreadyRegistered",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint32",
-        name: "expireBlock",
-        type: "uint32",
-      },
-    ],
-    name: "QuoteExpiredByBlocks",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint32",
-        name: "depositDateLimit",
-        type: "uint32",
-      },
-      {
-        internalType: "uint32",
-        name: "expireDate",
-        type: "uint32",
-      },
-    ],
-    name: "QuoteExpiredByTime",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-    ],
-    name: "QuoteNotExpired",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "int256",
-        name: "errorCode",
-        type: "int256",
-      },
-    ],
-    name: "UnableToGetConfirmations",
-    type: "error",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "userAddress",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "change",
-        type: "uint256",
-      },
-    ],
-    name: "PegOutChangePaid",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "sender",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "timestamp",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "PegOutDeposit",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-    ],
-    name: "PegOutRefunded",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "userAddress",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-    ],
-    name: "PegOutUserRefunded",
-    type: "event",
-  },
-  {
-    inputs: [
-      {
-        components: [
-          {
-            internalType: "uint256",
-            name: "callFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "penaltyFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "value",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "productFeeAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "gasFee",
-            type: "uint256",
-          },
-          {
-            internalType: "address",
-            name: "lbcAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "lpRskAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "rskRefundAddress",
-            type: "address",
-          },
-          {
-            internalType: "int64",
-            name: "nonce",
-            type: "int64",
-          },
-          {
-            internalType: "uint32",
-            name: "agreementTimestamp",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "depositDateLimit",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "transferTime",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "expireDate",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "expireBlock",
-            type: "uint32",
-          },
-          {
-            internalType: "uint16",
-            name: "depositConfirmations",
-            type: "uint16",
-          },
-          {
-            internalType: "uint16",
-            name: "transferConfirmations",
-            type: "uint16",
-          },
-          {
-            internalType: "bytes",
-            name: "depositAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "btcRefundAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "lpBtcAddress",
-            type: "bytes",
-          },
-        ],
-        internalType: "struct Quotes.PegOutQuote",
         name: "quote",
         type: "tuple",
+        internalType: "struct Quotes.PegOutQuote",
+        components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "callFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "penaltyFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "gasFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "lbcAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "lpRskAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "rskRefundAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "nonce",
+            type: "int64",
+            internalType: "int64",
+          },
+          {
+            name: "agreementTimestamp",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositDateLimit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "transferTime",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "expireDate",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "expireBlock",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "transferConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "depositAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "btcRefundAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "lpBtcAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
       },
       {
-        internalType: "bytes",
         name: "signature",
         type: "bytes",
+        internalType: "bytes",
       },
     ],
-    name: "depositPegOut",
     outputs: [],
     stateMutability: "payable",
-    type: "function",
   },
   {
+    type: "function",
+    name: "eip712Domain",
     inputs: [],
-    name: "getCurrentContribution",
     outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
+        name: "fields",
+        type: "bytes1",
+        internalType: "bytes1",
       },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getFeeCollector",
-    outputs: [
       {
-        internalType: "address",
-        name: "",
+        name: "name",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "version",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "chainId",
+        type: "uint256",
+        internalType: "uint256",
+      },
+      {
+        name: "verifyingContract",
         type: "address",
+        internalType: "address",
       },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getFeePercentage",
-    outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
+        name: "salt",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+      {
+        name: "extensions",
+        type: "uint256[]",
+        internalType: "uint256[]",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "hashPegOutQuote",
     inputs: [
       {
-        components: [
-          {
-            internalType: "uint256",
-            name: "callFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "penaltyFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "value",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "productFeeAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "gasFee",
-            type: "uint256",
-          },
-          {
-            internalType: "address",
-            name: "lbcAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "lpRskAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "rskRefundAddress",
-            type: "address",
-          },
-          {
-            internalType: "int64",
-            name: "nonce",
-            type: "int64",
-          },
-          {
-            internalType: "uint32",
-            name: "agreementTimestamp",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "depositDateLimit",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "transferTime",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "expireDate",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "expireBlock",
-            type: "uint32",
-          },
-          {
-            internalType: "uint16",
-            name: "depositConfirmations",
-            type: "uint16",
-          },
-          {
-            internalType: "uint16",
-            name: "transferConfirmations",
-            type: "uint16",
-          },
-          {
-            internalType: "bytes",
-            name: "depositAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "btcRefundAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "lpBtcAddress",
-            type: "bytes",
-          },
-        ],
-        internalType: "struct Quotes.PegOutQuote",
         name: "quote",
         type: "tuple",
+        internalType: "struct Quotes.PegOutQuote",
+        components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "callFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "penaltyFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "gasFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "lbcAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "lpRskAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "rskRefundAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "nonce",
+            type: "int64",
+            internalType: "int64",
+          },
+          {
+            name: "agreementTimestamp",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositDateLimit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "transferTime",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "expireDate",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "expireBlock",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "transferConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "depositAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "btcRefundAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "lpBtcAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
       },
     ],
-    name: "hashPegOutQuote",
     outputs: [
       {
-        internalType: "bytes32",
         name: "",
         type: "bytes32",
+        internalType: "bytes32",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "hashPegOutQuoteEIP712",
     inputs: [
       {
+        name: "quote",
+        type: "tuple",
+        internalType: "struct Quotes.PegOutQuote",
+        components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "callFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "penaltyFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "gasFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "lbcAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "lpRskAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "rskRefundAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "nonce",
+            type: "int64",
+            internalType: "int64",
+          },
+          {
+            name: "agreementTimestamp",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositDateLimit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "transferTime",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "expireDate",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "expireBlock",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "transferConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "depositAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "btcRefundAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "lpBtcAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "bytes32",
         internalType: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "isQuoteCompleted",
+    inputs: [
+      {
         name: "quoteHash",
         type: "bytes32",
+        internalType: "bytes32",
       },
     ],
-    name: "isQuoteCompleted",
     outputs: [
       {
-        internalType: "bool",
         name: "",
         type: "bool",
+        internalType: "bool",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "pause",
     inputs: [
       {
-        internalType: "string",
         name: "reason",
         type: "string",
+        internalType: "string",
       },
     ],
-    name: "pause",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
-    inputs: [],
+    type: "function",
     name: "pauseStatus",
+    inputs: [],
     outputs: [
       {
-        internalType: "bool",
         name: "isPaused",
         type: "bool",
+        internalType: "bool",
       },
       {
-        internalType: "string",
         name: "reason",
         type: "string",
+        internalType: "string",
       },
       {
-        internalType: "uint64",
         name: "since",
         type: "uint64",
+        internalType: "uint64",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "refundPegOut",
     inputs: [
       {
-        internalType: "bytes32",
         name: "quoteHash",
         type: "bytes32",
+        internalType: "bytes32",
       },
       {
-        internalType: "bytes",
         name: "btcTx",
         type: "bytes",
+        internalType: "bytes",
       },
       {
-        internalType: "bytes32",
         name: "btcBlockHeaderHash",
         type: "bytes32",
+        internalType: "bytes32",
       },
       {
-        internalType: "uint256",
         name: "merkleBranchPath",
         type: "uint256",
+        internalType: "uint256",
       },
       {
-        internalType: "bytes32[]",
         name: "merkleBranchHashes",
         type: "bytes32[]",
+        internalType: "bytes32[]",
       },
     ],
-    name: "refundPegOut",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
+    type: "function",
+    name: "refundUserPegOut",
     inputs: [
       {
-        internalType: "bytes32",
         name: "quoteHash",
         type: "bytes32",
+        internalType: "bytes32",
       },
     ],
-    name: "refundUserPegOut",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
-    inputs: [],
+    type: "function",
     name: "unpause",
+    inputs: [],
     outputs: [],
     stateMutability: "nonpayable",
+  },
+  {
     type: "function",
+    name: "validatePegout",
+    inputs: [
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+      {
+        name: "btcTx",
+        type: "bytes",
+        internalType: "bytes",
+      },
+    ],
+    outputs: [
+      {
+        name: "quote",
+        type: "tuple",
+        internalType: "struct Quotes.PegOutQuote",
+        components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "callFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "penaltyFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "gasFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "lbcAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "lpRskAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "rskRefundAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "nonce",
+            type: "int64",
+            internalType: "int64",
+          },
+          {
+            name: "agreementTimestamp",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositDateLimit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "transferTime",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "expireDate",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "expireBlock",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "transferConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "depositAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "btcRefundAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "lpBtcAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "event",
+    name: "EIP712DomainChanged",
+    inputs: [],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "PegOutChangePaid",
+    inputs: [
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        indexed: true,
+        internalType: "bytes32",
+      },
+      {
+        name: "userAddress",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "change",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "PegOutDeposit",
+    inputs: [
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        indexed: true,
+        internalType: "bytes32",
+      },
+      {
+        name: "sender",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "timestamp",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+      {
+        name: "amount",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "PegOutRefunded",
+    inputs: [
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        indexed: true,
+        internalType: "bytes32",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "PegOutUserRefunded",
+    inputs: [
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        indexed: true,
+        internalType: "bytes32",
+      },
+      {
+        name: "userAddress",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "value",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "error",
+    name: "InvalidDestination",
+    inputs: [
+      {
+        name: "expected",
+        type: "bytes",
+        internalType: "bytes",
+      },
+      {
+        name: "actual",
+        type: "bytes",
+        internalType: "bytes",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "InvalidQuoteHash",
+    inputs: [
+      {
+        name: "expected",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+      {
+        name: "actual",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "MalformedTransaction",
+    inputs: [
+      {
+        name: "outputScript",
+        type: "bytes",
+        internalType: "bytes",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "NotEnoughConfirmations",
+    inputs: [
+      {
+        name: "required",
+        type: "int256",
+        internalType: "int256",
+      },
+      {
+        name: "current",
+        type: "int256",
+        internalType: "int256",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "QuoteAlreadyCompleted",
+    inputs: [
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "QuoteAlreadyRegistered",
+    inputs: [
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "QuoteExpiredByBlocks",
+    inputs: [
+      {
+        name: "expireBlock",
+        type: "uint32",
+        internalType: "uint32",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "QuoteExpiredByTime",
+    inputs: [
+      {
+        name: "depositDateLimit",
+        type: "uint32",
+        internalType: "uint32",
+      },
+      {
+        name: "expireDate",
+        type: "uint32",
+        internalType: "uint32",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "QuoteNotExpired",
+    inputs: [
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "UnableToGetConfirmations",
+    inputs: [
+      {
+        name: "errorCode",
+        type: "int256",
+        internalType: "int256",
+      },
+    ],
   },
 ] as const;
 

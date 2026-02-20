@@ -7,906 +7,1037 @@ import type { Pegin, PeginInterface } from "../Pegin";
 
 const _abi = [
   {
+    type: "function",
+    name: "callForUser",
     inputs: [
       {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "AmountUnderMinimum",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "gasLeft",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "gasRequired",
-        type: "uint256",
-      },
-    ],
-    name: "InsufficientGas",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes",
-        name: "refundAddress",
-        type: "bytes",
-      },
-    ],
-    name: "InvalidRefundAddress",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "NotEnoughConfirmations",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-    ],
-    name: "QuoteAlreadyProcessed",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "int256",
-        name: "errorCode",
-        type: "int256",
-      },
-    ],
-    name: "UnexpectedBridgeError",
-    type: "error",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "dest",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "BalanceDecrease",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "dest",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "BalanceIncrease",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-      {
-        indexed: true,
-        internalType: "int256",
-        name: "errorCode",
-        type: "int256",
-      },
-    ],
-    name: "BridgeCapExceeded",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "dest",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "gasLimit",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-      {
-        indexed: false,
-        internalType: "bool",
-        name: "success",
-        type: "bool",
-      },
-    ],
-    name: "CallForUser",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "transferredAmount",
-        type: "uint256",
-      },
-    ],
-    name: "PegInRegistered",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "dest",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "quoteHash",
-        type: "bytes32",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "bool",
-        name: "success",
-        type: "bool",
-      },
-    ],
-    name: "Refund",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "Withdrawal",
-    type: "event",
-  },
-  {
-    inputs: [
-      {
-        components: [
-          {
-            internalType: "uint256",
-            name: "callFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "penaltyFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "value",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "productFeeAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "gasFee",
-            type: "uint256",
-          },
-          {
-            internalType: "bytes20",
-            name: "fedBtcAddress",
-            type: "bytes20",
-          },
-          {
-            internalType: "address",
-            name: "lbcAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "liquidityProviderRskAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "contractAddress",
-            type: "address",
-          },
-          {
-            internalType: "address payable",
-            name: "rskRefundAddress",
-            type: "address",
-          },
-          {
-            internalType: "int64",
-            name: "nonce",
-            type: "int64",
-          },
-          {
-            internalType: "uint32",
-            name: "gasLimit",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "agreementTimestamp",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "timeForDeposit",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "callTime",
-            type: "uint32",
-          },
-          {
-            internalType: "uint16",
-            name: "depositConfirmations",
-            type: "uint16",
-          },
-          {
-            internalType: "bool",
-            name: "callOnRegister",
-            type: "bool",
-          },
-          {
-            internalType: "bytes",
-            name: "btcRefundAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "liquidityProviderBtcAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "data",
-            type: "bytes",
-          },
-        ],
-        internalType: "struct Quotes.PegInQuote",
         name: "quote",
         type: "tuple",
+        internalType: "struct Quotes.PegInQuote",
+        components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "callFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "penaltyFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "gasFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "fedBtcAddress",
+            type: "bytes20",
+            internalType: "bytes20",
+          },
+          {
+            name: "lbcAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "liquidityProviderRskAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "contractAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "rskRefundAddress",
+            type: "address",
+            internalType: "address payable",
+          },
+          {
+            name: "nonce",
+            type: "int64",
+            internalType: "int64",
+          },
+          {
+            name: "gasLimit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "agreementTimestamp",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "timeForDeposit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "callTime",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "callOnRegister",
+            type: "bool",
+            internalType: "bool",
+          },
+          {
+            name: "btcRefundAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "liquidityProviderBtcAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "data",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
       },
     ],
-    name: "callForUser",
     outputs: [
       {
-        internalType: "bool",
         name: "",
         type: "bool",
+        internalType: "bool",
       },
     ],
     stateMutability: "payable",
-    type: "function",
   },
   {
-    inputs: [],
+    type: "function",
     name: "deposit",
+    inputs: [],
     outputs: [],
     stateMutability: "payable",
-    type: "function",
   },
   {
+    type: "function",
+    name: "eip712Domain",
+    inputs: [],
+    outputs: [
+      {
+        name: "fields",
+        type: "bytes1",
+        internalType: "bytes1",
+      },
+      {
+        name: "name",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "version",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "chainId",
+        type: "uint256",
+        internalType: "uint256",
+      },
+      {
+        name: "verifyingContract",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "salt",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+      {
+        name: "extensions",
+        type: "uint256[]",
+        internalType: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getBalance",
     inputs: [
       {
-        internalType: "address",
         name: "addr",
         type: "address",
-      },
-    ],
-    name: "getBalance",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getCurrentContribution",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getFeeCollector",
-    outputs: [
-      {
         internalType: "address",
-        name: "",
-        type: "address",
       },
     ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getFeePercentage",
     outputs: [
       {
-        internalType: "uint256",
         name: "",
         type: "uint256",
+        internalType: "uint256",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
-    inputs: [],
+    type: "function",
     name: "getMinPegIn",
+    inputs: [],
     outputs: [
       {
-        internalType: "uint256",
         name: "",
         type: "uint256",
+        internalType: "uint256",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "getQuoteStatus",
     inputs: [
       {
-        internalType: "bytes32",
         name: "quoteHash",
         type: "bytes32",
+        internalType: "bytes32",
       },
     ],
-    name: "getQuoteStatus",
     outputs: [
       {
-        internalType: "enum IPegIn.PegInStates",
         name: "",
         type: "uint8",
+        internalType: "enum IPegIn.PegInStates",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "hashPegInQuote",
     inputs: [
       {
-        components: [
-          {
-            internalType: "uint256",
-            name: "callFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "penaltyFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "value",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "productFeeAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "gasFee",
-            type: "uint256",
-          },
-          {
-            internalType: "bytes20",
-            name: "fedBtcAddress",
-            type: "bytes20",
-          },
-          {
-            internalType: "address",
-            name: "lbcAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "liquidityProviderRskAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "contractAddress",
-            type: "address",
-          },
-          {
-            internalType: "address payable",
-            name: "rskRefundAddress",
-            type: "address",
-          },
-          {
-            internalType: "int64",
-            name: "nonce",
-            type: "int64",
-          },
-          {
-            internalType: "uint32",
-            name: "gasLimit",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "agreementTimestamp",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "timeForDeposit",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "callTime",
-            type: "uint32",
-          },
-          {
-            internalType: "uint16",
-            name: "depositConfirmations",
-            type: "uint16",
-          },
-          {
-            internalType: "bool",
-            name: "callOnRegister",
-            type: "bool",
-          },
-          {
-            internalType: "bytes",
-            name: "btcRefundAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "liquidityProviderBtcAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "data",
-            type: "bytes",
-          },
-        ],
-        internalType: "struct Quotes.PegInQuote",
         name: "quote",
         type: "tuple",
+        internalType: "struct Quotes.PegInQuote",
+        components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "callFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "penaltyFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "gasFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "fedBtcAddress",
+            type: "bytes20",
+            internalType: "bytes20",
+          },
+          {
+            name: "lbcAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "liquidityProviderRskAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "contractAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "rskRefundAddress",
+            type: "address",
+            internalType: "address payable",
+          },
+          {
+            name: "nonce",
+            type: "int64",
+            internalType: "int64",
+          },
+          {
+            name: "gasLimit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "agreementTimestamp",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "timeForDeposit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "callTime",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "callOnRegister",
+            type: "bool",
+            internalType: "bool",
+          },
+          {
+            name: "btcRefundAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "liquidityProviderBtcAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "data",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
       },
     ],
-    name: "hashPegInQuote",
     outputs: [
       {
-        internalType: "bytes32",
         name: "",
         type: "bytes32",
+        internalType: "bytes32",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "hashPegInQuoteEIP712",
     inputs: [
       {
-        internalType: "string",
-        name: "reason",
-        type: "string",
+        name: "quote",
+        type: "tuple",
+        internalType: "struct Quotes.PegInQuote",
+        components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "callFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "penaltyFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "gasFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "fedBtcAddress",
+            type: "bytes20",
+            internalType: "bytes20",
+          },
+          {
+            name: "lbcAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "liquidityProviderRskAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "contractAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "rskRefundAddress",
+            type: "address",
+            internalType: "address payable",
+          },
+          {
+            name: "nonce",
+            type: "int64",
+            internalType: "int64",
+          },
+          {
+            name: "gasLimit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "agreementTimestamp",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "timeForDeposit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "callTime",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "callOnRegister",
+            type: "bool",
+            internalType: "bool",
+          },
+          {
+            name: "btcRefundAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "liquidityProviderBtcAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "data",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
       },
     ],
-    name: "pause",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "pauseStatus",
     outputs: [
       {
-        internalType: "bool",
+        name: "",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "pause",
+    inputs: [
+      {
+        name: "reason",
+        type: "string",
+        internalType: "string",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "pauseStatus",
+    inputs: [],
+    outputs: [
+      {
         name: "isPaused",
         type: "bool",
+        internalType: "bool",
       },
       {
-        internalType: "string",
         name: "reason",
         type: "string",
+        internalType: "string",
       },
       {
-        internalType: "uint64",
         name: "since",
         type: "uint64",
+        internalType: "uint64",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "registerPegIn",
     inputs: [
       {
-        components: [
-          {
-            internalType: "uint256",
-            name: "callFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "penaltyFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "value",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "productFeeAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "gasFee",
-            type: "uint256",
-          },
-          {
-            internalType: "bytes20",
-            name: "fedBtcAddress",
-            type: "bytes20",
-          },
-          {
-            internalType: "address",
-            name: "lbcAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "liquidityProviderRskAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "contractAddress",
-            type: "address",
-          },
-          {
-            internalType: "address payable",
-            name: "rskRefundAddress",
-            type: "address",
-          },
-          {
-            internalType: "int64",
-            name: "nonce",
-            type: "int64",
-          },
-          {
-            internalType: "uint32",
-            name: "gasLimit",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "agreementTimestamp",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "timeForDeposit",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "callTime",
-            type: "uint32",
-          },
-          {
-            internalType: "uint16",
-            name: "depositConfirmations",
-            type: "uint16",
-          },
-          {
-            internalType: "bool",
-            name: "callOnRegister",
-            type: "bool",
-          },
-          {
-            internalType: "bytes",
-            name: "btcRefundAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "liquidityProviderBtcAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "data",
-            type: "bytes",
-          },
-        ],
-        internalType: "struct Quotes.PegInQuote",
         name: "quote",
         type: "tuple",
+        internalType: "struct Quotes.PegInQuote",
+        components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "callFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "penaltyFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "gasFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "fedBtcAddress",
+            type: "bytes20",
+            internalType: "bytes20",
+          },
+          {
+            name: "lbcAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "liquidityProviderRskAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "contractAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "rskRefundAddress",
+            type: "address",
+            internalType: "address payable",
+          },
+          {
+            name: "nonce",
+            type: "int64",
+            internalType: "int64",
+          },
+          {
+            name: "gasLimit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "agreementTimestamp",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "timeForDeposit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "callTime",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "callOnRegister",
+            type: "bool",
+            internalType: "bool",
+          },
+          {
+            name: "btcRefundAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "liquidityProviderBtcAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "data",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
       },
       {
-        internalType: "bytes",
         name: "signature",
         type: "bytes",
+        internalType: "bytes",
       },
       {
-        internalType: "bytes",
         name: "btcRawTransaction",
         type: "bytes",
+        internalType: "bytes",
       },
       {
-        internalType: "bytes",
         name: "partialMerkleTree",
         type: "bytes",
+        internalType: "bytes",
       },
       {
-        internalType: "uint256",
         name: "height",
         type: "uint256",
+        internalType: "uint256",
       },
     ],
-    name: "registerPegIn",
     outputs: [
       {
-        internalType: "int256",
         name: "",
         type: "int256",
+        internalType: "int256",
       },
     ],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
-    inputs: [],
+    type: "function",
     name: "unpause",
+    inputs: [],
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
+    type: "function",
+    name: "validatePegInDepositAddress",
     inputs: [
       {
-        components: [
-          {
-            internalType: "uint256",
-            name: "callFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "penaltyFee",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "value",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "productFeeAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "gasFee",
-            type: "uint256",
-          },
-          {
-            internalType: "bytes20",
-            name: "fedBtcAddress",
-            type: "bytes20",
-          },
-          {
-            internalType: "address",
-            name: "lbcAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "liquidityProviderRskAddress",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "contractAddress",
-            type: "address",
-          },
-          {
-            internalType: "address payable",
-            name: "rskRefundAddress",
-            type: "address",
-          },
-          {
-            internalType: "int64",
-            name: "nonce",
-            type: "int64",
-          },
-          {
-            internalType: "uint32",
-            name: "gasLimit",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "agreementTimestamp",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "timeForDeposit",
-            type: "uint32",
-          },
-          {
-            internalType: "uint32",
-            name: "callTime",
-            type: "uint32",
-          },
-          {
-            internalType: "uint16",
-            name: "depositConfirmations",
-            type: "uint16",
-          },
-          {
-            internalType: "bool",
-            name: "callOnRegister",
-            type: "bool",
-          },
-          {
-            internalType: "bytes",
-            name: "btcRefundAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "liquidityProviderBtcAddress",
-            type: "bytes",
-          },
-          {
-            internalType: "bytes",
-            name: "data",
-            type: "bytes",
-          },
-        ],
-        internalType: "struct Quotes.PegInQuote",
         name: "quote",
         type: "tuple",
+        internalType: "struct Quotes.PegInQuote",
+        components: [
+          {
+            name: "chainId",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "callFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "penaltyFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "value",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "gasFee",
+            type: "uint256",
+            internalType: "uint256",
+          },
+          {
+            name: "fedBtcAddress",
+            type: "bytes20",
+            internalType: "bytes20",
+          },
+          {
+            name: "lbcAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "liquidityProviderRskAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "contractAddress",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "rskRefundAddress",
+            type: "address",
+            internalType: "address payable",
+          },
+          {
+            name: "nonce",
+            type: "int64",
+            internalType: "int64",
+          },
+          {
+            name: "gasLimit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "agreementTimestamp",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "timeForDeposit",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "callTime",
+            type: "uint32",
+            internalType: "uint32",
+          },
+          {
+            name: "depositConfirmations",
+            type: "uint16",
+            internalType: "uint16",
+          },
+          {
+            name: "callOnRegister",
+            type: "bool",
+            internalType: "bool",
+          },
+          {
+            name: "btcRefundAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "liquidityProviderBtcAddress",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          {
+            name: "data",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
       },
       {
-        internalType: "bytes",
         name: "depositAddress",
         type: "bytes",
+        internalType: "bytes",
       },
     ],
-    name: "validatePegInDepositAddress",
     outputs: [
       {
-        internalType: "bool",
         name: "",
         type: "bool",
+        internalType: "bool",
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "withdraw",
     inputs: [
       {
-        internalType: "uint256",
         name: "amount",
         type: "uint256",
+        internalType: "uint256",
       },
     ],
-    name: "withdraw",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
+  },
+  {
+    type: "event",
+    name: "BalanceDecrease",
+    inputs: [
+      {
+        name: "dest",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "amount",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "BalanceIncrease",
+    inputs: [
+      {
+        name: "dest",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "amount",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "BridgeCapExceeded",
+    inputs: [
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        indexed: true,
+        internalType: "bytes32",
+      },
+      {
+        name: "errorCode",
+        type: "int256",
+        indexed: true,
+        internalType: "int256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "CallForUser",
+    inputs: [
+      {
+        name: "from",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "dest",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        indexed: true,
+        internalType: "bytes32",
+      },
+      {
+        name: "gasLimit",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
+      {
+        name: "value",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
+      {
+        name: "data",
+        type: "bytes",
+        indexed: false,
+        internalType: "bytes",
+      },
+      {
+        name: "success",
+        type: "bool",
+        indexed: false,
+        internalType: "bool",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "EIP712DomainChanged",
+    inputs: [],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "PegInRegistered",
+    inputs: [
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        indexed: true,
+        internalType: "bytes32",
+      },
+      {
+        name: "transferredAmount",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "Refund",
+    inputs: [
+      {
+        name: "dest",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        indexed: true,
+        internalType: "bytes32",
+      },
+      {
+        name: "amount",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+      {
+        name: "success",
+        type: "bool",
+        indexed: false,
+        internalType: "bool",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "Withdrawal",
+    inputs: [
+      {
+        name: "from",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "amount",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "error",
+    name: "AmountUnderMinimum",
+    inputs: [
+      {
+        name: "amount",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "InsufficientGas",
+    inputs: [
+      {
+        name: "gasLeft",
+        type: "uint256",
+        internalType: "uint256",
+      },
+      {
+        name: "gasRequired",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "InvalidRefundAddress",
+    inputs: [
+      {
+        name: "refundAddress",
+        type: "bytes",
+        internalType: "bytes",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "NotEnoughConfirmations",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "QuoteAlreadyProcessed",
+    inputs: [
+      {
+        name: "quoteHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "UnexpectedBridgeError",
+    inputs: [
+      {
+        name: "errorCode",
+        type: "int256",
+        internalType: "int256",
+      },
+    ],
   },
 ] as const;
 

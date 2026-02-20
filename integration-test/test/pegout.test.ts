@@ -91,7 +91,7 @@ describe('Flyover pegout process should', () => {
     expect(quote.transferConfirmations).not.toBeUndefined()
     expect(quote.transferTime).not.toBeUndefined()
     expect(quote.value).not.toBeUndefined()
-    expect(quote.productFeeAmount).not.toBeUndefined()
+    expect(quote.chainId).not.toBeUndefined()
   }, EXTENDED_TIMEOUT)
 
   test('accept specific quote', async () => {
@@ -146,11 +146,11 @@ describe('Flyover pegout process should', () => {
     expect(detail.lpBtcAddr).not.toBeUndefined()
     expect(detail.nonce).not.toBeUndefined()
     expect(detail.penaltyFee).not.toBeUndefined()
-    expect(detail.productFeeAmount).not.toBeUndefined()
     expect(detail.rskRefundAddress).not.toBeUndefined()
     expect(detail.transferConfirmations).not.toBeUndefined()
     expect(detail.transferTime).not.toBeUndefined()
     expect(detail.value).not.toBeUndefined()
+    expect(detail.chainId).not.toBeUndefined()
 
     expect(status.bridgeRefundTxHash).not.toBeUndefined()
     expect(status.depositAddress).not.toBeUndefined()
@@ -175,7 +175,6 @@ describe('Flyover pegout process should', () => {
     );
     expect(result.estimatedCallFee.toString()).toEqual(selectedQuote.quote.callFee.toString());
     expect(result.estimatedGasFee.toString()).toEqual(selectedQuote.quote.gasFee.toString());
-    expect(result.estimatedProductFee.toString()).toEqual(selectedQuote.quote.productFeeAmount.toString());
     expect(result.recommendedQuoteValue.toString()).toEqual(selectedQuote.quote.value.toString());
   }, EXTENDED_TIMEOUT)
 

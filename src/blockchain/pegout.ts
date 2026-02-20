@@ -4,7 +4,7 @@ import { callContractFunction, Connection, decodeBtcAddress, executeContractFunc
 import { Quotes } from "./bindings/Pegout"
 import { type PegoutQuoteDetail, type PegoutQuote } from '../api'
 import { FlyoverNetworks, FlyoverSupportedNetworks } from "../constants/networks"
-import { validateNotPaused } from "./lbc"
+import { getEip712Domain, validateNotPaused } from "./lbc"
 
 export class PegOutContract {
   private readonly pegoutContract: Contract
@@ -20,10 +20,6 @@ export class PegOutContract {
 
   async getAddress (): Promise<string> {
     return this.pegoutContract.address
-  }
-
-  async getProductFeePercentage (): Promise<number> {
-    return executeContractView<number>(this.pegoutContract, 'getFeePercentage')
   }
 
   /**
@@ -51,12 +47,22 @@ export class PegOutContract {
     return result.startsWith('0x') ? result.slice(2) : result
   }
 
+  async hashPegoutQuoteEIP712 (quote: PegoutQuote): Promise<string> {
+    const bytes = await executeContractView<BytesLike>(this.pegoutContract, 'hashPegOutQuoteEIP712', this.toContractPegoutQuote(quote.quote))
+    const result = utils.hexlify(bytes)
+    return result.startsWith('0x') ? result.slice(2) : result
+  }
+
   async depositPegout (quote: PegoutQuote, signature: string, weiAmount: bigint): Promise<TxResult> {
     await validateNotPaused(this.pegoutContract)
     const detail: PegoutQuoteDetail = quote.quote
     const signatureBytes = utils.arrayify('0x' + signature)
     const lbcPegoutQuote: Quotes.PegOutQuoteStruct = this.toContractPegoutQuote(detail)
     return executeContractFunction(this.pegoutContract, 'depositPegOut', lbcPegoutQuote, signatureBytes, { value: weiAmount })
+  }
+
+  async getEip712Domain (): Promise<{ name: string, version: string, chainId: bigint, verifyingContract: string }> {
+    return getEip712Domain(this.pegoutContract)
   }
 
   async isPegOutQuoteCompleted (quoteHash: string): Promise<boolean> {
@@ -83,8 +89,8 @@ export class PegOutContract {
       transferTime: detail.transferTime,
       expireDate: detail.expireDate,
       expireBlock: detail.expireBlocks,
-      productFeeAmount: detail.productFeeAmount,
-      gasFee: detail.gasFee
+      gasFee: detail.gasFee,
+      chainId: detail.chainId
     }
   }
 }

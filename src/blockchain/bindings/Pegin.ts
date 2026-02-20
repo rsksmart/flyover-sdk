@@ -28,10 +28,10 @@ import type {
 
 export declare namespace Quotes {
   export type PegInQuoteStruct = {
+    chainId: BigNumberish;
     callFee: BigNumberish;
     penaltyFee: BigNumberish;
     value: BigNumberish;
-    productFeeAmount: BigNumberish;
     gasFee: BigNumberish;
     fedBtcAddress: BytesLike;
     lbcAddress: string;
@@ -72,10 +72,10 @@ export declare namespace Quotes {
     string,
     string
   ] & {
+    chainId: BigNumber;
     callFee: BigNumber;
     penaltyFee: BigNumber;
     value: BigNumber;
-    productFeeAmount: BigNumber;
     gasFee: BigNumber;
     fedBtcAddress: string;
     lbcAddress: string;
@@ -99,13 +99,12 @@ export interface PeginInterface extends utils.Interface {
   functions: {
     "callForUser((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
     "deposit()": FunctionFragment;
+    "eip712Domain()": FunctionFragment;
     "getBalance(address)": FunctionFragment;
-    "getCurrentContribution()": FunctionFragment;
-    "getFeeCollector()": FunctionFragment;
-    "getFeePercentage()": FunctionFragment;
     "getMinPegIn()": FunctionFragment;
     "getQuoteStatus(bytes32)": FunctionFragment;
     "hashPegInQuote((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
+    "hashPegInQuoteEIP712((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
     "pause(string)": FunctionFragment;
     "pauseStatus()": FunctionFragment;
     "registerPegIn((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes,bytes,bytes,uint256)": FunctionFragment;
@@ -118,13 +117,12 @@ export interface PeginInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "callForUser"
       | "deposit"
+      | "eip712Domain"
       | "getBalance"
-      | "getCurrentContribution"
-      | "getFeeCollector"
-      | "getFeePercentage"
       | "getMinPegIn"
       | "getQuoteStatus"
       | "hashPegInQuote"
+      | "hashPegInQuoteEIP712"
       | "pause"
       | "pauseStatus"
       | "registerPegIn"
@@ -138,19 +136,11 @@ export interface PeginInterface extends utils.Interface {
     values: [Quotes.PegInQuoteStruct]
   ): string;
   encodeFunctionData(functionFragment: "deposit", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "eip712Domain",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "getBalance", values: [string]): string;
-  encodeFunctionData(
-    functionFragment: "getCurrentContribution",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getFeeCollector",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getFeePercentage",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "getMinPegIn",
     values?: undefined
@@ -161,6 +151,10 @@ export interface PeginInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "hashPegInQuote",
+    values: [Quotes.PegInQuoteStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "hashPegInQuoteEIP712",
     values: [Quotes.PegInQuoteStruct]
   ): string;
   encodeFunctionData(functionFragment: "pause", values: [string]): string;
@@ -193,19 +187,11 @@ export interface PeginInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "eip712Domain",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getBalance", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getCurrentContribution",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getFeeCollector",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getFeePercentage",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "getMinPegIn",
     data: BytesLike
@@ -216,6 +202,10 @@ export interface PeginInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "hashPegInQuote",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "hashPegInQuoteEIP712",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
@@ -239,6 +229,7 @@ export interface PeginInterface extends utils.Interface {
     "BalanceIncrease(address,uint256)": EventFragment;
     "BridgeCapExceeded(bytes32,int256)": EventFragment;
     "CallForUser(address,address,bytes32,uint256,uint256,bytes,bool)": EventFragment;
+    "EIP712DomainChanged()": EventFragment;
     "PegInRegistered(bytes32,uint256)": EventFragment;
     "Refund(address,bytes32,uint256,bool)": EventFragment;
     "Withdrawal(address,uint256)": EventFragment;
@@ -248,6 +239,7 @@ export interface PeginInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "BalanceIncrease"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BridgeCapExceeded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CallForUser"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "EIP712DomainChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PegInRegistered"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Refund"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdrawal"): EventFragment;
@@ -302,6 +294,15 @@ export type CallForUserEvent = TypedEvent<
 >;
 
 export type CallForUserEventFilter = TypedEventFilter<CallForUserEvent>;
+
+export interface EIP712DomainChangedEventObject {}
+export type EIP712DomainChangedEvent = TypedEvent<
+  [],
+  EIP712DomainChangedEventObject
+>;
+
+export type EIP712DomainChangedEventFilter =
+  TypedEventFilter<EIP712DomainChangedEvent>;
 
 export interface PegInRegisteredEventObject {
   quoteHash: string;
@@ -374,13 +375,21 @@ export interface Pegin extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<ContractTransaction>;
 
+    eip712Domain(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, BigNumber, string, string, BigNumber[]] & {
+        fields: string;
+        name: string;
+        version: string;
+        chainId: BigNumber;
+        verifyingContract: string;
+        salt: string;
+        extensions: BigNumber[];
+      }
+    >;
+
     getBalance(addr: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    getCurrentContribution(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<[string]>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getMinPegIn(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -390,6 +399,11 @@ export interface Pegin extends BaseContract {
     ): Promise<[number]>;
 
     hashPegInQuote(
+      quote: Quotes.PegInQuoteStruct,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    hashPegInQuoteEIP712(
       quote: Quotes.PegInQuoteStruct,
       overrides?: CallOverrides
     ): Promise<[string]>;
@@ -443,13 +457,21 @@ export interface Pegin extends BaseContract {
     overrides?: PayableOverrides & { from?: string }
   ): Promise<ContractTransaction>;
 
+  eip712Domain(
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string, BigNumber, string, string, BigNumber[]] & {
+      fields: string;
+      name: string;
+      version: string;
+      chainId: BigNumber;
+      verifyingContract: string;
+      salt: string;
+      extensions: BigNumber[];
+    }
+  >;
+
   getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
-
-  getFeeCollector(overrides?: CallOverrides): Promise<string>;
-
-  getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
 
   getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -459,6 +481,11 @@ export interface Pegin extends BaseContract {
   ): Promise<number>;
 
   hashPegInQuote(
+    quote: Quotes.PegInQuoteStruct,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  hashPegInQuoteEIP712(
     quote: Quotes.PegInQuoteStruct,
     overrides?: CallOverrides
   ): Promise<string>;
@@ -510,13 +537,21 @@ export interface Pegin extends BaseContract {
 
     deposit(overrides?: CallOverrides): Promise<void>;
 
+    eip712Domain(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, BigNumber, string, string, BigNumber[]] & {
+        fields: string;
+        name: string;
+        version: string;
+        chainId: BigNumber;
+        verifyingContract: string;
+        salt: string;
+        extensions: BigNumber[];
+      }
+    >;
+
     getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<string>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
 
     getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -526,6 +561,11 @@ export interface Pegin extends BaseContract {
     ): Promise<number>;
 
     hashPegInQuote(
+      quote: Quotes.PegInQuoteStruct,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    hashPegInQuoteEIP712(
       quote: Quotes.PegInQuoteStruct,
       overrides?: CallOverrides
     ): Promise<string>;
@@ -609,6 +649,9 @@ export interface Pegin extends BaseContract {
       success?: null
     ): CallForUserEventFilter;
 
+    "EIP712DomainChanged()"(): EIP712DomainChangedEventFilter;
+    EIP712DomainChanged(): EIP712DomainChangedEventFilter;
+
     "PegInRegistered(bytes32,uint256)"(
       quoteHash?: BytesLike | null,
       transferredAmount?: BigNumberish | null
@@ -651,13 +694,9 @@ export interface Pegin extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<BigNumber>;
 
+    eip712Domain(overrides?: CallOverrides): Promise<BigNumber>;
+
     getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    getCurrentContribution(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<BigNumber>;
 
     getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -667,6 +706,11 @@ export interface Pegin extends BaseContract {
     ): Promise<BigNumber>;
 
     hashPegInQuote(
+      quote: Quotes.PegInQuoteStruct,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    hashPegInQuoteEIP712(
       quote: Quotes.PegInQuoteStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -711,18 +755,12 @@ export interface Pegin extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
+    eip712Domain(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getBalance(
       addr: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    getCurrentContribution(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getFeeCollector(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getFeePercentage(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getMinPegIn(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -732,6 +770,11 @@ export interface Pegin extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     hashPegInQuote(
+      quote: Quotes.PegInQuoteStruct,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    hashPegInQuoteEIP712(
       quote: Quotes.PegInQuoteStruct,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

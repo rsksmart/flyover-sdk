@@ -72,7 +72,7 @@ const quoteMock: Quote = {
     confirmations: 1,
     callOnRegister: true,
     gasFee: BigInt('1'),
-    productFeeAmount: BigInt(50000000000000)
+    chainId: 31,
   }
 }
 
@@ -81,6 +81,7 @@ const signatureMock = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567
 const lbcMock = {
   pegInContract: {
     validatePeginDepositAddress: async (_quote: Quote, _depositAddress: string) => Promise.resolve(true),
+    hashPeginQuoteEIP712: jest.fn()
   }
 } as unknown as LiquidityBridgeContract
 
@@ -92,6 +93,7 @@ describe('acceptAuthenticatedQuote function should', () => {
   test('build url correctly and call post with correct parameters', async () => {
     jest.spyOn(bridgesCoreSdk, 'isValidSignature').mockImplementation(() => true)
     const clientSpy = jest.spyOn(mockClient, 'post')
+    jest.spyOn(lbcMock.pegInContract, 'hashPeginQuoteEIP712').mockResolvedValue('signature')
 
     await acceptAuthenticatedQuote(mockClient, lbcMock, providerMock, quoteMock, signatureMock)
 
@@ -100,6 +102,7 @@ describe('acceptAuthenticatedQuote function should', () => {
       { quoteHash: quoteMock.quoteHash, signature: signatureMock },
       { includeCaptcha: false }
     )
+    expect(lbcMock.pegInContract.hashPeginQuoteEIP712).toBeCalledWith(quoteMock)
   })
 
   test('fail on provider missing properties', async () => {

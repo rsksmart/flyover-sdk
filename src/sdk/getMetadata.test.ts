@@ -1,7 +1,6 @@
 import { describe, test, expect } from '@jest/globals'
 import { type PegoutQuote, type LiquidityProvider, type Quote } from '../api'
 import { getMetadata } from './getMetadata'
-import { type LiquidityBridgeContract } from '../blockchain/lbc'
 import JSONbig from 'json-bigint'
 
 const serializer = JSONbig({ useNativeBigInt: true })
@@ -53,7 +52,7 @@ const pegoutQuoteMock: PegoutQuote = {
     transferConfirmations: 1,
     transferTime: 1,
     value: BigInt(1),
-    productFeeAmount: BigInt(50000000000000)
+    chainId: 31,
   },
   quoteHash: 'any hash'
 }
@@ -79,23 +78,14 @@ const peginQuoteMock: Quote = {
     lpBTCAddr: 'any address',
     lpCallTime: 1,
     gasFee: BigInt(1),
-    productFeeAmount: BigInt(50000000000000)
+    chainId: 31,
   },
   quoteHash: 'any hash'
 }
 
-const lbcMock = {
-  pegInContract: {
-    getProductFeePercentage: async () => Promise.resolve(2)
-  },
-  pegOutContract: {
-    getProductFeePercentage: async () => Promise.resolve(3)
-  },
-} as LiquidityBridgeContract
-
 describe('getMetadata function should', () => {
   test('return pegin and pegout fees', async () => {
-    const metadata = await getMetadata(providerMock, lbcMock, null, null)
+    const metadata = await getMetadata(providerMock, null, null)
     expect(metadata.length).toBe(2)
     expect(serializer.stringify(metadata.at(0))).toEqual(serializer.stringify({
       operation: 'PegIn',
@@ -115,12 +105,6 @@ describe('getMetadata function should', () => {
           decimals: 0,
           type: 'Percental',
           description: 'Liquidity provider percentage fee. It is a percentage of the pegged value.'
-        },
-        {
-          amount: 2,
-          decimals: 0,
-          type: 'Percental',
-          description: 'Fee to be paid to the network. Its a percentage of the pegged value'
         }
       ]
     }))
@@ -143,20 +127,14 @@ describe('getMetadata function should', () => {
           decimals: 0,
           type: 'Percental',
           description: 'Liquidity provider percentage fee. It is a percentage of the pegged value.'
-        },
-        {
-          amount: 3,
-          decimals: 0,
-          type: 'Percental',
-          description: 'Fee to be paid to the network. Its a percentage of the pegged value'
         }
       ]
     }))
   })
 
   test('include service fee if pegin quote is provided', async () => {
-    const metadata = await getMetadata(providerMock, lbcMock, peginQuoteMock, null)
-    expect(serializer.stringify(metadata.at(0)?.fees.at(2))).toEqual(serializer.stringify({
+    const metadata = await getMetadata(providerMock, peginQuoteMock, null)
+    expect(serializer.stringify(metadata.at(0)?.fees.at(1))).toEqual(serializer.stringify({
       amount: peginQuoteMock.quote.gasFee,
       decimals: 0,
       type: 'Fixed',
@@ -166,8 +144,8 @@ describe('getMetadata function should', () => {
   })
 
   test('include service fee if pegout quote is provided', async () => {
-    const metadata = await getMetadata(providerMock, lbcMock, null, pegoutQuoteMock)
-    expect(serializer.stringify(metadata.at(1)?.fees.at(2))).toEqual(serializer.stringify({
+    const metadata = await getMetadata(providerMock, null, pegoutQuoteMock)
+    expect(serializer.stringify(metadata.at(1)?.fees.at(1))).toEqual(serializer.stringify({
       amount: pegoutQuoteMock.quote.gasFee,
       decimals: 0,
       type: 'Fixed',

@@ -5,9 +5,9 @@ cd lbc-code || return
 npm ci
 npm run compile
 
-jq .abi artifacts/contracts/interfaces/IPegIn.sol/IPegIn.json | jq -r  tostring > pegin.json
-jq .abi artifacts/contracts/interfaces/IPegOut.sol/IPegOut.json | jq -r  tostring > pegout.json
-jq .abi artifacts/contracts/interfaces/IFlyoverDiscovery.sol/IFlyoverDiscovery.json | jq -r  tostring > discovery.json
+jq .abi out/IPegIn.sol/IPegIn.json | jq -r  tostring > pegin.json
+jq .abi out/IPegOut.sol/IPegOut.json | jq -r  tostring > pegout.json
+jq .abi out/IFlyoverDiscovery.sol/IFlyoverDiscovery.json | jq -r  tostring > discovery.json
 
 cp pegin.json ../src/blockchain/pegin-abi.ts
 cp pegout.json ../src/blockchain/pegout-abi.ts

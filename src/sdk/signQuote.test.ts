@@ -1,6 +1,6 @@
 import { signQuote } from "./signQuote";
 import { describe, test, jest, expect, beforeAll } from '@jest/globals'
-import { assertTruthy, BlockchainConnection, FlyoverConfig, isValidSignature, ethers } from "@rsksmart/bridges-core-sdk";
+import { assertTruthy, FlyoverConfig, isValidSignature, ethers } from "@rsksmart/bridges-core-sdk";
 import { LiquidityProvider, PegoutQuote, Quote } from "../api";
 import { LiquidityBridgeContract } from "../blockchain/lbc";
 
@@ -31,22 +31,13 @@ const providerMock: LiquidityProvider = {
   }
 }
 
-const TEST_ACCOUNT_ONE = {
-    keystore: {"address":"26f40996671e622a0a6408b24c0e678d93a9efea","crypto":{"cipher":"aes-128-ctr","ciphertext":"8ce65d2e83e97ccf3e8703def56407023c57d92e1f62af4d5bece8b1405c5499","cipherparams":{"iv":"09861cec65e6cb56029cdbae1c5abd4b"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"15ef60f8d2b060ba231d3fedb55886689fbd60d186da773a13eafbc152b05167"},"mac":"c965c4f8b28911b9a4128d37ff0da5f1d953ce194385a117cbd37c712019e10c"},"id":"c7f6dd91-6e1c-4c4b-b82e-1ce700fa84a3","version":3},
-    password: 'test2'
-}
-const TEST_ACCOUNT_TWO = {
-    keystore: {"address":"7f982fab4d11cef2fb979de5dddb0318a3cf0035","crypto":{"cipher":"aes-128-ctr","ciphertext":"b545a8b73620ee6ba86e05b800a0f0129f1c42dcedbaca388e7fc80ff61dad36","cipherparams":{"iv":"3910b03585a284e13a5f9257a6e86880"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"52a47e913543bb95cd052d6551826a32f7fc0435009399c91dd9b1c4d155275f"},"mac":"624167d62efb0be2d95d31cb9dad797ed07a4285430ff47f9301229a9d6d9706"},"id":"c7ffe208-49db-41cd-98a6-eacdf01c6833","version":3},
-    password: 'test'
-};
-
-const peginCases: {quote: Quote, signer: string, signature: string, connection?: BlockchainConnection}[] =  [
+const peginCases: {quote: Quote, signer: string, signature: string, connection?: any}[] =  [
     {
         quote: {
             quote:{
             fedBTCAddr: '2MvW72NchDEXiYuTv8SurroHwGw8rSuDKxz',
             lbcAddr: '0x18D8212bC00106b93070123f325021C723D503a3',
-            lpRSKAddr: '0xdfcf32644e6cc5badd1188cddf66f66e21b24375',
+            lpRSKAddr: '0xAFf2c034FD8Bc690e62A897BbC5A6C4dF2321992',
             btcRefundAddr: 'mfWxJ45yp2SFn7UciZyNpvDKrzbhyfKrY8',
             rskRefundAddr: '0x79568c2989232dCa1840087D73d403602364c0D4',
             lpBTCAddr: 'mwEceC31MwWmF6hc5SSQ8FmbgdsSoBSnbm',
@@ -63,19 +54,19 @@ const peginCases: {quote: Quote, signer: string, signature: string, connection?:
             confirmations: 3,
             callOnRegister: false,
             gasFee: BigInt("102071097248"),
-            productFeeAmount: BigInt(0)
+            chainId: 31,
             },
             quoteHash: 'bad965e00a5b1085cb2d4d448e2cdb7fd06b8875583055620f08516b18ee899f'
         },
-        signer: '0x26f40996671e622A0a6408B24C0e678D93a9eFEA',
-        signature: '7d9d587a3390717fad2af4921d9f73fac41243e394369ea6af793217f53240c13897a459153995e7d18704f4c218f220b377069d0607db5a2a9879548a122f761b',
+        signer: '0xAFf2c034FD8Bc690e62A897BbC5A6C4dF2321992',
+        signature: 'aaebe63d6e226d0a88325f6657481cb038f6b3930ab4cdb5f9a4a49a57b45e387ecdfb084109068d8c6bbea5ea030cab9d5ca4d4be82134a67b9fef55e2287d41c',
     },
     {
         quote: {
             quote: {
                 fedBTCAddr: '2MvW72NchDEXiYuTv8SurroHwGw8rSuDKxz',
                 lbcAddr: '0x18D8212bC00106b93070123f325021C723D503a3',
-                lpRSKAddr: '0xdfcf32644e6cc5badd1188cddf66f66e21b24375',
+                lpRSKAddr: '0x57f9F71E683E2A8ff3d2f394aE45C58b2d913A35',
                 btcRefundAddr: 'mfWxJ45yp2SFn7UciZyNpvDKrzbhyfKrY8',
                 rskRefundAddr: '0x79568c2989232dCa1840087D73d403602364c0D4',
                 lpBTCAddr: 'mwEceC31MwWmF6hc5SSQ8FmbgdsSoBSnbm',
@@ -92,21 +83,21 @@ const peginCases: {quote: Quote, signer: string, signature: string, connection?:
                 confirmations: 3,
                 callOnRegister: false,
                 gasFee: BigInt("547794649600"),
-                productFeeAmount: BigInt(0)
+                chainId: 31,
             },
             quoteHash: 'adf549ecbc1a4e734fa90b2985495732b1c1c9e84235fe77584c5eeedf4dbf3f'
         },
-        signature: 'c9e7ffac26b89016a9a1a2f5661f680725708670c815abd4934a3e115443aaae11e8e11f70fbf5406edf7ad0b81656326d01c3afc406f400f10fc3f3fd226a601b',
-        signer: '0x7f982fab4d11cef2fb979de5dddb0318a3cf0035'
+        signature: '40126b215bd55aa96c5e552249359677dc4fad7f99ce5dfaa85b3e6f6a92df9d35764a4bc0e47b66b045183bfbd8978c2238823e6068087a45a83d63df4c3d731b',
+        signer: '0x57f9F71E683E2A8ff3d2f394aE45C58b2d913A35'
     }
 ]
 
-const pegoutCases: {quote: PegoutQuote, signer: string, signature: string, connection?: BlockchainConnection}[] =  [
+const pegoutCases: {quote: PegoutQuote, signer: string, signature: string, connection?: any}[] =  [
 {
     quote: {
         quote: {
             lbcAddress: '0x18D8212bC00106b93070123f325021C723D503a3',
-            liquidityProviderRskAddress: '0xdfcf32644e6cc5badd1188cddf66f66e21b24375',
+            liquidityProviderRskAddress: '0x57f9F71E683E2A8ff3d2f394aE45C58b2d913A35',
             btcRefundAddress: 'mxwbsN5eUH2qC84ZCYMavQamgJZS5bgsvW',
             rskRefundAddress: '0x9D93929A9099be4355fC2389FbF253982F9dF47c',
             lpBtcAddr: 'mwEceC31MwWmF6hc5SSQ8FmbgdsSoBSnbm',
@@ -123,18 +114,18 @@ const pegoutCases: {quote: PegoutQuote, signer: string, signature: string, conne
             expireDate: 1748262660,
             expireBlocks: 6430650,
             gasFee: BigInt("2690000000000"),
-            productFeeAmount: BigInt(0)
+            chainId: 31,
         },
         quoteHash: 'cd0540da2550bdecd0721c09f16dde85832d1553a378bd090f8716a688e94cf6'
     },
-    signature: '8a7e1af37ecab74183acbafd65e0791eb61eb4b4e884310f33da0b276dbe3a7f727cea1875008804f8c8d6750f0146d13d315307269ca2c2f4f46969b1dea5041c',
-    signer: '0x7f982fab4d11cef2fb979de5dddb0318a3cf0035'
+    signature: 'd0b104aa793c09802ae8fda443693498a6ffb1552a936afaba3068c838c57e6b2c89aa5dc882e3b5c942b28a7282bc9e4e46e4b63b4b1fd15ac2026fb41cf4db1c',
+    signer: '0x57f9F71E683E2A8ff3d2f394aE45C58b2d913A35'
 },
 {
     quote:{
           quote:  {
                 lbcAddress: '0x18D8212bC00106b93070123f325021C723D503a3',
-                liquidityProviderRskAddress: '0xdfcf32644e6cc5badd1188cddf66f66e21b24375',
+                liquidityProviderRskAddress: '0xAFf2c034FD8Bc690e62A897BbC5A6C4dF2321992',
                 btcRefundAddress: 'mxwbsN5eUH2qC84ZCYMavQamgJZS5bgsvW',
                 rskRefundAddress: '0x9D93929A9099be4355fC2389FbF253982F9dF47c',
                 lpBtcAddr: 'mwEceC31MwWmF6hc5SSQ8FmbgdsSoBSnbm',
@@ -151,39 +142,45 @@ const pegoutCases: {quote: PegoutQuote, signer: string, signature: string, conne
                 expireDate: 1748264172,
                 expireBlocks: 6430725,
                 gasFee: BigInt("4170000000000"),
-                productFeeAmount: BigInt(0)
+                chainId: 31,
         },
             quoteHash: 'b2e14c87f0cd6e0074bdd7f7617f4c206cb7a48abe572f7862ada5f265d4d1d6'
         },
-        signature: 'a2a1fa5467ce5a8f4dad51707c738e906c355dd4c20e7aa6a46cb38edaa1e38b7bb6b07a059936701210b4bd78a76aa2b37fe28c95a6620fac82ab80aff89fdd1b',
-        signer: '0x26f40996671e622A0a6408B24C0e678D93a9eFEA'
+        signature: '3763a6b88b92d31546d1369668834624a5c4fc7cd95c0c90c461db7313a218390b1c6d89fe8107da5325f328d2429959f89d86dcc9cd7eedd2be147f10ad82dd1c',
+        signer: '0xAFf2c034FD8Bc690e62A897BbC5A6C4dF2321992'
     },
 ]
 
 describe("signQuote", () => {
   const peginQuote = peginCases[0]?.quote
-  let connections: {connection:BlockchainConnection, address:string}[]
+  let connections: {connection: any, address:string}[]
 
   beforeAll(async () => {
       connections = [
         {
-          connection:  await BlockchainConnection.createUsingEncryptedJson(
-            TEST_ACCOUNT_ONE.keystore,
-            TEST_ACCOUNT_ONE.password,
-          ), address: '0x'+TEST_ACCOUNT_ONE.keystore.address,
+          address: '0xAFf2c034FD8Bc690e62A897BbC5A6C4dF2321992',
+          connection: {
+            signer: {
+                _signTypedData: jest.fn()
+            }
+          }
         },
         {
-          connection:  await BlockchainConnection.createUsingEncryptedJson(
-            TEST_ACCOUNT_TWO.keystore,
-            TEST_ACCOUNT_TWO.password,
-          ), address: '0x'+TEST_ACCOUNT_TWO.keystore.address,
+          address: '0x57f9F71E683E2A8ff3d2f394aE45C58b2d913A35',
+          connection: {
+            signer: {
+                _signTypedData: jest.fn()
+            }
+          }
         }
       ]
     peginCases.forEach((peginCase) => {
         peginCase.connection = connections.find((c) => c.address.toLowerCase() === peginCase.signer.toLowerCase())?.connection
+        jest.spyOn(peginCase.connection.signer, '_signTypedData').mockResolvedValueOnce(peginCase.signature)
     })
     pegoutCases.forEach((pegoutCase) => {
         pegoutCase.connection = connections.find((c) => c.address.toLowerCase() === pegoutCase.signer.toLowerCase())?.connection
+        jest.spyOn(pegoutCase.connection.signer, '_signTypedData').mockResolvedValueOnce(pegoutCase.signature)
     })
   }, 50_000);
 
@@ -192,6 +189,7 @@ describe("signQuote", () => {
         const lbcMock = {
             pegInContract: {
                 hashPeginQuote: jest.fn<() => Promise<string>>().mockResolvedValue(peginCase.quote.quoteHash),
+                getEip712Domain: jest.fn<() => Promise<unknown>>().mockResolvedValue({ name: 'PegInContract', version: '1', chainId: 31, verifyingContract:'addr' }),
             }
         }
 
@@ -204,6 +202,7 @@ describe("signQuote", () => {
         const checksummedSigner = ethers.utils.getAddress(peginCase.signer);
 
         expect(lbcMock.pegInContract.hashPeginQuote).toHaveBeenCalledWith(peginCase.quote);
+        expect(lbcMock.pegInContract.getEip712Domain).toHaveBeenCalled();
         expect(signature).toBe(peginCase.signature);
         await expect(isValidSignature(checksummedSigner, peginCase.quote.quoteHash, signature)).toBe(true);
     }
@@ -214,6 +213,7 @@ describe("signQuote", () => {
         const lbcMock = {
             pegOutContract: {
                 hashPegoutQuote: jest.fn<() => Promise<string>>().mockResolvedValue(pegoutCase.quote.quoteHash),
+                getEip712Domain: jest.fn<() => Promise<unknown>>().mockResolvedValue({ name: 'PegOutContract', version: '1', chainId: 31, verifyingContract:'addr' }),
             }
         }
 
@@ -226,6 +226,7 @@ describe("signQuote", () => {
         const checksummedSigner = ethers.utils.getAddress(pegoutCase.signer);
 
         expect(lbcMock.pegOutContract.hashPegoutQuote).toHaveBeenCalledWith(pegoutCase.quote);
+        expect(lbcMock.pegOutContract.getEip712Domain).toHaveBeenCalled();
         expect(signature).toBe(pegoutCase.signature);
         await expect(isValidSignature(checksummedSigner, pegoutCase.quote.quoteHash, signature)).toBe(true);
     }

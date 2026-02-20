@@ -86,7 +86,7 @@ const quoteResponseMock: Quote =
       confirmations: 1,
       callOnRegister: true,
       gasFee: BigInt(1),
-      productFeeAmount: BigInt(50000000000000)
+      chainId: 31,
     },
     quoteHash: 'any hash'
   }
@@ -113,7 +113,7 @@ const quoteResponseSanitizedMock: Quote =
       confirmations: 1,
       callOnRegister: true,
       gasFee: BigInt(1),
-      productFeeAmount: BigInt(50000000000000)
+      chainId: 31,
     },
     quoteHash: 'any hash'
   }
