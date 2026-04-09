@@ -50,6 +50,7 @@ function validateQuoteResponse (config: FlyoverConfig, quoteRequest: PeginQuoteR
     quoteRequest.callEoaOrContractAddress === quote.contractAddr &&
     quoteRequest.rskRefundAddress === quote.rskRefundAddr &&
     quoteRequest.valueToTransfer === quote.value &&
+    quote.callOnRegister === false &&
     isBtcZeroAddress(config, quote.btcRefundAddr)
 }
 
