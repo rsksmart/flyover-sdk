@@ -16,7 +16,7 @@ export async function acceptPegoutQuote (httpClient: HttpClient, provider: Liqui
     throw FlyoverError.invalidSignatureError({
       serverUrl: provider.apiBaseUrl,
       address: quote.quote.liquidityProviderRskAddress,
-      sinature: acceptedQuote.signature
+      signature: acceptedQuote.signature
     })
   }
   return acceptedQuote

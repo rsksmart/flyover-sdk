@@ -22,7 +22,7 @@ The signature and derivation address for the PegIn quote
 
 #### Defined in
 
-[src/sdk/validatePeginTransaction.ts:15](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/validatePeginTransaction.ts#L15)
+[src/sdk/validatePeginTransaction.ts:15](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/validatePeginTransaction.ts#L15)
 
 ___
 
@@ -34,7 +34,7 @@ The serialized Bitcoin transaction to validate
 
 #### Defined in
 
-[src/sdk/validatePeginTransaction.ts:17](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/validatePeginTransaction.ts#L17)
+[src/sdk/validatePeginTransaction.ts:17](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/validatePeginTransaction.ts#L17)
 
 ___
 
@@ -46,4 +46,4 @@ The detail of the quote of the PegIn
 
 #### Defined in
 
-[src/sdk/validatePeginTransaction.ts:13](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/validatePeginTransaction.ts#L13)
+[src/sdk/validatePeginTransaction.ts:13](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/validatePeginTransaction.ts#L13)

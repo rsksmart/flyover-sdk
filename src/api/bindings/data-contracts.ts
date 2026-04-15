@@ -10,6 +10,20 @@
  */
 
 export type Type = any;
+export interface AcceptAuthenticatedQuoteRequest {
+  /**
+   * QuoteHash
+   * @example "0x0"
+   */
+  quoteHash: string;
+  /**
+   * Signature from a trusted account
+   * @example "0x0"
+   */
+  signature: string;
+}
+
+export const AcceptAuthenticatedQuoteRequestRequiredFields: string[] = ["quoteHash", "signature"];
 
 export interface AcceptPeginRespose {
   /**
@@ -54,7 +68,7 @@ export const AcceptQuoteRequestRequiredFields: string[] = ["quoteHash"];
 export interface AddCollateralRequest {
   /**
    * Amount to add to the collateral
-   * @example 100000000000
+   * @example "100000000000"
    */
   amount: bigint;
 }
@@ -64,9 +78,9 @@ export const AddCollateralRequestRequiredFields: string[] = ["amount"];
 export interface AddCollateralResponse {
   /**
    * New Collateral Balance
-   * @example 100000000000
+   * @example "100000000000"
    */
-  newCollateralBalance?: number;
+  newCollateralBalance?: any;
 }
 
 export interface AvailableLiquidityDTO {
@@ -86,10 +100,6 @@ export const AvailableLiquidityDtoRequiredFields: string[] = ["peginLiquidityAmo
 
 export interface ChangeStatusRequest {
   status?: boolean;
-}
-
-export interface ConfirmationsPerAmount {
-  key?: number;
 }
 
 export interface DepositEventDTO {
@@ -116,18 +126,22 @@ export interface DepositEventDTO {
   timestamp?: string;
 }
 
-export interface GeneralConfiguration {
-  btcConfirmations?: bigint;
+export interface GeneralConfigurationDTO {
+  btcConfirmations?: {
+    key?: number;
+  };
   publicLiquidityCheck?: boolean;
-  rskConfirmations?: bigint;
+  rskConfirmations?: {
+    key?: number;
+  };
 }
 
 export interface GeneralConfigurationRequest {
-  configuration?: GeneralConfiguration;
+  configuration?: GeneralConfigurationDTO;
 }
 
 export interface GetCollateralResponse {
-  collateral: number;
+  collateral: Type;
 }
 
 export const GetCollateralResponseRequiredFields: string[] = ["collateral"];
@@ -149,6 +163,25 @@ export interface GetPegoutQuoteResponse {
 }
 
 export const GetPegoutQuoteResponseRequiredFields: string[] = ["quote", "quoteHash"];
+
+export interface GetTransactionsItem {
+  amount?: bigint;
+  callFee?: bigint;
+  gasFee?: bigint;
+  quoteHash?: string;
+  status?: string;
+}
+
+export interface GetTransactionsResponse {
+  data?: {
+    amount?: bigint;
+    callFee?: bigint;
+    gasFee?: bigint;
+    quoteHash?: string;
+    status?: string;
+  }[];
+  pagination?: PaginationMetadata;
+}
 
 export interface HealthResponse {
   /**
@@ -206,6 +239,13 @@ export const LiquidityProviderRequiredFields: string[] = [
   "status",
   "providerType",
 ];
+
+export interface PaginationMetadata {
+  page?: number;
+  perPage?: number;
+  total?: number;
+  totalPages?: number;
+}
 
 export interface PeginConfigurationDTO {
   callTime?: number;
@@ -316,7 +356,7 @@ export interface PeginQuoteRequest {
   rskRefundAddress: string;
   /**
    * Value to send in the call
-   * @example 0
+   * @example "0x0"
    */
   valueToTransfer: bigint;
 }
@@ -424,7 +464,7 @@ export interface PegoutQuoteRequest {
   to: string;
   /**
    * ValueToTransfer
-   * @example 10000000000000
+   * @example "10000000000000"
    */
   valueToTransfer: bigint;
 }
@@ -469,6 +509,36 @@ export interface ProviderDetailResponse {
 }
 
 export const ProviderDetailResponseRequiredFields: string[] = ["siteKey", "liquidityCheckEnabled", "pegin", "pegout"];
+
+export interface RecommendedOperationDTO {
+  /**
+   * Estimated call fee if a quote is created with the recommended amount
+   * @example "100000"
+   */
+  estimatedCallFee: bigint;
+  /**
+   * Estimated gas fee if a quote is created with the recommended amount
+   * @example "100000"
+   */
+  estimatedGasFee: bigint;
+  /**
+   * Estimated product fee if a quote is created with the recommended amount
+   * @example "100000"
+   */
+  estimatedProductFee: bigint;
+  /**
+   * Recommended quote value for the input amount
+   * @example "100000"
+   */
+  recommendedQuoteValue: bigint;
+}
+
+export const RecommendedOperationDtoRequiredFields: string[] = [
+  "recommendedQuoteValue",
+  "estimatedCallFee",
+  "estimatedGasFee",
+  "estimatedProductFee",
+];
 
 export interface RetainedPeginQuoteDTO {
   /** The hash of the RSK transaction to the address requested by the user */
@@ -574,6 +644,75 @@ export interface Services {
   rsk?: string;
 }
 
+export interface SummaryDataDTO {
+  acceptedQuotesCount?: number;
+  lpEarnings?: Type;
+  paidQuotesAmount?: bigint;
+  paidQuotesCount?: number;
+  refundedQuotesCount?: number;
+  totalAcceptedQuotedAmount?: bigint;
+  totalFeesCollected?: bigint;
+  totalPenaltyAmount?: bigint;
+  totalQuotesCount?: number;
+}
+
+export interface SummaryResultDTO {
+  peginSummary?: SummaryDataDTO;
+  pegoutSummary?: SummaryDataDTO;
+}
+
+export interface TrustedAccountRequest {
+  address?: string;
+  btcLockingCap?: Type;
+  name?: string;
+  rbtcLockingCap?: Type;
+}
+
+export interface PkgAcceptAuthenticatedQuoteRequest {
+  /**
+   * QuoteHash
+   * @example "0x0"
+   */
+  quoteHash: string;
+  /**
+   * Signature from a trusted account
+   * @example "0x0"
+   */
+  signature: string;
+}
+
+export const PkgAcceptAuthenticatedQuoteRequestRequiredFields: string[] = ["quoteHash", "signature"];
+
+export interface PkgAcceptPeginRespose {
+  /**
+   * Hash of the deposit BTC address
+   * @example "0x0"
+   */
+  bitcoinDepositAddressHash: string;
+  /**
+   * Signature of the quote
+   * @example "0x0"
+   */
+  signature: string;
+}
+
+export const PkgAcceptPeginResposeRequiredFields: string[] = ["signature", "bitcoinDepositAddressHash"];
+
+export interface PkgAcceptPegoutResponse {
+  /**
+   * LBC address to execute depositPegout function
+   * @example "0x0"
+   */
+  lbcAddress: string;
+  /**
+   * Signature of the quote
+   * @example "0x0"
+   */
+  signature: string;
+}
+
+export const PkgAcceptPegoutResponseRequiredFields: string[] = ["signature", "lbcAddress"];
+
 export interface PkgAcceptQuoteRequest {
   /**
    * QuoteHash
@@ -587,7 +726,7 @@ export const PkgAcceptQuoteRequestRequiredFields: string[] = ["quoteHash"];
 export interface PkgAddCollateralRequest {
   /**
    * Amount to add to the collateral
-   * @example 100000000000
+   * @example "100000000000"
    */
   amount: bigint;
 }
@@ -597,13 +736,50 @@ export const PkgAddCollateralRequestRequiredFields: string[] = ["amount"];
 export interface PkgAddCollateralResponse {
   /**
    * New Collateral Balance
-   * @example 100000000000
+   * @example "100000000000"
    */
-  newCollateralBalance?: number;
+  newCollateralBalance?: any;
 }
 
 export interface PkgGetCollateralResponse {
-  collateral: number;
+  collateral: Type;
 }
 
 export const PkgGetCollateralResponseRequiredFields: string[] = ["collateral"];
+
+export interface PkgRecommendedOperationDTO {
+  /**
+   * Estimated call fee if a quote is created with the recommended amount
+   * @example "100000"
+   */
+  estimatedCallFee: bigint;
+  /**
+   * Estimated gas fee if a quote is created with the recommended amount
+   * @example "100000"
+   */
+  estimatedGasFee: bigint;
+  /**
+   * Estimated product fee if a quote is created with the recommended amount
+   * @example "100000"
+   */
+  estimatedProductFee: bigint;
+  /**
+   * Recommended quote value for the input amount
+   * @example "100000"
+   */
+  recommendedQuoteValue: bigint;
+}
+
+export const PkgRecommendedOperationDtoRequiredFields: string[] = [
+  "recommendedQuoteValue",
+  "estimatedCallFee",
+  "estimatedGasFee",
+  "estimatedProductFee",
+];
+
+export interface PkgTrustedAccountRequest {
+  address?: string;
+  btcLockingCap?: Type;
+  name?: string;
+  rbtcLockingCap?: Type;
+}

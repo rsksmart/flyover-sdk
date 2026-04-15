@@ -1,17 +1,7 @@
 import { describe, test, expect } from '@jest/globals'
-import { getQuoteTotal, isPeginStillPayable, satsToWei } from './quote'
+import { getQuoteTotal, isPeginQuote, isPeginStillPayable, satsToWei } from './quote'
 import { type QuoteDetail, type PegoutQuote, type Quote } from '../api'
 
-describe('getQuoteTotal function should', () => {
-  test('fail if quote is empty', () => {
-    expect(() => { getQuoteTotal(null as any) }).toThrow('empty quote')
-    expect(() => { getQuoteTotal(undefined as any) }).toThrow('empty quote')
-  })
-  test('fail if quote detail is empty', () => {
-    expect(() => { getQuoteTotal({} as Quote) }).toThrow('empty quote detail')
-    expect(() => { getQuoteTotal({} as PegoutQuote) }).toThrow('empty quote detail')
-  })
-  test('sum properly quote value', () => {
     const peginQuote: Quote = {
       quote: {
         fedBTCAddr: 'any addres',
@@ -37,7 +27,7 @@ describe('getQuoteTotal function should', () => {
       },
       quoteHash: 'a hash'
     }
-    const pegoutQuote = {
+    const pegoutQuote: PegoutQuote = {
       quote: {
         lbcAddress: 'an address',
         liquidityProviderRskAddress: 'an address',
@@ -61,6 +51,17 @@ describe('getQuoteTotal function should', () => {
       },
       quoteHash: 'a hash'
     }
+
+describe('getQuoteTotal function should', () => {
+  test('fail if quote is empty', () => {
+    expect(() => { getQuoteTotal(null as any) }).toThrow('empty quote')
+    expect(() => { getQuoteTotal(undefined as any) }).toThrow('empty quote')
+  })
+  test('fail if quote detail is empty', () => {
+    expect(() => { getQuoteTotal({} as Quote) }).toThrow('empty quote detail')
+    expect(() => { getQuoteTotal({} as PegoutQuote) }).toThrow('empty quote detail')
+  })
+  test('sum properly quote value', () => {
     expect(getQuoteTotal(peginQuote)).toBe(BigInt('9000000001234567890'))
     expect(getQuoteTotal(pegoutQuote)).toBe(BigInt('13500000000000000000'))
   })
@@ -141,5 +142,35 @@ describe('satsToWei function should', () => {
   })
   test('fail if sats is negative', () => {
     expect(() => { satsToWei(BigInt(-1)) }).toThrow('Negative sats value')
+  })
+
+  describe('isPeginQuote function should', () => {
+    test('return true for a pegin quote', () => {
+      expect(isPeginQuote(peginQuote)).toBe(true)
+    })
+
+    test('return false for a pegout quote', () => {
+      expect(isPeginQuote(pegoutQuote)).toBe(false)
+    })
+
+    test('return false if fedBTCAddr is missing', () => {
+      const notPeginQuote = {
+        quote: {
+          lbcAddr: 'any addres'
+        },
+        quoteHash: 'hash'
+      }
+      expect(isPeginQuote(notPeginQuote as any)).toBe(false)
+    })
+
+    test('return false if fedBTCAddr is undefined', () => {
+      const notPeginQuote = {
+        quote: {
+          fedBTCAddr: undefined
+        },
+        quoteHash: 'hash'
+      }
+      expect(isPeginQuote(notPeginQuote as any)).toBe(false)
+    })
   })
 })

@@ -9,6 +9,8 @@
  * ---------------------------------------------------------------
  */
 
+import { TrustedAccountRequest } from "./data-contracts";
+
 export namespace Management {
   /**
    * @description  Serves the static site for the Management UI
@@ -73,4 +75,74 @@ export namespace Management {
   }
 
   export const PostLogoutPath = "/management/logout";
+
+  /**
+   * @description  Deletes a trusted account
+   * @name DeleteTrustedAccounts
+   * @summary Delete Trusted Account
+   * @request DELETE:/management/trusted-accounts
+   */
+  export namespace DeleteTrustedAccounts {
+    export type RequestParams = {};
+    export type RequestQuery = {
+      /**
+       * Address of the trusted account to delete
+       * @format string
+       */
+      address: string;
+    };
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = void;
+  }
+
+  export const DeleteTrustedAccountsPath = "/management/trusted-accounts";
+
+  /**
+   * @description  Returns all trusted accounts
+   * @name TrustedAccountsList
+   * @summary Get Trusted Accounts
+   * @request GET:/management/trusted-accounts
+   */
+  export namespace TrustedAccountsList {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = void;
+  }
+
+  export const TrustedAccountsListPath = "/management/trusted-accounts";
+
+  /**
+   * @description  Adds a new trusted account
+   * @name PostTrustedAccounts
+   * @summary Add Trusted Account
+   * @request POST:/management/trusted-accounts
+   */
+  export namespace PostTrustedAccounts {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = TrustedAccountRequest;
+    export type RequestHeaders = {};
+    export type ResponseBody = void;
+  }
+
+  export const PostTrustedAccountsPath = "/management/trusted-accounts";
+
+  /**
+   * @description  Updates an existing trusted account
+   * @name PutTrustedAccounts
+   * @summary Update Trusted Account
+   * @request PUT:/management/trusted-accounts
+   */
+  export namespace PutTrustedAccounts {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = TrustedAccountRequest;
+    export type RequestHeaders = {};
+    export type ResponseBody = void;
+  }
+
+  export const PutTrustedAccountsPath = "/management/trusted-accounts";
 }

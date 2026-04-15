@@ -26,7 +26,7 @@ RskRefundAddress
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:394](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L394)
+[src/api/bindings/data-contracts.ts:394](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L394)
 
 ___
 
@@ -38,7 +38,7 @@ Bitcoin address that will receive the BTC amount
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:396](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L396)
+[src/api/bindings/data-contracts.ts:396](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L396)
 
 ___
 
@@ -56,4 +56,4 @@ ValueToTransfer
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:401](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L401)
+[src/api/bindings/data-contracts.ts:401](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L401)

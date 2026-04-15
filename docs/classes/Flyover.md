@@ -45,6 +45,7 @@ Class that represents the entrypoint to the Flyover SDK
 - [getSelectedLiquidityProvider](Flyover.md#getselectedliquidityprovider)
 - [getUserQuotes](Flyover.md#getuserquotes)
 - [isConnected](Flyover.md#isconnected)
+- [isQuotePaid](Flyover.md#isquotepaid)
 - [refundPegout](Flyover.md#refundpegout)
 - [registerPegin](Flyover.md#registerpegin)
 - [setNetwork](Flyover.md#setnetwork)
@@ -74,7 +75,7 @@ Create a Flyover client instance.
 
 #### Defined in
 
-[src/sdk/flyover.ts:51](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L51)
+[src/sdk/flyover.ts:52](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L52)
 
 ## Properties
 
@@ -86,7 +87,7 @@ Object that holds the connection configuration
 
 #### Defined in
 
-[src/sdk/flyover.ts:52](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L52)
+[src/sdk/flyover.ts:53](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L53)
 
 ___
 
@@ -96,7 +97,7 @@ ___
 
 #### Defined in
 
-[src/sdk/flyover.ts:42](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L42)
+[src/sdk/flyover.ts:43](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L43)
 
 ___
 
@@ -106,7 +107,7 @@ ___
 
 #### Defined in
 
-[src/sdk/flyover.ts:43](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L43)
+[src/sdk/flyover.ts:44](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L44)
 
 ___
 
@@ -116,7 +117,7 @@ ___
 
 #### Defined in
 
-[src/sdk/flyover.ts:44](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L44)
+[src/sdk/flyover.ts:45](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L45)
 
 ___
 
@@ -126,7 +127,7 @@ ___
 
 #### Defined in
 
-[src/sdk/flyover.ts:40](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L40)
+[src/sdk/flyover.ts:41](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L41)
 
 ___
 
@@ -136,7 +137,7 @@ ___
 
 #### Defined in
 
-[src/sdk/flyover.ts:39](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L39)
+[src/sdk/flyover.ts:40](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L40)
 
 ___
 
@@ -146,7 +147,7 @@ ___
 
 #### Defined in
 
-[src/sdk/flyover.ts:41](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L41)
+[src/sdk/flyover.ts:42](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L42)
 
 ## Methods
 
@@ -186,7 +187,7 @@ await flyover.acceptPegoutQuote(quotes[0])
 
 #### Defined in
 
-[src/sdk/flyover.ts:177](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L177)
+[src/sdk/flyover.ts:178](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L178)
 
 ___
 
@@ -226,7 +227,7 @@ await flyover.acceptQuote(quotes[0])
 
 #### Defined in
 
-[src/sdk/flyover.ts:124](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L124)
+[src/sdk/flyover.ts:125](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L125)
 
 ___
 
@@ -240,7 +241,7 @@ ___
 
 #### Defined in
 
-[src/sdk/flyover.ts:323](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L323)
+[src/sdk/flyover.ts:324](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L324)
 
 ___
 
@@ -254,7 +255,7 @@ ___
 
 #### Defined in
 
-[src/sdk/flyover.ts:315](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L315)
+[src/sdk/flyover.ts:316](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L316)
 
 ___
 
@@ -280,7 +281,7 @@ If Flyover already has a connection to the network
 
 #### Defined in
 
-[src/sdk/flyover.ts:250](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L250)
+[src/sdk/flyover.ts:251](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L251)
 
 ___
 
@@ -311,7 +312,7 @@ If not connected to RSK
 
 #### Defined in
 
-[src/sdk/flyover.ts:269](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L269)
+[src/sdk/flyover.ts:270](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L270)
 
 ___
 
@@ -327,7 +328,7 @@ Disconnects from RSK network, removing BlockchainConnection object from Flyover 
 
 #### Defined in
 
-[src/sdk/flyover.ts:309](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L309)
+[src/sdk/flyover.ts:310](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L310)
 
 ___
 
@@ -341,7 +342,7 @@ ___
 
 #### Defined in
 
-[src/sdk/flyover.ts:331](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L331)
+[src/sdk/flyover.ts:332](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L332)
 
 ___
 
@@ -365,7 +366,7 @@ Generate QR code for given address. The supported networks are Bitcoin and RSK
 
 #### Defined in
 
-[src/sdk/flyover.ts:214](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L214)
+[src/sdk/flyover.ts:215](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L215)
 
 ___
 
@@ -386,7 +387,7 @@ If the feature was disabled by the provider
 
 #### Defined in
 
-[src/sdk/flyover.ts:425](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L425)
+[src/sdk/flyover.ts:444](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L444)
 
 ___
 
@@ -406,7 +407,7 @@ Providers list
 
 #### Defined in
 
-[src/sdk/flyover.ts:76](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L76)
+[src/sdk/flyover.ts:77](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L77)
 
 ___
 
@@ -424,7 +425,7 @@ Bridge.getMetadata
 
 #### Defined in
 
-[src/sdk/flyover.ts:358](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L358)
+[src/sdk/flyover.ts:359](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L359)
 
 ___
 
@@ -450,6 +451,8 @@ transactions hashes
 
 If you want to have a simplified version of the state of the quote to display as a status in
 a client UI, you can use the getSimpleQuoteStatus function
+This function implies trusting the LPS to provide the correct status of the quote and should
+be used  with caution since is not a reliable source of truth.
 
 **`Throws`**
 
@@ -457,7 +460,7 @@ If quote wasn't accepted or doesn't exist
 
 #### Defined in
 
-[src/sdk/flyover.ts:390](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L390)
+[src/sdk/flyover.ts:393](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L393)
 
 ___
 
@@ -496,7 +499,7 @@ await flyover.getPegoutQuotes(quoteRequest)
 
 #### Defined in
 
-[src/sdk/flyover.ts:147](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L147)
+[src/sdk/flyover.ts:148](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L148)
 
 ___
 
@@ -521,7 +524,9 @@ transactions hashes
 **`Remarks`**
 
 If you want to have a simplified version of the state of the quote to display as a status in
-a client UI, you can use the getSimpleQuoteStatus function
+a client UI, you can use the getSimpleQuoteStatus function.
+This function implies trusting the LPS to provide the correct status of the quote and should
+be used  with caution since is not a reliable source of truth.
 
 **`Throws`**
 
@@ -529,7 +534,7 @@ If quote wasn't accepted or doesn't exist
 
 #### Defined in
 
-[src/sdk/flyover.ts:411](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L411)
+[src/sdk/flyover.ts:430](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L430)
 
 ___
 
@@ -568,7 +573,7 @@ await flyover.getQuotes(quoteRequest)
 
 #### Defined in
 
-[src/sdk/flyover.ts:98](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L98)
+[src/sdk/flyover.ts:99](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L99)
 
 ___
 
@@ -582,7 +587,7 @@ ___
 
 #### Defined in
 
-[src/sdk/flyover.ts:371](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L371)
+[src/sdk/flyover.ts:372](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L372)
 
 ___
 
@@ -608,7 +613,7 @@ If not connected to RSK
 
 #### Defined in
 
-[src/sdk/flyover.ts:348](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L348)
+[src/sdk/flyover.ts:349](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L349)
 
 ___
 
@@ -626,7 +631,30 @@ boolean
 
 #### Defined in
 
-[src/sdk/flyover.ts:239](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L239)
+[src/sdk/flyover.ts:240](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L240)
+
+___
+
+### isQuotePaid
+
+▸ **isQuotePaid**(`quoteHash`): `Promise`\<`IsQuotePaidResponse`\>
+
+Checks if a quote has been paid by the LPS. The information is initially provided by the LPS and then
+verified in the blockchain.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `quoteHash` | `string` | the has of the quote |
+
+#### Returns
+
+`Promise`\<`IsQuotePaidResponse`\>
+
+#### Defined in
+
+[src/sdk/flyover.ts:407](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L407)
 
 ___
 
@@ -655,7 +683,7 @@ If not connected to RSK
 
 #### Defined in
 
-[src/sdk/flyover.ts:285](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L285)
+[src/sdk/flyover.ts:286](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L286)
 
 ___
 
@@ -687,7 +715,7 @@ If there was an error during transaction execution
 
 #### Defined in
 
-[src/sdk/flyover.ts:300](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L300)
+[src/sdk/flyover.ts:301](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L301)
 
 ___
 
@@ -709,7 +737,7 @@ Change client network after instantiating it. Useful if plan to switch networks 
 
 #### Defined in
 
-[src/sdk/flyover.ts:199](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L199)
+[src/sdk/flyover.ts:200](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L200)
 
 ___
 
@@ -734,7 +762,7 @@ Bridge.supportsConversion
 
 #### Defined in
 
-[src/sdk/flyover.ts:354](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L354)
+[src/sdk/flyover.ts:355](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L355)
 
 ___
 
@@ -758,7 +786,7 @@ Bridge.supportsNetwork
 
 #### Defined in
 
-[src/sdk/flyover.ts:367](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L367)
+[src/sdk/flyover.ts:368](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L368)
 
 ___
 
@@ -780,7 +808,7 @@ Set provider whose LPS will be used to get/accept quotes
 
 #### Defined in
 
-[src/sdk/flyover.ts:188](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L188)
+[src/sdk/flyover.ts:189](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L189)
 
 ___
 
@@ -816,7 +844,7 @@ If options.throwError is true and the validation fails
 
 #### Defined in
 
-[src/sdk/flyover.ts:448](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L448)
+[src/sdk/flyover.ts:467](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L467)
 
 ___
 
@@ -838,4 +866,4 @@ ___
 
 #### Defined in
 
-[src/sdk/flyover.ts:61](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/sdk/flyover.ts#L61)
+[src/sdk/flyover.ts:62](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/sdk/flyover.ts#L62)

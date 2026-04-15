@@ -19,7 +19,7 @@ Detail of the quote
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:137](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L137)
+[src/api/bindings/data-contracts.ts:137](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L137)
 
 ___
 
@@ -31,4 +31,4 @@ This is a 64 digit number that derives from a quote object
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:139](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L139)
+[src/api/bindings/data-contracts.ts:139](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L139)

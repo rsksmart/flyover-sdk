@@ -22,3 +22,7 @@ export function satsToWei (sats: bigint): bigint {
   }
   return sats * (BigInt(10) ** BigInt(10))
 }
+
+export function isPeginQuote (quote: Quote | PegoutQuote): quote is Quote {
+  return "fedBTCAddr" in quote.quote && quote.quote.fedBTCAddr !== undefined
+}

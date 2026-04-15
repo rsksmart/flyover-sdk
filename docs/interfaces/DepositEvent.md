@@ -27,7 +27,7 @@ Event Value
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:100](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L100)
+[src/api/bindings/data-contracts.ts:100](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L100)
 
 ___
 
@@ -45,7 +45,7 @@ From Address
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:105](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L105)
+[src/api/bindings/data-contracts.ts:105](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L105)
 
 ___
 
@@ -63,7 +63,7 @@ QuoteHash
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:110](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L110)
+[src/api/bindings/data-contracts.ts:110](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L110)
 
 ___
 
@@ -85,4 +85,4 @@ date-time
 
 #### Defined in
 
-[src/api/bindings/data-contracts.ts:116](https://github.com/rsksmart/flyover-sdk/blob/18dbf4f19eeffd80a65cc3f468bbc1f72a91f197/src/api/bindings/data-contracts.ts#L116)
+[src/api/bindings/data-contracts.ts:116](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L116)
