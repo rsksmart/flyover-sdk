@@ -55,7 +55,7 @@
         "json-bigint": "^1.0.0",
         "rollup": "^4.34.8",
         "rollup-plugin-dts": "^6.1.0",
-        "rollup-plugin-typescript2": "^0.35.0",
+        "rollup-plugin-typescript2": "^0.37.0",
         "swagger-typescript-api": "^13.0.23",
         "ts-jest": "^29.2.6",
         "typechain": "^8.1.1",
