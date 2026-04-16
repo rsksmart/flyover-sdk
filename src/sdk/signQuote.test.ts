@@ -232,6 +232,54 @@ describe("signQuote", () => {
     }
     });
 
+    test("throws if pegin domain chain id does not match quote chain id", async () => {
+        const peginCase = peginCases[0];
+        assertTruthy(peginCase);
+        const lbcMock = {
+            pegInContract: {
+                hashPeginQuote: jest.fn<() => Promise<string>>().mockResolvedValue(peginCase.quote.quoteHash),
+                getEip712Domain: jest.fn<() => Promise<unknown>>().mockResolvedValue({ name: 'PegInContract', version: '1', chainId: 1234, verifyingContract:'addr' }),
+            }
+        };
+        const config: FlyoverConfig = { rskConnection: peginCase.connection } as unknown as FlyoverConfig;
+
+        await expect(signQuote(
+            config,
+            lbcMock as unknown as LiquidityBridgeContract,
+            providerMock,
+            peginCase.quote
+        )).rejects.toMatchObject({
+            message: 'Flyover error',
+            details: 'Chain id of domain does not match chain id of quote',
+            timestamp: expect.any(Number),
+            recoverable: true,
+        });
+    });
+
+    test("throws if pegout domain chain id does not match quote chain id", async () => {
+        const pegoutCase = pegoutCases[0];
+        assertTruthy(pegoutCase);
+        const lbcMock = {
+            pegOutContract: {
+                hashPegoutQuote: jest.fn<() => Promise<string>>().mockResolvedValue(pegoutCase.quote.quoteHash),
+                getEip712Domain: jest.fn<() => Promise<unknown>>().mockResolvedValue({ name: 'PegOutContract', version: '1', chainId: 1234, verifyingContract:'addr' }),
+            }
+        };
+        const config: FlyoverConfig = { rskConnection: pegoutCase.connection } as unknown as FlyoverConfig;
+
+        await expect(signQuote(
+            config,
+            lbcMock as unknown as LiquidityBridgeContract,
+            providerMock,
+            pegoutCase.quote
+        )).rejects.toMatchObject({
+            message: 'Flyover error',
+            details: 'Chain id of domain does not match chain id of quote',
+            timestamp: expect.any(Number),
+            recoverable: true,
+        });
+    });
+
    test("throws if rskConnection is not set", async () => {
         assertTruthy(peginQuote)
         const config = { rskConnection: undefined } as unknown as FlyoverConfig;
