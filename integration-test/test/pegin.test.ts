@@ -4,7 +4,7 @@ import { assertTruthy, ethers, BlockchainReadOnlyConnection } from '@rsksmart/br
 import { integrationTestConfig } from '../config'
 import { fakeTokenResolver, getUtxosFromMempoolSpace } from './common/utils'
 import { Transaction, payments, networks } from 'bitcoinjs-lib'
-import { TEST_CONTRACT_ABI } from './common/constants'
+import { EXTENDED_TIMEOUT, TEST_CONTRACT_ABI } from './common/constants'
 
 describe('Flyover pegin process should', () => {
   let flyover: Flyover
@@ -189,6 +189,20 @@ describe('Flyover pegin process should', () => {
     }, options)
     expect(result).toBe('')
   })
+
+  test('get recommended value for quote total', async () => {
+    const result = await flyover.estimateRecommendedPegin(
+      FlyoverUtils.getQuoteTotal(quote),
+      {
+        data: quote.quote.data,
+        destinationAddress: quote.quote.contractAddr
+      }
+    );
+    expect(result.estimatedCallFee.toString()).toEqual(quote.quote.callFee.toString());
+    expect(result.estimatedGasFee.toString()).toEqual(quote.quote.gasFee.toString());
+    expect(result.estimatedProductFee.toString()).toEqual(quote.quote.productFeeAmount.toString());
+    expect(result.recommendedQuoteValue.toString()).toEqual(quote.quote.value.toString());
+  }, EXTENDED_TIMEOUT)
 
   test('get a smart contract interaction quote', async () => {
     const smartContractData = new ethers.utils.Interface(TEST_CONTRACT_ABI)
