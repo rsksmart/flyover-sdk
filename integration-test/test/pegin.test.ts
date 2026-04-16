@@ -90,7 +90,7 @@ describe('Flyover pegin process should', () => {
     expect(quote.lpCallTime).not.toBeUndefined()
     expect(quote.confirmations).not.toBeUndefined()
     expect(quote.callOnRegister).not.toBeUndefined()
-    expect(quote.productFeeAmount).not.toBeUndefined()
+    expect(quote.chainId).not.toBeUndefined()
   })
 
   // TODO we need to find a way to test functions with external dependency inside SDK
@@ -128,10 +128,10 @@ describe('Flyover pegin process should', () => {
     expect(detail.lpRSKAddr).not.toBeUndefined()
     expect(detail.nonce).not.toBeUndefined()
     expect(detail.penaltyFee).not.toBeUndefined()
-    expect(detail.productFeeAmount).not.toBeUndefined()
     expect(detail.rskRefundAddr).not.toBeUndefined()
     expect(detail.timeForDeposit).not.toBeUndefined()
     expect(detail.value).not.toBeUndefined()
+    expect(detail.chainId).not.toBeUndefined()
 
     expect(status.callForUserTxHash).not.toBeUndefined()
     expect(status.depositAddress).not.toBeUndefined()
@@ -200,7 +200,6 @@ describe('Flyover pegin process should', () => {
     );
     expect(result.estimatedCallFee.toString()).toEqual(quote.quote.callFee.toString());
     expect(result.estimatedGasFee.toString()).toEqual(quote.quote.gasFee.toString());
-    expect(result.estimatedProductFee.toString()).toEqual(quote.quote.productFeeAmount.toString());
     expect(result.recommendedQuoteValue.toString()).toEqual(quote.quote.value.toString());
   }, EXTENDED_TIMEOUT)
 

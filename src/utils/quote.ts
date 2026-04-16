@@ -5,8 +5,7 @@ export function getQuoteTotal (quote: Quote | PegoutQuote): bigint {
   assertTruthy(quote, 'empty quote')
   const detail = quote.quote
   assertTruthy(detail, 'empty quote detail')
-  return BigInt(detail.callFee ?? 0) + BigInt(detail.gasFee ?? 0) +
-        BigInt(detail.productFeeAmount ?? 0) + BigInt(detail.value ?? 0)
+  return BigInt(detail.callFee ?? 0) + BigInt(detail.gasFee ?? 0) + BigInt(detail.value ?? 0)
 }
 
 export function isPeginStillPayable (quote: Quote): boolean {

@@ -29,6 +29,9 @@ import { isPeginRefundable, type IsPeginRefundableParams } from './isPeginRefund
 import { signQuote } from './signQuote'
 import { estimateRecommendedPegin } from './recommendedPegin'
 import { estimateRecommendedPegout, RecommendedPegoutExtraArgs } from './recommendedPegout'
+import { PegOutContract } from '../blockchain/pegout'
+import { PegInContract } from '../blockchain/pegin'
+import { DiscoveryContract } from '../blockchain/discovery'
 
 jest.mock('ethers')
 
@@ -90,7 +93,7 @@ const quoteMock: Quote = {
     confirmations: 1,
     callOnRegister: true,
     gasFee: BigInt('1'),
-    productFeeAmount: BigInt(50000000000000)
+    chainId: 31,
   }
 }
 
@@ -114,7 +117,7 @@ const pegoutQuoteMock: PegoutQuote = {
     transferConfirmations: 1,
     transferTime: 1,
     value: BigInt('9007199254740993'),
-    productFeeAmount: BigInt(50000000000000)
+    chainId: 31,
   },
   quoteHash: 'any hash'
 }
@@ -267,6 +270,7 @@ describe('Flyover object should', () => {
 
   test('invoke correctly acceptPegoutQuote', async () => {
     flyover.useLiquidityProvider(providerMock)
+    await flyover.connectToRsk(rskConnectionMock)
     await flyover.acceptPegoutQuote(pegoutQuoteMock)
     expect(acceptPegoutQuote).toBeCalledTimes(1)
   })
@@ -279,6 +283,7 @@ describe('Flyover object should', () => {
       expect(acceptAuthenticatedPegoutQuote).toBeCalledTimes(1)
       expect(acceptAuthenticatedPegoutQuote).toBeCalledWith(
         (flyover as any).httpClient,
+        (flyover as any).liquidityBridgeContract,
         providerMock,
         pegoutQuoteMock,
         signatureMock
@@ -447,7 +452,16 @@ describe('Flyover object should', () => {
     await flyover.depositPegout(pegoutQuoteMock, signatureMock, amount)
 
     expect(depositPegout).toBeCalledTimes(1)
-    expect(depositPegout).toBeCalledWith(pegoutQuoteMock, signatureMock, amount, expect.any(LiquidityBridgeContract))
+    expect(depositPegout).toBeCalledWith(
+      pegoutQuoteMock,
+      signatureMock,
+      amount,
+      expect.objectContaining({
+        pegOutContract: expect.any(PegOutContract),
+        pegInContract: expect.any(PegInContract),
+        discoveryContract: expect.any(DiscoveryContract)
+      }),
+    )
   })
 
   test('create LBC instance during depositPegout if not created before', async () => {
@@ -553,17 +567,6 @@ describe('Flyover object should', () => {
     }
   })
 
-  test('fail to get metadata if is not connected to the network', async () => {
-    expect.assertions(2)
-    try {
-      flyover.useLiquidityProvider(providerMock)
-      await flyover.getMetadata()
-    } catch (e: any) {
-      expect(e).toBeInstanceOf(Error)
-      expect(e.message).toBe('Not connected to RSK')
-    }
-  })
-
   test('invoke correctly getPeginStatus', async () => {
     flyover.useLiquidityProvider(providerMock)
     await flyover.connectToRsk(rskConnectionMock)
@@ -643,7 +646,11 @@ describe('Flyover object should', () => {
             allowInsecureConnections: true
           }),
           bridge: expect.any(RskBridge),
-          lbc: expect.any(LiquidityBridgeContract),
+          lbc: expect.objectContaining({
+            pegOutContract: expect.any(PegOutContract),
+            pegInContract: expect.any(PegInContract),
+            discoveryContract: expect.any(DiscoveryContract)
+          }),
           provider: providerMock
         }),
         params,
@@ -814,7 +821,11 @@ describe('Flyover object should', () => {
         pegoutQuoteMock,
         expect.objectContaining({
           config: expect.anything(),
-          lbc: expect.any(LiquidityBridgeContract),
+          lbc: expect.objectContaining({
+            pegInContract: expect.any(PegInContract),
+            pegOutContract: expect.any(PegOutContract),
+            discoveryContract: expect.any(DiscoveryContract)
+          }),
           provider: providerMock,
           httpClient: expect.anything(),
           rskConnection: rskConnectionMock
@@ -1032,13 +1043,15 @@ describe('Flyover object should', () => {
     const MOCK_HASH = 'mocked-hash-value'
 
     const mockLiquidityBridgeContract: LiquidityBridgeContract = {
-      hashPeginQuote: jest.fn()
+      pegInContract: {
+        hashPeginQuote: jest.fn()
+      }
     } as unknown as LiquidityBridgeContract
 
     beforeEach(() => {
       jest.clearAllMocks()
 
-      jest.spyOn(mockLiquidityBridgeContract, 'hashPeginQuote').mockImplementation(async () => Promise.resolve(MOCK_HASH))
+      jest.spyOn(mockLiquidityBridgeContract.pegInContract, 'hashPeginQuote').mockImplementation(async () => Promise.resolve(MOCK_HASH))
       ;(flyover as any).liquidityBridgeContract = mockLiquidityBridgeContract
     })
 
@@ -1047,13 +1060,13 @@ describe('Flyover object should', () => {
 
       const result = await flyover.hashPeginQuote(quoteMock)
 
-      expect(mockLiquidityBridgeContract.hashPeginQuote).toHaveBeenCalledWith(quoteMock)
+      expect(mockLiquidityBridgeContract.pegInContract.hashPeginQuote).toHaveBeenCalledWith(quoteMock)
       expect(result).toBe(MOCK_HASH)
     })
 
     test('return the hash computed by the LBC contract', async () => {
       await flyover.connectToRsk(rskConnectionMock)
-      jest.spyOn(LiquidityBridgeContract.prototype, 'hashPeginQuote').mockResolvedValue(MOCK_HASH)
+      jest.spyOn(PegInContract.prototype, 'hashPeginQuote').mockResolvedValue(MOCK_HASH)
 
       const result = await flyover.hashPeginQuote(quoteMock)
 
@@ -1088,13 +1101,15 @@ describe('Flyover object should', () => {
     const MOCK_HASH = 'mocked-pegout-hash-value'
 
     const mockLiquidityBridgeContract: LiquidityBridgeContract = {
-      hashPegoutQuote: jest.fn()
+      pegOutContract: {
+        hashPegoutQuote: jest.fn()
+      }
     } as unknown as LiquidityBridgeContract
 
     beforeEach(() => {
       jest.clearAllMocks()
 
-      jest.spyOn(mockLiquidityBridgeContract, 'hashPegoutQuote').mockImplementation(async () => Promise.resolve(MOCK_HASH))
+      jest.spyOn(mockLiquidityBridgeContract.pegOutContract, 'hashPegoutQuote').mockImplementation(async () => Promise.resolve(MOCK_HASH))
       ;(flyover as any).liquidityBridgeContract = mockLiquidityBridgeContract
     })
 
@@ -1103,13 +1118,13 @@ describe('Flyover object should', () => {
 
       const result = await flyover.hashPegoutQuote(pegoutQuoteMock)
 
-      expect(mockLiquidityBridgeContract.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
+      expect(mockLiquidityBridgeContract.pegOutContract.hashPegoutQuote).toHaveBeenCalledWith(pegoutQuoteMock)
       expect(result).toBe(MOCK_HASH)
     })
 
     test('return the hash computed by the LBC contract', async () => {
       await flyover.connectToRsk(rskConnectionMock)
-      jest.spyOn(LiquidityBridgeContract.prototype, 'hashPegoutQuote').mockResolvedValue(MOCK_HASH)
+      jest.spyOn(PegOutContract.prototype, 'hashPegoutQuote').mockResolvedValue(MOCK_HASH)
 
       const result = await flyover.hashPegoutQuote(pegoutQuoteMock)
 
@@ -1151,7 +1166,11 @@ describe('Flyover object should', () => {
           network: 'Regtest',
           allowInsecureConnections: true
         }),
-        expect.any(LiquidityBridgeContract),
+        expect.objectContaining({
+          pegInContract: expect.any(PegInContract),
+          pegOutContract: expect.any(PegOutContract),
+          discoveryContract: expect.any(DiscoveryContract)
+        }),
         providerMock,
         quoteMock,
       )

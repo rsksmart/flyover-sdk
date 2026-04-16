@@ -7,7 +7,7 @@ export async function depositPegout (quote: PegoutQuote, signature: string, amou
   validateRequiredFields(quote.quote, ...pegoutQuoteDetailRequiredFields)
   validateRequiredFields({ amount, signature }, 'amount', 'signature')
 
-  const result = await lbc.depositPegout(quote, signature, amount)
+  const result = await lbc.pegOutContract.depositPegout(quote, signature, amount)
   throwErrorIfFailedTx(result, 'deposit pegout transaction did not complete successfully')
   return result.txHash
 }
