@@ -1,10 +1,10 @@
 import { describe, test, expect, jest } from '@jest/globals'
 import { type Quote } from '../api'
 import { type RskBridge } from '../blockchain/bridge'
-import { type LiquidityBridgeContract } from '../blockchain/lbc'
 import { FlyoverError } from '../client/httpClient'
 import { type FlyoverSDKContext } from '../utils/interfaces'
 import { validatePeginTransaction, type ValidatePeginTransactionParams } from './validatePeginTransaction'
+import { PegInContract } from '../blockchain/pegin'
 
 const mainnetSignedInvalidAmountParams: ValidatePeginTransactionParams = {
   quoteInfo: {
@@ -28,7 +28,7 @@ const mainnetSignedInvalidAmountParams: ValidatePeginTransactionParams = {
       confirmations: 2,
       callOnRegister: false,
       gasFee: BigInt('1341211956000'),
-      productFeeAmount: BigInt(0)
+      chainId: 31,
     },
     quoteHash: 'some-hash'
   },
@@ -61,7 +61,7 @@ const regtestSingedInvalidUtxoParams: ValidatePeginTransactionParams = {
       confirmations: 10,
       callOnRegister: false,
       gasFee: BigInt('0'),
-      productFeeAmount: BigInt(0)
+      chainId: 31,
     },
     quoteHash: '9bf66366ea7a20d55365549213caddf2b156f9eb432dc55b7a8c87d684549113'
   },
@@ -94,7 +94,7 @@ const regtestUnsignedInvalidAmountParams: ValidatePeginTransactionParams = {
       confirmations: 10,
       callOnRegister: false,
       gasFee: BigInt(0),
-      productFeeAmount: BigInt(0)
+      chainId: 31,
     },
     quoteHash: '65f1199e7a1f46469339d94d64d0c8fd933811313230f032b8198c0afead1645'
   },
@@ -127,7 +127,7 @@ const regtestUnsingedInvalidUtxoParams: ValidatePeginTransactionParams = {
       confirmations: 10,
       callOnRegister: false,
       gasFee: BigInt(0),
-      productFeeAmount: BigInt(0)
+      chainId: 31,
     },
     quoteHash: 'd24d8c6ffce10f06f5f99e30f78b689356f5a4b7bdea1be87cb2aba54b5993f1'
   },
@@ -160,7 +160,7 @@ const regtestSignedValidParams: ValidatePeginTransactionParams = {
       confirmations: 10,
       callOnRegister: false,
       gasFee: BigInt(0),
-      productFeeAmount: BigInt(0)
+      chainId: 31,
     },
     quoteHash: 'a1e4682de734710a08461bc40b4c42b0ed821342903f11e8a0d71e9a76c698a2'
   },
@@ -193,7 +193,7 @@ const regtestUnsignedValidParams: ValidatePeginTransactionParams = {
       confirmations: 10,
       callOnRegister: false,
       gasFee: BigInt(0),
-      productFeeAmount: BigInt(0)
+      chainId: 31,
     },
     quoteHash: 'e0eb23644710c5ef8f218d9fa7dd4416471655660f2a2ba6b559059486c50ebb'
   },
@@ -204,7 +204,7 @@ const regtestUnsignedValidParams: ValidatePeginTransactionParams = {
   btcTx: '0200000001745b85d6b1b7cf631c92c92faba180b2a6ce6eca7a9bb7a1e030137bc5cb9cb50000000000fdffffff02008793030000000017a9147bdc591c95c088cfad33356ae044bf1c5fe278c487e65abf10000000001976a914daf6e2bd97024710be556a304acb85462e332c0188ac00000000'
 }
 
-function getLbcMock (validAddressResult: boolean): Partial<LiquidityBridgeContract> {
+function getPeginContractMock (validAddressResult: boolean): Partial<PegInContract> {
   return {
     validatePeginDepositAddress: jest.fn<any>().mockImplementation(async (_quote: Quote, _depositAddress: string) => Promise.resolve(validAddressResult))
   }
@@ -214,7 +214,7 @@ describe('validatePeginTransaction function should', () => {
   test('validate that the quote has the correct value in a signed transaction', async () => {
     const context = {
       config: { network: 'Mainnet', captchaTokenResolver: async () => Promise.resolve('') },
-      lbc: getLbcMock(true),
+      lbc: { pegInContract: getPeginContractMock(true) },
       provider: {},
       bridge: {}
     } as FlyoverSDKContext
@@ -251,7 +251,7 @@ describe('validatePeginTransaction function should', () => {
   })
   test('validate the deposit address in a signed transaction', async () => {
     const context = {
-      lbc: getLbcMock(false),
+      lbc: { pegInContract: getPeginContractMock(false) },
       provider: { apiBaseUrl: 'http://url.com' }
     } as FlyoverSDKContext
 
@@ -275,7 +275,7 @@ describe('validatePeginTransaction function should', () => {
   test('validate that all the UTXOs are above the minimum in a signed transaction', async () => {
     const context = {
       config: { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') },
-      lbc: getLbcMock(true),
+      lbc: { pegInContract: getPeginContractMock(true) },
       provider: {},
       bridge: {
         getMinimumLockTxValue: async () => Promise.resolve(BigInt(50000000))
@@ -301,7 +301,7 @@ describe('validatePeginTransaction function should', () => {
   test('fail on invalid raw transaction', async () => {
     const context = {
       config: { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') },
-      lbc: getLbcMock(true),
+      lbc: { pegInContract: getPeginContractMock(true) },
       provider: {},
       bridge: {}
     } as FlyoverSDKContext
@@ -327,7 +327,7 @@ describe('validatePeginTransaction function should', () => {
   test('validate that the quote has the correct value in a unsigned transaction', async () => {
     const context = {
       config: { network: 'Testnet', captchaTokenResolver: async () => Promise.resolve('') },
-      lbc: getLbcMock(true),
+      lbc: { pegInContract: getPeginContractMock(true) },
       provider: {},
       bridge: {}
     } as FlyoverSDKContext
@@ -364,7 +364,7 @@ describe('validatePeginTransaction function should', () => {
   })
   test('validate the deposit address in a unsigned transaction', async () => {
     const context = {
-      lbc: getLbcMock(false),
+      lbc: { pegInContract: getPeginContractMock(false) },
       provider: { apiBaseUrl: 'http://url.com' }
     } as FlyoverSDKContext
 
@@ -388,7 +388,7 @@ describe('validatePeginTransaction function should', () => {
   test('validate that all the UTXOs are above the minimum in a unsigned transaction', async () => {
     const context = {
       config: { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') },
-      lbc: getLbcMock(true),
+      lbc: { pegInContract: getPeginContractMock(true) },
       provider: {},
       bridge: {
         getMinimumLockTxValue: async () => Promise.resolve(BigInt(30000000))
@@ -414,7 +414,7 @@ describe('validatePeginTransaction function should', () => {
   test('accept a valid transaction', async () => {
     const context = {
       config: { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') },
-      lbc: getLbcMock(true),
+      lbc: { pegInContract: getPeginContractMock(true) },
       provider: {},
       bridge: {
         getMinimumLockTxValue: jest.fn<any>().mockImplementation(async () => Promise.resolve(BigInt(50000000)))
@@ -433,9 +433,9 @@ describe('validatePeginTransaction function should', () => {
 
     expect(signedResult).toBe('')
     expect(unsignedResult).toBe('')
-    expect(context.lbc?.validatePeginDepositAddress).toBeCalledTimes(2)
+    expect(context.lbc?.pegInContract.validatePeginDepositAddress).toBeCalledTimes(2)
     expect(context.bridge?.getMinimumLockTxValue).toBeCalledTimes(2)
-    expect(context.lbc?.validatePeginDepositAddress).toHaveBeenNthCalledWith(1, signedParams.quoteInfo, signedParams.acceptInfo.bitcoinDepositAddressHash)
-    expect(context.lbc?.validatePeginDepositAddress).toHaveBeenNthCalledWith(2, unsignedParams.quoteInfo, unsignedParams.acceptInfo.bitcoinDepositAddressHash)
+    expect(context.lbc?.pegInContract.validatePeginDepositAddress).toHaveBeenNthCalledWith(1, signedParams.quoteInfo, signedParams.acceptInfo.bitcoinDepositAddressHash)
+    expect(context.lbc?.pegInContract.validatePeginDepositAddress).toHaveBeenNthCalledWith(2, unsignedParams.quoteInfo, unsignedParams.acceptInfo.bitcoinDepositAddressHash)
   })
 })
