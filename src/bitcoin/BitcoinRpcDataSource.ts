@@ -36,12 +36,12 @@ function getBitcoinRpcCaller (config: BitcoinClientConfig): RpcCaller {
 
 interface GetRawTransactionResponse {
   txid: string
-  blockhash: string
+  blockhash?: string
+  confirmations?: number
   vout: {
     value:number
     scriptPubKey: { hex: string }
   }[]
-  confirmations: number
   hex: string
 }
 
@@ -69,14 +69,26 @@ export class BitcoindRpcDataSource implements BitcoinDataSource {
       // The second parameter 'true' tells Bitcoin Core to return the full decoded transaction
       const transaction = await this.rpcCaller<GetRawTransactionResponse>('getrawtransaction', txHash, true)
 
+      const confirmations = transaction.confirmations ?? 0
+      const vout = transaction.vout.map((output) => ({
+        valueInSats: output.value * 100_000_000, // Convert BTC to satoshis
+        hex: output.scriptPubKey.hex
+      }))
+
+      // Mempool transactions omit blockhash; calling getblock with undefined would fail
+      if (transaction.blockhash == null || transaction.blockhash === '') {
+        return {
+          txid: transaction.txid,
+          isConfirmed: confirmations >= MIN_BTC_CONFIRMATIONS,
+          vout
+        }
+      }
+
       const btcBlock = await this.rpcCaller<GetBlockResponse>('getblock', transaction.blockhash)
       return {
         txid: transaction.txid,
-        isConfirmed: transaction.confirmations >= MIN_BTC_CONFIRMATIONS,
-        vout: transaction.vout.map((output) => ({
-          valueInSats: output.value * 100_000_000, // Convert BTC to satoshis
-          hex: output.scriptPubKey.hex
-        })),
+        isConfirmed: confirmations >= MIN_BTC_CONFIRMATIONS,
+        vout,
         blockHash: transaction.blockhash,
         blockHeight: btcBlock.height
       }
