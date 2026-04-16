@@ -1,6 +1,6 @@
 {
     "name": "@rsksmart/flyover-sdk",
-    "version": "1.8.0",
+    "version": "1.9.0-beta.1",
     "description": "SDK that simplifies interaction between Flyover's Liquidity Provider Server and client applications",
     "main": "lib/index.js",
     "private": false,
@@ -55,7 +55,7 @@
         "json-bigint": "^1.0.0",
         "rollup": "^4.34.8",
         "rollup-plugin-dts": "^6.1.0",
-        "rollup-plugin-typescript2": "^0.35.0",
+        "rollup-plugin-typescript2": "^0.37.0",
         "swagger-typescript-api": "^13.0.23",
         "ts-jest": "^29.2.6",
         "typechain": "^8.1.1",
@@ -65,7 +65,7 @@
         "typescript-eslint": "^8.27.0"
     },
     "dependencies": {
-        "@rsksmart/bridges-core-sdk": "^0.5.0",
+        "@rsksmart/bridges-core-sdk": "^0.6.0-beta",
         "@rsksmart/pmt-builder": "^3.0.1",
         "bitcoinjs-lib": "^6.1.6",
         "qrcode": "^1.5.1"

@@ -18,14 +18,15 @@ import {
       { quoteHash: quote.quoteHash, signature: signature },
       { includeCaptcha: false }
     )
-    if (!isValidSignature(provider.provider, quote.quoteHash, acceptedQuote.signature)) {
+    const eip712Hash = await lbc.pegInContract.hashPeginQuoteEIP712(quote)
+    if (!isValidSignature(provider.provider, eip712Hash, acceptedQuote.signature)) {
       throw FlyoverError.invalidSignatureError({
         serverUrl: provider.apiBaseUrl,
         address: quote.quote.lpRSKAddr,
         signature: acceptedQuote.signature
       })
     }
-    const isValidAddress = await lbc.validatePeginDepositAddress(quote, acceptedQuote.bitcoinDepositAddressHash)
+    const isValidAddress = await lbc.pegInContract.validatePeginDepositAddress(quote, acceptedQuote.bitcoinDepositAddressHash)
     if (!isValidAddress) {
       throw FlyoverError.untrustedBtcAddressError({
         serverUrl: provider.apiBaseUrl,
