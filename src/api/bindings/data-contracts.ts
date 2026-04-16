@@ -10,7 +10,6 @@
  */
 
 export type Type = any;
-
 export interface AcceptAuthenticatedQuoteRequest {
   /**
    * QuoteHash
@@ -69,7 +68,7 @@ export const AcceptQuoteRequestRequiredFields: string[] = ["quoteHash"];
 export interface AddCollateralRequest {
   /**
    * Amount to add to the collateral
-   * @example 100000000000
+   * @example "100000000000"
    */
   amount: bigint;
 }
@@ -79,9 +78,9 @@ export const AddCollateralRequestRequiredFields: string[] = ["amount"];
 export interface AddCollateralResponse {
   /**
    * New Collateral Balance
-   * @example 100000000000
+   * @example "100000000000"
    */
-  newCollateralBalance?: number;
+  newCollateralBalance?: any;
 }
 
 export interface AvailableLiquidityDTO {
@@ -99,12 +98,61 @@ export interface AvailableLiquidityDTO {
 
 export const AvailableLiquidityDtoRequiredFields: string[] = ["peginLiquidityAmount", "pegoutLiquidityAmount"];
 
-export interface ChangeStatusRequest {
-  status?: boolean;
+export interface BtcAssetAllocationDTO {
+  /**
+   * BTC available for new pegout quotes
+   * @example "43200000"
+   */
+  available?: any;
+  /**
+   * BTC reserved for users (accepted pegout quotes)
+   * @example "4500000"
+   */
+  reservedForUsers?: any;
+  /**
+   * BTC waiting to be refunded to the LP
+   * @example "19800000"
+   */
+  waitingForRefund?: any;
 }
 
-export interface ConfirmationsPerAmount {
-  key?: number;
+export interface BtcAssetLocationDTO {
+  /**
+   * BTC in the LP's Bitcoin wallet
+   * @example "50000000"
+   */
+  btcWallet?: any;
+  /**
+   * BTC in the federation (rebalancing or waiting for refund)
+   * @example "5000000"
+   */
+  federation?: any;
+  /**
+   * BTC represented as RBTC locked in the Liquidity Bridge Contract
+   * @example "5300000"
+   */
+  lbc?: any;
+  /**
+   * BTC represented as RBTC in the RSK wallet (waiting for rebalancing)
+   * @example "6500000"
+   */
+  rskWallet?: any;
+}
+
+export interface BtcAssetReportDTO {
+  /** BTC allocation by usage/purpose */
+  allocation?: BtcAssetAllocationDTO;
+  /** BTC distribution across different locations */
+  location?: BtcAssetLocationDTO;
+  /**
+   * Total BTC assets under LP control
+   * @example "67500000"
+   */
+  total?: any;
+}
+
+export interface ChangeStatusRequest {
+  status?: boolean;
 }
 
 export interface DepositEventDTO {
@@ -131,18 +179,29 @@ export interface DepositEventDTO {
   timestamp?: string;
 }
 
-export interface GeneralConfiguration {
-  btcConfirmations?: bigint;
+export interface GeneralConfigurationDTO {
+  btcConfirmations?: {
+    key?: number;
+  };
   publicLiquidityCheck?: boolean;
-  rskConfirmations?: bigint;
+  rskConfirmations?: {
+    key?: number;
+  };
 }
 
 export interface GeneralConfigurationRequest {
-  configuration?: GeneralConfiguration;
+  configuration?: GeneralConfigurationDTO;
+}
+
+export interface GetAssetsReportResponse {
+  /** Detailed BTC asset report */
+  btcAssetReport?: BtcAssetReportDTO;
+  /** Detailed RBTC asset report */
+  rbtcAssetReport?: RbtcAssetReportDTO;
 }
 
 export interface GetCollateralResponse {
-  collateral: number;
+  collateral: Type;
 }
 
 export const GetCollateralResponseRequiredFields: string[] = ["collateral"];
@@ -164,6 +223,25 @@ export interface GetPegoutQuoteResponse {
 }
 
 export const GetPegoutQuoteResponseRequiredFields: string[] = ["quote", "quoteHash"];
+
+export interface GetTransactionsItem {
+  amount?: bigint;
+  callFee?: bigint;
+  gasFee?: bigint;
+  quoteHash?: string;
+  status?: string;
+}
+
+export interface GetTransactionsResponse {
+  data?: {
+    amount?: bigint;
+    callFee?: bigint;
+    gasFee?: bigint;
+    quoteHash?: string;
+    status?: string;
+  }[];
+  pagination?: PaginationMetadata;
+}
 
 export interface HealthResponse {
   /**
@@ -222,6 +300,13 @@ export const LiquidityProviderRequiredFields: string[] = [
   "providerType",
 ];
 
+export interface PaginationMetadata {
+  page?: number;
+  perPage?: number;
+  total?: number;
+  totalPages?: number;
+}
+
 export interface PeginConfigurationDTO {
   callTime?: number;
   feePercentage?: number;
@@ -256,6 +341,8 @@ export interface PeginQuoteDTO {
   callFee: bigint;
   /** A boolean value indicating whether the callForUser can be called on registerPegIn */
   callOnRegister: boolean;
+  /** Chain ID of the RSK network where the quote is valid */
+  chainId: number;
   /** The number of confirmations that the LP requires before making the call */
   confirmations: number;
   /** The destination address of the peg-in */
@@ -264,7 +351,7 @@ export interface PeginQuoteDTO {
   data: string;
   /** The BTC address of the PowPeg */
   fedBTCAddr: string;
-  /** Fee to pay for the gas of every call done during the pegin (call on behalf of the user and call to the dao fee collector) */
+  /** Fee to pay for the gas of every call done during the pegin (call on behalf of the user) */
   gasFee: bigint;
   /** The gas limit */
   gasLimit: number;
@@ -280,8 +367,6 @@ export interface PeginQuoteDTO {
   nonce: bigint;
   /** The penalty fee that the LP pays if it fails to deliver the service */
   penaltyFee: bigint;
-  /** The DAO Fee amount */
-  productFeeAmount: bigint;
   /** A User RSK refund address */
   rskRefundAddr: string;
   /** The time (in seconds) that the user has to achieve one confirmation on the BTC deposit */
@@ -310,7 +395,7 @@ export const PeginQuoteDtoRequiredFields: string[] = [
   "confirmations",
   "callOnRegister",
   "gasFee",
-  "productFeeAmount",
+  "chainId",
 ];
 
 export interface PeginQuoteRequest {
@@ -331,7 +416,7 @@ export interface PeginQuoteRequest {
   rskRefundAddress: string;
   /**
    * Value to send in the call
-   * @example 0
+   * @example "0x0"
    */
   valueToTransfer: bigint;
 }
@@ -387,20 +472,20 @@ export interface PegoutQuoteDTO {
   agreementTimestamp: number;
   btcRefundAddress: string;
   callFee: bigint;
+  /** Chain ID of the RSK network where the quote is valid */
+  chainId: number;
   depositAddr: string;
   depositConfirmations: number;
   depositDateLimit: number;
   expireBlocks: number;
   expireDate: number;
-  /** Fee to pay for the gas of every call done during the pegout (call on behalf of the user in Bitcoin network and call to the dao fee collector in Rootstock) */
+  /** Fee to pay for the gas of every call done during the pegout (call on behalf of the user in Bitcoin network) */
   gasFee: bigint;
   lbcAddress: string;
   liquidityProviderRskAddress: string;
   lpBtcAddr: string;
   nonce: bigint;
   penaltyFee: bigint;
-  /** The DAO fee amount */
-  productFeeAmount: bigint;
   rskRefundAddress: string;
   transferConfirmations: number;
   transferTime: number;
@@ -426,7 +511,7 @@ export const PegoutQuoteDtoRequiredFields: string[] = [
   "expireDate",
   "expireBlocks",
   "gasFee",
-  "productFeeAmount",
+  "chainId",
 ];
 
 export interface PegoutQuoteRequest {
@@ -439,7 +524,7 @@ export interface PegoutQuoteRequest {
   to: string;
   /**
    * ValueToTransfer
-   * @example 10000000000000
+   * @example "10000000000000"
    */
   valueToTransfer: bigint;
 }
@@ -484,6 +569,78 @@ export interface ProviderDetailResponse {
 }
 
 export const ProviderDetailResponseRequiredFields: string[] = ["siteKey", "liquidityCheckEnabled", "pegin", "pegout"];
+
+export interface RbtcAssetAllocationDTO {
+  /**
+   * RBTC available for new pegin quotes
+   * @example "12000000000000000000"
+   */
+  available?: any;
+  /**
+   * RBTC reserved for users (accepted pegin quotes)
+   * @example "3000000000000000000"
+   */
+  reservedForUsers?: any;
+  /**
+   * RBTC waiting to be refunded to the LP
+   * @example "2000000000000000000"
+   */
+  waitingForRefund?: any;
+}
+
+export interface RbtcAssetLocationDTO {
+  /**
+   * RBTC in the federation (waiting for refund)
+   * @example "2000000000000000000"
+   */
+  federation?: any;
+  /**
+   * RBTC locked in the Liquidity Bridge Contract
+   * @example "5000000000000000000"
+   */
+  lbc?: any;
+  /**
+   * RBTC in the LP's RSK wallet
+   * @example "10000000000000000000"
+   */
+  rskWallet?: any;
+}
+
+export interface RbtcAssetReportDTO {
+  /** RBTC allocation by usage/purpose */
+  allocation?: RbtcAssetAllocationDTO;
+  /** RBTC distribution across different locations */
+  location?: RbtcAssetLocationDTO;
+  /**
+   * Total RBTC assets under LP control
+   * @example "17000000000000000000"
+   */
+  total?: any;
+}
+
+export interface RecommendedOperationDTO {
+  /**
+   * Estimated call fee if a quote is created with the recommended amount
+   * @example "100000"
+   */
+  estimatedCallFee: bigint;
+  /**
+   * Estimated gas fee if a quote is created with the recommended amount
+   * @example "100000"
+   */
+  estimatedGasFee: bigint;
+  /**
+   * Recommended quote value for the input amount
+   * @example "100000"
+   */
+  recommendedQuoteValue: bigint;
+}
+
+export const RecommendedOperationDtoRequiredFields: string[] = [
+  "recommendedQuoteValue",
+  "estimatedCallFee",
+  "estimatedGasFee",
+];
 
 export interface RetainedPeginQuoteDTO {
   /** The hash of the RSK transaction to the address requested by the user */
@@ -654,7 +811,7 @@ export const PkgAcceptQuoteRequestRequiredFields: string[] = ["quoteHash"];
 export interface PkgAddCollateralRequest {
   /**
    * Amount to add to the collateral
-   * @example 100000000000
+   * @example "100000000000"
    */
   amount: bigint;
 }
@@ -664,16 +821,40 @@ export const PkgAddCollateralRequestRequiredFields: string[] = ["amount"];
 export interface PkgAddCollateralResponse {
   /**
    * New Collateral Balance
-   * @example 100000000000
+   * @example "100000000000"
    */
-  newCollateralBalance?: number;
+  newCollateralBalance?: any;
 }
 
 export interface PkgGetCollateralResponse {
-  collateral: number;
+  collateral: Type;
 }
 
 export const PkgGetCollateralResponseRequiredFields: string[] = ["collateral"];
+
+export interface PkgRecommendedOperationDTO {
+  /**
+   * Estimated call fee if a quote is created with the recommended amount
+   * @example "100000"
+   */
+  estimatedCallFee: bigint;
+  /**
+   * Estimated gas fee if a quote is created with the recommended amount
+   * @example "100000"
+   */
+  estimatedGasFee: bigint;
+  /**
+   * Recommended quote value for the input amount
+   * @example "100000"
+   */
+  recommendedQuoteValue: bigint;
+}
+
+export const PkgRecommendedOperationDtoRequiredFields: string[] = [
+  "recommendedQuoteValue",
+  "estimatedCallFee",
+  "estimatedGasFee",
+];
 
 export interface PkgTrustedAccountRequest {
   address?: string;
