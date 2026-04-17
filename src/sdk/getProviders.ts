@@ -3,7 +3,7 @@ import { type HttpClient } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
 
 export async function getProviders (httpClient: HttpClient, lbc: LiquidityBridgeContract): Promise<LiquidityProvider[]> {
-  return lbc.getProviders()
+  return lbc.discoveryContract.getProviders()
     .then(async providers => {
       const liquidityProviders = providers.map(async provider => {
         return httpClient.get<LiquidityProviderDetail>(provider.apiBaseUrl + Routes.providerDetail)
