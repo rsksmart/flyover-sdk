@@ -86,7 +86,7 @@ const quoteResponseMock: Quote =
       confirmations: 1,
       callOnRegister: true,
       gasFee: BigInt(1),
-      productFeeAmount: BigInt(50000000000000)
+      chainId: 31,
     },
     quoteHash: 'any hash'
   }
@@ -113,13 +113,15 @@ const quoteResponseSanitizedMock: Quote =
       confirmations: 1,
       callOnRegister: true,
       gasFee: BigInt(1),
-      productFeeAmount: BigInt(50000000000000)
+      chainId: 31,
     },
     quoteHash: 'any hash'
   }
 
 const lbcMock = {
-  hashPeginQuote: async (quote: Quote) => Promise.resolve(quote.quoteHash)
+  pegInContract: {
+    hashPeginQuote: async (quote: Quote) => Promise.resolve(quote.quoteHash)
+  },
 } as LiquidityBridgeContract
 
 const configMock: FlyoverConfig = {
@@ -199,14 +201,14 @@ describe('getQuote function should', () => {
   })
 
   test('validate quote hash', async () => {
-    const original = lbcMock.hashPeginQuote
-    lbcMock.hashPeginQuote = async (_: Quote) => Promise.resolve('fake hash')
+    const original = lbcMock.pegInContract.hashPeginQuote
+    lbcMock.pegInContract.hashPeginQuote = async (_: Quote) => Promise.resolve('fake hash')
     expect.assertions(2)
     await getQuote(configMock, mockClient, lbcMock, providerMock, quoteRequestMock).catch(e => {
       expect(e).toBeInstanceOf(FlyoverError)
       expect(e.message).toBe('Quote hash mismatch')
     })
-    lbcMock.hashPeginQuote = original
+    lbcMock.pegInContract.hashPeginQuote = original
   })
 
   test('validate response fields', async () => {

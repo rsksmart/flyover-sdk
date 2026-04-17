@@ -20,6 +20,7 @@ import {
   PegoutConfigurationRequest,
   PegoutQuoteRequest,
   PegoutQuoteStatusDTO,
+  RecommendedOperationDTO,
 } from "./data-contracts";
 
 export namespace Pegout {
@@ -118,6 +119,33 @@ export namespace Pegout {
   }
 
   export const PostGetQuotesPath = "/pegout/getQuotes";
+
+  /**
+   * @description  Returns the recommended quote value to create a quote whose total payment is the input amount
+   * @name RecommendedList
+   * @summary Recommended pegout
+   * @request GET:/pegout/recommended
+   */
+  export namespace RecommendedList {
+    export type RequestParams = {};
+    export type RequestQuery = {
+      /**
+       * Amount in wei expected to use as total payment for the quote
+       * @format string
+       */
+      amount: string;
+      /**
+       * Destination address type for the pegout. Is optional, but if provided, it will  increase the estimation accuracy. Must be one of: p2pkh, p2sh, p2wpkh, p2wsh, p2tr
+       * @format string
+       */
+      destination_type?: string;
+    };
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = RecommendedOperationDTO;
+  }
+
+  export const RecommendedListPath = "/pegout/recommended";
 
   /**
    * @description  Returns the status of an accepted pegout quote

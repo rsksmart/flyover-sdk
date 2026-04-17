@@ -2,7 +2,7 @@ import { describe, test, expect, jest } from '@jest/globals'
 import { type FlyoverConfig } from '@rsksmart/bridges-core-sdk'
 import * as core from '@rsksmart/bridges-core-sdk'
 import { FlyoverError } from '..'
-import { validateRskChecksum } from './validation'
+import { isHex, validateRskChecksum } from './validation'
 
 jest.mock('@rsksmart/bridges-core-sdk', () => {
   return {
@@ -77,5 +77,36 @@ describe('validateRskChecksum function should', () => {
       expect(e.message).toBe('Invalid RSK address checksum')
       expect(e.details).toBe(`The following addresses doesn't have a valid checksum address: ${rskMainnetAddress}, ${ethAddress}`)
     }
+  })
+})
+
+describe('isHex function should', () => {
+  test('return true for valid hex strings', () => {
+    const validHexStrings = [
+      '0x',
+      '',
+      '0x1A2b3C4d5E6f',
+      'abcdef',
+      '0xABCDEF'
+    ]
+    validHexStrings.forEach(hexString => {
+      expect(isHex(hexString)).toBe(true)
+    })
+  })
+
+  test('return false for invalid hex strings', () => {
+    const invalidHexStrings = [
+      '0xGHIJKL',
+      '0x12345Z',
+      'xyz',
+      '0x1234 ',
+      ' 0x1234',
+      '0x12.34',
+      '0x12345',
+      '0XABCDEF'
+    ]
+    invalidHexStrings.forEach(hexString => {
+      expect(isHex(hexString)).toBe(false)
+    })
   })
 })

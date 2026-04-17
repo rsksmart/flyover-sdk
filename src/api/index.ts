@@ -26,6 +26,7 @@ export {
   type PegoutQuoteStatusDTO as PegoutQuoteStatus,
   type AvailableLiquidityDTO as AvailableLiquidity,
   type PeginCreationDataDTO as PeginCreationData,
+  type RecommendedOperationDTO as RecommendedOperation,
   PeginQuoteRequestRequiredFields as quoteRequestRequiredFields,
   GetPeginQuoteResponseRequiredFields as quoteRequiredFields,
   PeginQuoteDtoRequiredFields as quoteDetailRequiredFields,
@@ -50,5 +51,7 @@ export const Routes = {
   providerDetail: Providers.DetailsListPath,
   peginStatus: Pegin.StatusListPath,
   pegoutStatus: Pegout.StatusListPath,
-  availableLiquidity: Providers.LiquidityListPath
+  availableLiquidity: Providers.LiquidityListPath,
+  recommendedPegin: Pegin.RecommendedListPath,
+  recommendedPegout: Pegout.RecommendedListPath
 } as const
