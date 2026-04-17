@@ -65,7 +65,7 @@ export async function registerPegin (
   const block = await btcConnection.getBlockFromTransaction(userBtcTransactionHash)
   const partialMarkleTree = pmtBuilder.buildPMT(block.transactionHashes, userBtcTransactionHash)
 
-  const txResult = await lbc.registerPegin({
+  const txResult = await lbc.pegInContract.registerPegin({
     quote,
     signature: providerSignature,
     btcRawTransaction: btcRawTxWithoutWitnesses,

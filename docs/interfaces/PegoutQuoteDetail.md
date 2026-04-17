@@ -20,7 +20,6 @@
 - [lpBtcAddr](PegoutQuoteDetail.md#lpbtcaddr)
 - [nonce](PegoutQuoteDetail.md#nonce)
 - [penaltyFee](PegoutQuoteDetail.md#penaltyfee)
-- [productFeeAmount](PegoutQuoteDetail.md#productfeeamount)
 - [rskRefundAddress](PegoutQuoteDetail.md#rskrefundaddress)
 - [transferConfirmations](PegoutQuoteDetail.md#transferconfirmations)
 - [transferTime](PegoutQuoteDetail.md#transfertime)
@@ -112,7 +111,7 @@ ___
 
 • **gasFee**: `bigint`
 
-Fee to pay for the gas of every call done during the pegout (call on behalf of the user in Bitcoin network and call to the dao fee collector in Rootstock)
+Fee to pay for the gas of every call done during the pegout (call on behalf of the user in Bitcoin network)
 
 #### Defined in
 
@@ -167,18 +166,6 @@ ___
 #### Defined in
 
 [src/api/bindings/data-contracts.ts:358](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L358)
-
-___
-
-### productFeeAmount
-
-• **productFeeAmount**: `bigint`
-
-The DAO fee amount
-
-#### Defined in
-
-[src/api/bindings/data-contracts.ts:360](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L360)
 
 ___
 

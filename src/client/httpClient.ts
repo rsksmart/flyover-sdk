@@ -88,4 +88,13 @@ export class FlyoverError extends BridgeError {
       details: `The following addresses doesn't have a valid checksum address: ${addresses.join(', ')}`
     })
   }
+
+  static protocolPaused(args: { reason: string, timestamp: number }): FlyoverError {
+    return new FlyoverError({
+      timestamp: Date.now(),
+      recoverable: true,
+      message: 'Protocol paused',
+      details: { reason: args.reason, timestamp: args.timestamp }
+    })
+  }
 }

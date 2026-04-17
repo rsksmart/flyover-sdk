@@ -67,7 +67,6 @@ const mockPegoutStatusWithTxHash = {
     expireDate: 1741360675,
     expireBlocks: 11202,
     gasFee: 67250000000000,
-    productFeeAmount: 0
   },
   status: {
     quoteHash: FAKE_QUOTE_HASH,

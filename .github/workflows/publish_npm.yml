@@ -3,7 +3,7 @@ name: Deploy library on NPM
 on:
   release:
     types: [created, edited, published]
-    
+
 # Declare default permissions as read only.
 permissions: read-all
 
@@ -24,7 +24,7 @@ jobs:
         uses: andstor/file-existence-action@076e0072799f4942c8bc574a82233e1e4d13e9d6 # v3.0.0
         with:
           files: "package.json, README.md"
-          
+
       - name: File exists
         if: steps.check_files.outputs.files_exists != 'true'
         # Only runs if all of the files exists
@@ -55,7 +55,7 @@ jobs:
         if: github.ref != steps.get_package_info.outputs.PACKAGE_VERSION
         # Fail if package version not properly setted
         run: exit 1
-      
+
       - name: Check if package repository matches with repository
         if: github.repositoryUrl != steps.get_package_info.outputs.PACKAGE_REPOSITORY
         # Fail if package repository doesn't match with repository
@@ -80,12 +80,12 @@ jobs:
 
       - name: Pre upload validation
         id: pack
-        run: | 
+        run: |
           rm -f *.tgz
           PRE_UPLOAD_HASH=$(npm pack --dry-run 2>&1 | grep 'shasum:' | awk '{print $NF}')
           echo "PRE_UPLOAD_HASH=$PRE_UPLOAD_HASH" >> $GITHUB_OUTPUT
           echo "PRE_UPLOAD_HASH: $PRE_UPLOAD_HASH"
-        
+
       - name: Check if version is already published
         run: |
           PACKAGE_NAME=$(cat package.json | jq -r .name)
@@ -99,8 +99,15 @@ jobs:
           echo "Version $PACKAGE_VERSION of $PACKAGE_NAME is not published. Proceeding with publishing..."
 
       - name: Upload package
-        run: npm publish
-      
+        run: |
+          VERSION=${{ steps.get_package_info.outputs.PACKAGE_VERSION }}
+          if [[ "$VERSION" == *"beta"* ]]; then
+            echo "Publishing beta version ($VERSION)"
+            npm publish --tag beta
+          else
+            echo "Publishing stable version ($VERSION)"
+            npm publish
+          fi
       - name: Post upload validation
         id: unpack
         run: |

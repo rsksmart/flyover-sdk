@@ -1,10 +1,8 @@
-import { type Fee, type BridgeMetadata } from '@rsksmart/bridges-core-sdk'
+import { type BridgeMetadata } from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type PegoutQuote, type Quote } from '../api'
-import { type LiquidityBridgeContract } from '../blockchain/lbc'
 
 export async function getMetadata (
   liquidityProvider: LiquidityProvider,
-  lbc: LiquidityBridgeContract,
   lastPeginQuote: Quote | null,
   lastPegoutQuote: PegoutQuote | null
 ): Promise<BridgeMetadata[]> {
@@ -51,19 +49,9 @@ export async function getMetadata (
     ]
   }
 
-  const productFee = await lbc.getProductFeePercentage()
-  const productFeeMetadata: Fee = {
-    amount: BigInt(productFee),
-    decimals: 0,
-    type: 'Percental',
-    description: 'Fee to be paid to the network. Its a percentage of the pegged value'
-  }
-  peginMetadata.fees.push(productFeeMetadata)
-  pegoutMetadata.fees.push(productFeeMetadata)
-
   const serviceFeeDescription = 'Service fee. Pays for the cost of making transactions on behalf of the user'
   if (lastPeginQuote !== null) {
-    peginMetadata.fees[2] = {
+    peginMetadata.fees[1] = {
       amount: lastPeginQuote.quote.gasFee,
       decimals: 0,
       type: 'Fixed',
@@ -73,7 +61,7 @@ export async function getMetadata (
   }
 
   if (lastPegoutQuote !== null) {
-    pegoutMetadata.fees[2] = {
+    pegoutMetadata.fees[1] = {
       amount: lastPegoutQuote.quote.gasFee,
       decimals: 0,
       type: 'Fixed',
