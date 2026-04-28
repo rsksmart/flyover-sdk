@@ -22,7 +22,6 @@
 - [lpRSKAddr](QuoteDetail.md#lprskaddr)
 - [nonce](QuoteDetail.md#nonce)
 - [penaltyFee](QuoteDetail.md#penaltyfee)
-- [productFeeAmount](QuoteDetail.md#productfeeamount)
 - [rskRefundAddr](QuoteDetail.md#rskrefundaddr)
 - [timeForDeposit](QuoteDetail.md#timefordeposit)
 - [value](QuoteDetail.md#value)
@@ -129,7 +128,7 @@ ___
 
 • **gasFee**: `bigint`
 
-Fee to pay for the gas of every call done during the pegin (call on behalf of the user and call to the dao fee collector)
+Fee to pay for the gas of every call done during the pegin (call on behalf of the user)
 
 #### Defined in
 
@@ -218,18 +217,6 @@ The penalty fee that the LP pays if it fails to deliver the service
 #### Defined in
 
 [src/api/bindings/data-contracts.ts:255](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L255)
-
-___
-
-### productFeeAmount
-
-• **productFeeAmount**: `bigint`
-
-The DAO Fee amount
-
-#### Defined in
-
-[src/api/bindings/data-contracts.ts:257](https://github.com/rsksmart/flyover-sdk/blob/c4e062545df2cd84086a652b1972659c273d682e/src/api/bindings/data-contracts.ts#L257)
 
 ___
 

@@ -21,7 +21,7 @@ export async function refundPegout (quote: PegoutQuote, context: FlyoverSDKConte
   const { lbc } = context
   assertTruthy(lbc, 'Missing Liquidity Bridge Contract')
 
-  const result = await lbc.refundPegout(quote)
+  const result = await lbc.pegOutContract.refundPegout(quote)
   assertTruthy(result, 'refund pegout transaction failed')
   throwErrorIfFailedTx(result, 'refund pegout transaction did not complete successfully')
   return result.txHash

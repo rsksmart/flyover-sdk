@@ -91,8 +91,8 @@ describe('Flyover pegout process should', () => {
     expect(quote.transferConfirmations).not.toBeUndefined()
     expect(quote.transferTime).not.toBeUndefined()
     expect(quote.value).not.toBeUndefined()
-    expect(quote.productFeeAmount).not.toBeUndefined()
-  })
+    expect(quote.chainId).not.toBeUndefined()
+  }, EXTENDED_TIMEOUT)
 
   test('accept specific quote', async () => {
     const quote = quotes[0]! // eslint-disable-line @typescript-eslint/no-non-null-assertion
@@ -100,7 +100,7 @@ describe('Flyover pegout process should', () => {
 
     expect(acceptedQuote.signature).not.toBeUndefined()
     expect(acceptedQuote.lbcAddress).not.toBeUndefined()
-  })
+  }, EXTENDED_TIMEOUT)
 
   test('fail to deposit pegout if connection is readonly', async () => {
     const readonlyFlyover = new Flyover({
@@ -115,10 +115,10 @@ describe('Flyover pegout process should', () => {
     try {
       await readonlyFlyover.depositPegout(selectedQuote, acceptedQuote.signature, amount)
     } catch (e: any) {
-      expect(e.message).toBe('error executing function depositPegout')
+      expect(e.message).toBe('error executing function depositPegOut')
       expect(e.details.error).toContain('sending a transaction requires a signer')
     }
-  })
+  }, EXTENDED_TIMEOUT)
 
   test('deposit amount to lbc for accepted quote', async () => {
     const txHash = await flyover.depositPegout(selectedQuote, acceptedQuote.signature, FlyoverUtils.getQuoteTotal(selectedQuote))
@@ -146,11 +146,11 @@ describe('Flyover pegout process should', () => {
     expect(detail.lpBtcAddr).not.toBeUndefined()
     expect(detail.nonce).not.toBeUndefined()
     expect(detail.penaltyFee).not.toBeUndefined()
-    expect(detail.productFeeAmount).not.toBeUndefined()
     expect(detail.rskRefundAddress).not.toBeUndefined()
     expect(detail.transferConfirmations).not.toBeUndefined()
     expect(detail.transferTime).not.toBeUndefined()
     expect(detail.value).not.toBeUndefined()
+    expect(detail.chainId).not.toBeUndefined()
 
     expect(status.bridgeRefundTxHash).not.toBeUndefined()
     expect(status.depositAddress).not.toBeUndefined()
@@ -175,7 +175,6 @@ describe('Flyover pegout process should', () => {
     );
     expect(result.estimatedCallFee.toString()).toEqual(selectedQuote.quote.callFee.toString());
     expect(result.estimatedGasFee.toString()).toEqual(selectedQuote.quote.gasFee.toString());
-    expect(result.estimatedProductFee.toString()).toEqual(selectedQuote.quote.productFeeAmount.toString());
     expect(result.recommendedQuoteValue.toString()).toEqual(selectedQuote.quote.value.toString());
   }, EXTENDED_TIMEOUT)
 

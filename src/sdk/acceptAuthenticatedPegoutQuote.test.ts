@@ -2,6 +2,7 @@ import { describe, test, expect, jest, beforeEach } from '@jest/globals'
 import { acceptAuthenticatedPegoutQuote } from './acceptAuthenticatedPegoutQuote'
 import * as bridgesCoreSdk from '@rsksmart/bridges-core-sdk'
 import { type LiquidityProvider, type PegoutQuote, providerRequiredFields, pegoutQuoteRequiredFields, pegoutQuoteDetailRequiredFields, Routes, type PegoutQuoteDetail } from '../api'
+import { LiquidityBridgeContract } from '../blockchain/lbc';
 
 jest.mock('@rsksmart/bridges-core-sdk', () => {
     const actual = jest.requireActual<typeof import('@rsksmart/bridges-core-sdk')>('@rsksmart/bridges-core-sdk');
@@ -10,6 +11,10 @@ jest.mock('@rsksmart/bridges-core-sdk', () => {
       isValidSignature: jest.fn(() => true),
     };
   });
+
+const MOCK_LIQUIDITY_BRIDGE_CONTRACT: LiquidityBridgeContract = {
+  pegOutContract: { hashPegoutQuoteEIP712: jest.fn() }
+} as unknown as LiquidityBridgeContract
 
 const mockClient: bridgesCoreSdk.HttpClient = {
   async post<M>(_url: string, _body: object) {
@@ -70,7 +75,7 @@ const pegoutQuoteMock: PegoutQuote = {
     transferConfirmations: 1,
     transferTime: 1,
     value: BigInt('9007199254740993'),
-    productFeeAmount: BigInt(50000000000000)
+    chainId: 31,
   }
 }
 
@@ -84,29 +89,32 @@ describe('acceptAuthenticatedPegoutQuote function should', () => {
   test('build url correctly and call post with correct parameters', async () => {
     jest.spyOn(bridgesCoreSdk, 'isValidSignature').mockImplementation(() => true)
     const clientSpy = jest.spyOn(mockClient, 'post')
+    jest.spyOn(MOCK_LIQUIDITY_BRIDGE_CONTRACT.pegOutContract, 'hashPegoutQuoteEIP712')
+          .mockResolvedValue('singature')
 
-    await acceptAuthenticatedPegoutQuote(mockClient, providerMock, pegoutQuoteMock, signatureMock)
+    await acceptAuthenticatedPegoutQuote(mockClient, MOCK_LIQUIDITY_BRIDGE_CONTRACT, providerMock, pegoutQuoteMock, signatureMock)
 
     expect(clientSpy).toBeCalledWith(
       mockApiBaseUrl + Routes.acceptAuthenticatedPegoutQuote,
       { quoteHash: pegoutQuoteMock.quoteHash, signature: signatureMock },
       { includeCaptcha: false }
     )
+    expect(MOCK_LIQUIDITY_BRIDGE_CONTRACT.pegOutContract.hashPegoutQuoteEIP712).toBeCalledWith(pegoutQuoteMock)
   })
 
   test('fail on provider missing properties', async () => {
-    await expect(acceptAuthenticatedPegoutQuote(mockClient, {} as any, pegoutQuoteMock, signatureMock))
+    await expect(acceptAuthenticatedPegoutQuote(mockClient, MOCK_LIQUIDITY_BRIDGE_CONTRACT, {} as any, pegoutQuoteMock, signatureMock))
       .rejects.toThrow(`Validation failed for object with following missing properties: ${providerRequiredFields.join(', ')}`)
   })
 
   test('fail on quote missing properties', async () => {
-    await expect(acceptAuthenticatedPegoutQuote(mockClient, providerMock, {} as any, signatureMock))
+    await expect(acceptAuthenticatedPegoutQuote(mockClient, MOCK_LIQUIDITY_BRIDGE_CONTRACT, providerMock, {} as any, signatureMock))
       .rejects.toThrow(`Validation failed for object with following missing properties: ${pegoutQuoteRequiredFields.join(', ')}`)
   })
 
   test('fail on quote detail missing properties', async () => {
     const invalidQuote = { ...pegoutQuoteMock, quote: {} as PegoutQuoteDetail }
-    await expect(acceptAuthenticatedPegoutQuote(mockClient, providerMock, invalidQuote, signatureMock))
+    await expect(acceptAuthenticatedPegoutQuote(mockClient, MOCK_LIQUIDITY_BRIDGE_CONTRACT, providerMock, invalidQuote, signatureMock))
       .rejects.toThrow(`Validation failed for object with following missing properties: ${pegoutQuoteDetailRequiredFields.join(', ')}`)
   })
 
@@ -114,7 +122,7 @@ describe('acceptAuthenticatedPegoutQuote function should', () => {
     jest.spyOn(bridgesCoreSdk, 'isValidSignature').mockReturnValue(false)
 
     await expect(async () => {
-      await acceptAuthenticatedPegoutQuote(mockClient, providerMock, pegoutQuoteMock, signatureMock)
+      await acceptAuthenticatedPegoutQuote(mockClient, MOCK_LIQUIDITY_BRIDGE_CONTRACT, providerMock, pegoutQuoteMock, signatureMock)
     }).rejects.toThrow(/Invalid signature/)
   })
 })
