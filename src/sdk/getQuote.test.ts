@@ -84,7 +84,7 @@ const quoteResponseMock: Quote =
       timeForDeposit: 1,
       lpCallTime: 1,
       confirmations: 1,
-      callOnRegister: true,
+      callOnRegister: false,
       gasFee: BigInt(1),
       chainId: 31,
     },
@@ -111,7 +111,7 @@ const quoteResponseSanitizedMock: Quote =
       timeForDeposit: 1,
       lpCallTime: 1,
       confirmations: 1,
-      callOnRegister: true,
+      callOnRegister: false,
       gasFee: BigInt(1),
       chainId: 31,
     },
@@ -148,7 +148,7 @@ describe('getQuote function should', () => {
     const quote = quotes[0]! // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
     expect(quotes).toBeTruthy()
-    quoteDetailRequiredFields.forEach(requiredField => { expect(quote.quote[requiredField as keyof QuoteDetail]).toBeTruthy() })
+    quoteDetailRequiredFields.forEach(requiredField => { expect(quote.quote[requiredField as keyof QuoteDetail]).toBeDefined() })
     quoteRequiredFields.forEach(requiredField => { expect(quote[requiredField as keyof Quote]).toBeTruthy() })
   })
 
@@ -247,6 +247,21 @@ describe('getQuote function should', () => {
 
     const badQuote = structuredClone(quoteResponseMock.quote)
     badQuote.btcRefundAddr = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa' // Non-zero BTC address
+    quoteResponseMock.quote = badQuote
+
+    expect.assertions(2)
+    await getQuote(configMock, mockClient, lbcMock, providerMock, quoteRequestMock).catch(e => {
+      expect(e).toBeInstanceOf(FlyoverError)
+      expect(e.message).toBe('Manipulated quote response')
+    })
+    quoteResponseMock.quote = oldQuote // reset quote
+  })
+
+  test('validate that callOnRegister is false', async () => {
+    const oldQuote = quoteResponseMock.quote
+
+    const badQuote = structuredClone(quoteResponseMock.quote)
+    badQuote.callOnRegister = true
     quoteResponseMock.quote = badQuote
 
     expect.assertions(2)
