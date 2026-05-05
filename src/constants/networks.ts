@@ -10,9 +10,9 @@ import { deepFreeze } from '@rsksmart/bridges-core-sdk'
  */
 export const FlyoverNetworks = deepFreeze({
   Mainnet: {
-    pegInContractAddress: '',
-    pegOutContractAddress: '',
-    discoveryAddress: '',
+    pegInContractAddress: '0x514148ca5bb08acfb082777cd4ce32beb6bf5d00',
+    pegOutContractAddress: '0xde16e087cc8209182b693b619c13aa272df9de84',
+    discoveryAddress: '0xf484ed4aaf47a5f584c4edcf29c146139baea460',
     chainId: 30
   },
   Testnet: {
