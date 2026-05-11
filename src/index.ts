@@ -6,6 +6,8 @@ export { type FlyoverNetworks } from './constants/networks'
 export { type RegisterPeginParams } from './sdk/registerPegin'
 export { type IsPeginRefundableParams } from './sdk/isPeginRefundable'
 export { type ValidatePeginTransactionParams, type ValidatePeginTransactionOptions } from './sdk/validatePeginTransaction'
+export { type PeginPaymentData, type PeginAmountUnit } from './sdk/getPeginPaymentData'
+export { type PegoutPaymentData } from './sdk/getPegoutPaymentData'
 
 export { FlyoverError } from './client/httpClient'
 

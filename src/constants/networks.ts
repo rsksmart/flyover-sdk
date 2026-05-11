@@ -22,15 +22,15 @@ export const FlyoverNetworks = deepFreeze({
     chainId: 31
   },
   Development: {
-    pegInContractAddress: '0xcf871fB1D934301dD161A3AD5eB50379527B1CDc',
-    pegOutContractAddress: '0x15c240d9Fb91224c0d3Ca9b04Ff63844aA3dF040',
-    discoveryAddress: '0xe16b04a1a87aC65a4aF8D46a8b797D0d46572408',
+    pegInContractAddress: '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e',
+    pegOutContractAddress: '0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82',
+    discoveryAddress: '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318',
     chainId: 31
   },
   Regtest: {
-    pegInContractAddress: '0xcf871fB1D934301dD161A3AD5eB50379527B1CDc',
-    pegOutContractAddress: '0x15c240d9Fb91224c0d3Ca9b04Ff63844aA3dF040',
-    discoveryAddress: '0xe16b04a1a87aC65a4aF8D46a8b797D0d46572408',
+    pegInContractAddress: '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e',
+    pegOutContractAddress: '0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82',
+    discoveryAddress: '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318',
     chainId: 33
   }
 } as const)

@@ -8,7 +8,7 @@ import { acceptAuthenticatedPegoutQuote } from './acceptAuthenticatedPegoutQuote
 import { getPegoutQuote } from './getPegoutQuote'
 import { acceptPegoutQuote } from './acceptPegoutQuote'
 import { depositPegout } from './depositPegout'
-import { type Quote, type PeginQuoteRequest, type LiquidityProvider, type PegoutQuote, type PegoutQuoteRequest } from '../api'
+import { type Quote, type PeginQuoteRequest, type LiquidityProvider, type PegoutQuote, type PegoutQuoteRequest, type AcceptedQuote, type AcceptedPegoutQuote } from '../api'
 import { LiquidityBridgeContract } from '../blockchain/lbc'
 import { refundPegout } from './refundPegout'
 import { registerPegin, type RegisterPeginParams } from './registerPegin'
@@ -29,6 +29,8 @@ import { isPeginRefundable, type IsPeginRefundableParams } from './isPeginRefund
 import { signQuote } from './signQuote'
 import { estimateRecommendedPegin } from './recommendedPegin'
 import { estimateRecommendedPegout, RecommendedPegoutExtraArgs } from './recommendedPegout'
+import { getPeginPaymentData } from './getPeginPaymentData'
+import { getPegoutPaymentData } from './getPegoutPaymentData'
 import { PegOutContract } from '../blockchain/pegout'
 import { PegInContract } from '../blockchain/pegin'
 import { DiscoveryContract } from '../blockchain/discovery'
@@ -58,6 +60,8 @@ jest.mock('./isPeginRefundable')
 jest.mock('./recommendedPegin')
 jest.mock('./recommendedPegout')
 jest.mock('./signQuote')
+jest.mock('./getPeginPaymentData')
+jest.mock('./getPegoutPaymentData')
 
 const mockedGetQuote = getQuote as jest.Mock<typeof getQuote>
 const mockedGetPegoutQuote = getPegoutQuote as jest.Mock<typeof getPegoutQuote>
@@ -370,34 +374,6 @@ describe('Flyover object should', () => {
     flyover.useLiquidityProvider(provider)
     await expect(flyover.acceptPegoutQuote(pegoutQuoteMock)).rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
   })
-  test('generate QR code from Bitcoin address', async () => {
-    const qrCode = await flyover.generateQrCode(
-      'mq4kBDAL4yDJBdd1qJk5jEffkJxvNdLxeF',
-      '1.4455',
-      'rsk'
-    )
-    expect(qrCode).toBe(
-      'data:image/png;base64,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'
-    )
-  })
-
-  test('generate QR code from RSK address', async () => {
-    const qrCode = await flyover.generateQrCode(
-      '0x9D93929A9099be4355fC2389FbF253982F9dF47c',
-      '10000',
-      'bitcoin'
-    )
-    expect(qrCode).toBe(
-      'data:image/png;base64,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'
-    )
-  })
-
-  test('throw error when generating code from invalid address', async () => {
-    await expect(
-      flyover.generateQrCode('ricardomilos<3', '1000000000', 'rsk')
-    ).rejects.toThrow('Only Bitcoin and RSK addresses are supported')
-  })
-
   test('validate correclty if its connected to network', async () => {
     const connected = new Flyover({
       network: 'Regtest',
@@ -1228,6 +1204,91 @@ describe('Flyover object should', () => {
     })
     test('fail if LP has not been selected', async () => {
       await expect(flyover.estimateRecommendedPegout(amount, extraArgs)).rejects.toThrow('You need to select a provider to do this operation')
+    })
+  })
+
+  describe('getPeginPaymentData method should', () => {
+    const acceptedQuoteMock: AcceptedQuote = {
+      signature: signatureMock,
+      bitcoinDepositAddressHash: '2MvkytopbHAGgTwrpQjpGVM5WZYvujPqf9u'
+    }
+    const optionsMock = { amountUnit: 'SAT' as const }
+
+    test('invoke correctly getPeginPaymentData', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      await flyover.getPeginPaymentData(quoteMock, acceptedQuoteMock, optionsMock)
+      expect(getPeginPaymentData).toBeCalledTimes(1)
+      expect(getPeginPaymentData).toBeCalledWith(
+        expect.objectContaining({
+          pegInContract: expect.any(PegInContract),
+          pegOutContract: expect.any(PegOutContract),
+          discoveryContract: expect.any(DiscoveryContract)
+        }),
+        providerMock,
+        quoteMock,
+        acceptedQuoteMock,
+        optionsMock
+      )
+    })
+
+    test('forward options to getPeginPaymentData when omitted', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      await flyover.getPeginPaymentData(quoteMock, acceptedQuoteMock)
+      expect(getPeginPaymentData).toBeCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        undefined
+      )
+    })
+
+    test('fail if LP has not been selected', async () => {
+      await expect(flyover.getPeginPaymentData(quoteMock, acceptedQuoteMock, optionsMock))
+        .rejects.toThrow('You need to select a provider to do this operation')
+    })
+
+    test('throw error if not connected to RSK', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await expect(flyover.getPeginPaymentData(quoteMock, acceptedQuoteMock, optionsMock))
+        .rejects.toThrow('Not connected to RSK')
+    })
+  })
+
+  describe('getPegoutPaymentData method should', () => {
+    const acceptedPegoutQuoteMock: AcceptedPegoutQuote = {
+      signature: signatureMock,
+      lbcAddress: 'any address'
+    }
+
+    test('invoke correctly getPegoutPaymentData', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      await flyover.getPegoutPaymentData(pegoutQuoteMock, acceptedPegoutQuoteMock)
+      expect(getPegoutPaymentData).toBeCalledTimes(1)
+      expect(getPegoutPaymentData).toBeCalledWith(
+        expect.objectContaining({
+          pegInContract: expect.any(PegInContract),
+          pegOutContract: expect.any(PegOutContract),
+          discoveryContract: expect.any(DiscoveryContract)
+        }),
+        providerMock,
+        pegoutQuoteMock,
+        acceptedPegoutQuoteMock
+      )
+    })
+
+    test('fail if LP has not been selected', async () => {
+      await expect(flyover.getPegoutPaymentData(pegoutQuoteMock, acceptedPegoutQuoteMock))
+        .rejects.toThrow('You need to select a provider to do this operation')
+    })
+
+    test('throw error if not connected to RSK', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await expect(flyover.getPegoutPaymentData(pegoutQuoteMock, acceptedPegoutQuoteMock))
+        .rejects.toThrow('Not connected to RSK')
     })
   })
 })

@@ -102,6 +102,13 @@ describe('Flyover pegout process should', () => {
     expect(acceptedQuote.lbcAddress).not.toBeUndefined()
   }, EXTENDED_TIMEOUT)
 
+  test('get pegout payment data for accepted quote', async () => {
+    const paymentData = await flyover.getPegoutPaymentData(selectedQuote, acceptedQuote)
+    expect(paymentData.to).toBe(acceptedQuote.lbcAddress)
+    expect(paymentData.value).toBe(FlyoverUtils.getQuoteTotal(selectedQuote))
+    expect(paymentData.data).toMatch(/^0x083bc4b2/)
+  }, EXTENDED_TIMEOUT)
+
   test('fail to deposit pegout if connection is readonly', async () => {
     const readonlyFlyover = new Flyover({
       network: integrationTestConfig.network,

@@ -15,11 +15,26 @@ export function isPeginStillPayable (quote: Quote): boolean {
   return (detail.agreementTimestamp + detail.timeForDeposit) * 1000 > Date.now()
 }
 
+export const SAT_TO_WEI = BigInt(10) ** BigInt(10)
+const SATS_PER_BTC = BigInt(100_000_000)
+const BTC_DECIMALS = 8
+
 export function satsToWei (sats: bigint): bigint {
   if (sats < 0) {
     throw new Error('Negative sats value')
   }
-  return sats * (BigInt(10) ** BigInt(10))
+  return sats * SAT_TO_WEI
+}
+
+export function weiToSats (wei: bigint): bigint {
+  return wei / SAT_TO_WEI
+}
+
+export function weiToBtc (wei: bigint): string {
+  const sats = weiToSats(wei)
+  const whole = sats / SATS_PER_BTC
+  const fraction = sats % SATS_PER_BTC
+  return `${whole}.${fraction.toString().padStart(BTC_DECIMALS, '0')}`
 }
 
 export function isPeginQuote (quote: Quote | PegoutQuote): quote is Quote {

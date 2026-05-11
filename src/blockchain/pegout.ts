@@ -6,6 +6,30 @@ import { type PegoutQuoteDetail, type PegoutQuote } from '../api'
 import { FlyoverNetworks, FlyoverSupportedNetworks } from "../constants/networks"
 import { getEip712Domain, validateNotPaused } from "./lbc"
 
+export function toContractPegoutQuote (detail: PegoutQuoteDetail): Quotes.PegOutQuoteStruct {
+  return {
+    lbcAddress: detail.lbcAddress.toLowerCase(),
+    lpRskAddress: detail.liquidityProviderRskAddress.toLowerCase(),
+    btcRefundAddress: decodeBtcAddress(detail.btcRefundAddress),
+    rskRefundAddress: detail.rskRefundAddress.toLowerCase(),
+    lpBtcAddress: decodeBtcAddress(detail.lpBtcAddr),
+    callFee: detail.callFee,
+    penaltyFee: detail.penaltyFee,
+    nonce: detail.nonce,
+    depositAddress: decodeBtcAddress(detail.depositAddr),
+    value: detail.value,
+    agreementTimestamp: detail.agreementTimestamp,
+    depositDateLimit: detail.depositDateLimit,
+    depositConfirmations: detail.depositConfirmations,
+    transferConfirmations: detail.transferConfirmations,
+    transferTime: detail.transferTime,
+    expireDate: detail.expireDate,
+    expireBlock: detail.expireBlocks,
+    gasFee: detail.gasFee,
+    chainId: detail.chainId
+  }
+}
+
 export class PegOutContract {
   private readonly pegoutContract: Contract
 
@@ -42,13 +66,13 @@ export class PegOutContract {
   }
 
   async hashPegoutQuote (quote: PegoutQuote): Promise<string> {
-    const bytes = await executeContractView<BytesLike>(this.pegoutContract, 'hashPegOutQuote', this.toContractPegoutQuote(quote.quote))
+    const bytes = await executeContractView<BytesLike>(this.pegoutContract, 'hashPegOutQuote', toContractPegoutQuote(quote.quote))
     const result = utils.hexlify(bytes)
     return result.startsWith('0x') ? result.slice(2) : result
   }
 
   async hashPegoutQuoteEIP712 (quote: PegoutQuote): Promise<string> {
-    const bytes = await executeContractView<BytesLike>(this.pegoutContract, 'hashPegOutQuoteEIP712', this.toContractPegoutQuote(quote.quote))
+    const bytes = await executeContractView<BytesLike>(this.pegoutContract, 'hashPegOutQuoteEIP712', toContractPegoutQuote(quote.quote))
     const result = utils.hexlify(bytes)
     return result.startsWith('0x') ? result.slice(2) : result
   }
@@ -57,7 +81,7 @@ export class PegOutContract {
     await validateNotPaused(this.pegoutContract)
     const detail: PegoutQuoteDetail = quote.quote
     const signatureBytes = utils.arrayify('0x' + signature)
-    const lbcPegoutQuote: Quotes.PegOutQuoteStruct = this.toContractPegoutQuote(detail)
+    const lbcPegoutQuote: Quotes.PegOutQuoteStruct = toContractPegoutQuote(detail)
     return executeContractFunction(this.pegoutContract, 'depositPegOut', lbcPegoutQuote, signatureBytes, { value: weiAmount })
   }
 
@@ -70,27 +94,4 @@ export class PegOutContract {
     return executeContractView(this.pegoutContract, 'isQuoteCompleted', hashBytes)
   }
 
-  private toContractPegoutQuote (detail: PegoutQuoteDetail): Quotes.PegOutQuoteStruct {
-    return {
-      lbcAddress: detail.lbcAddress.toLowerCase(),
-      lpRskAddress: detail.liquidityProviderRskAddress.toLowerCase(),
-      btcRefundAddress: decodeBtcAddress(detail.btcRefundAddress),
-      rskRefundAddress: detail.rskRefundAddress.toLowerCase(),
-      lpBtcAddress: decodeBtcAddress(detail.lpBtcAddr),
-      callFee: detail.callFee,
-      penaltyFee: detail.penaltyFee,
-      nonce: detail.nonce,
-      depositAddress: decodeBtcAddress(detail.depositAddr),
-      value: detail.value,
-      agreementTimestamp: detail.agreementTimestamp,
-      depositDateLimit: detail.depositDateLimit,
-      depositConfirmations: detail.depositConfirmations,
-      transferConfirmations: detail.transferConfirmations,
-      transferTime: detail.transferTime,
-      expireDate: detail.expireDate,
-      expireBlock: detail.expireBlocks,
-      gasFee: detail.gasFee,
-      chainId: detail.chainId
-    }
-  }
 }
