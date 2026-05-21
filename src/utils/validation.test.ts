@@ -84,6 +84,7 @@ describe('compareIgnoreCase function should', () => {
   test('return true for equal strings regardless of case', () => {
     expect(compareIgnoreCase('0xABC', '0xabc')).toBe(true)
     expect(compareIgnoreCase('Any Address', 'any address')).toBe(true)
+    expect(compareIgnoreCase('', '')).toBe(true)
   })
 
   test('return false for different strings', () => {
@@ -94,8 +95,6 @@ describe('compareIgnoreCase function should', () => {
   test('return true when both values are null or undefined at runtime', () => {
     expect(compareIgnoreCase(null as unknown as string, null as unknown as string)).toBe(true)
     expect(compareIgnoreCase(undefined as unknown as string, undefined as unknown as string)).toBe(true)
-    expect(compareIgnoreCase(null as unknown as string, undefined as unknown as string)).toBe(true)
-    expect(compareIgnoreCase(undefined as unknown as string, null as unknown as string)).toBe(true)
   })
 
   test('return false when only one value is null or undefined at runtime', () => {
@@ -103,6 +102,8 @@ describe('compareIgnoreCase function should', () => {
     expect(compareIgnoreCase(undefined as unknown as string, '0xabc')).toBe(false)
     expect(compareIgnoreCase('0xabc', null as unknown as string)).toBe(false)
     expect(compareIgnoreCase('0xabc', undefined as unknown as string)).toBe(false)
+    expect(compareIgnoreCase(null as unknown as string, undefined as unknown as string)).toBe(false)
+    expect(compareIgnoreCase(undefined as unknown as string, null as unknown as string)).toBe(false)
   })
 })
 
