@@ -90,6 +90,20 @@ describe('compareIgnoreCase function should', () => {
     expect(compareIgnoreCase('0xABC', '0xABD')).toBe(false)
     expect(compareIgnoreCase('any address', 'other address')).toBe(false)
   })
+
+  test('return true when both values are null or undefined at runtime', () => {
+    expect(compareIgnoreCase(null as unknown as string, null as unknown as string)).toBe(true)
+    expect(compareIgnoreCase(undefined as unknown as string, undefined as unknown as string)).toBe(true)
+    expect(compareIgnoreCase(null as unknown as string, undefined as unknown as string)).toBe(true)
+    expect(compareIgnoreCase(undefined as unknown as string, null as unknown as string)).toBe(true)
+  })
+
+  test('return false when only one value is null or undefined at runtime', () => {
+    expect(compareIgnoreCase(null as unknown as string, '0xabc')).toBe(false)
+    expect(compareIgnoreCase(undefined as unknown as string, '0xabc')).toBe(false)
+    expect(compareIgnoreCase('0xabc', null as unknown as string)).toBe(false)
+    expect(compareIgnoreCase('0xabc', undefined as unknown as string)).toBe(false)
+  })
 })
 
 describe('isHex function should', () => {

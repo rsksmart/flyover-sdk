@@ -16,5 +16,5 @@ export function validateRskChecksum (config: FlyoverConfig, ...addresses: string
 export const isHex = (value: string) => /^(0x)?([0-9A-Fa-f]{2})*$/.test(value)
 
 export const compareIgnoreCase = (str1: string, str2: string): boolean => {
-  return str1.toLowerCase() === str2.toLowerCase()
+  return str1?.toLowerCase() === str2?.toLowerCase()
 }
