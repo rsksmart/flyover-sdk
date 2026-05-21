@@ -23,9 +23,11 @@ const mockSanitizedClient: HttpClient = {
   getCaptchaToken: async () => Promise.resolve('')
 }
 
+const LP_RSK_ADDRESS = '0x57f9F71E683E2A8ff3d2f394aE45C58b2d913A35'
+
 const providerMock: LiquidityProvider = {
   id: 1,
-  provider: 'any address',
+  provider: LP_RSK_ADDRESS,
   apiBaseUrl: 'http://localhost:8081',
   name: 'any name',
   status: true,
@@ -69,7 +71,7 @@ const quoteResponseMock: Quote =
     quote: {
       fedBTCAddr: 'any addres',
       lbcAddr: 'any addres',
-      lpRSKAddr: 'any addres',
+      lpRSKAddr: providerMock.provider,
       btcRefundAddr: BTC_ZERO_ADDRESS_MAINNET,
       rskRefundAddr: quoteRequestMock.rskRefundAddress,
       lpBTCAddr: 'any addres',
@@ -96,7 +98,7 @@ const quoteResponseSanitizedMock: Quote =
     quote: {
       fedBTCAddr: 'any addres',
       lbcAddr: 'any addres',
-      lpRSKAddr: 'any addres',
+      lpRSKAddr: providerMock.provider,
       btcRefundAddr: BTC_ZERO_ADDRESS_MAINNET,
       rskRefundAddr: quoteRequestToSanitizeMock.rskRefundAddress,
       lpBTCAddr: 'any addres',
@@ -209,6 +211,26 @@ describe('getQuote function should', () => {
       expect(e.message).toBe('Quote hash mismatch')
     })
     lbcMock.pegInContract.hashPeginQuote = original
+  })
+
+  test('fail when lpRSKAddr does not match provider address', async () => {
+    const oldQuote = quoteResponseMock.quote
+    const badQuote = structuredClone(quoteResponseMock.quote)
+    badQuote.lpRSKAddr = '0xd6F117d8194Eba2fCA8bD63B2E259Dbea40E07d9'
+    quoteResponseMock.quote = badQuote
+    expect.assertions(2)
+    await getQuote(configMock, mockClient, lbcMock, providerMock, quoteRequestMock).catch(e => {
+      expect(e).toBeInstanceOf(FlyoverError)
+      expect(e.message).toBe('Manipulated quote response')
+    })
+    quoteResponseMock.quote = oldQuote
+  })
+
+  test('accept lpRSKAddr with different casing than provider', async () => {
+    const oldQuote = quoteResponseMock.quote
+    quoteResponseMock.quote = { ...oldQuote, lpRSKAddr: LP_RSK_ADDRESS.toLowerCase() }
+    await expect(getQuote(configMock, mockClient, lbcMock, providerMock, quoteRequestMock)).resolves.not.toThrow()
+    quoteResponseMock.quote = oldQuote
   })
 
   test('validate response fields', async () => {

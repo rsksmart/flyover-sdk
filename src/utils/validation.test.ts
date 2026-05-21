@@ -2,7 +2,7 @@ import { describe, test, expect, jest } from '@jest/globals'
 import { type FlyoverConfig } from '@rsksmart/bridges-core-sdk'
 import * as core from '@rsksmart/bridges-core-sdk'
 import { FlyoverError } from '..'
-import { isHex, validateRskChecksum } from './validation'
+import { compareIgnoreCase, isHex, validateRskChecksum } from './validation'
 
 jest.mock('@rsksmart/bridges-core-sdk', () => {
   return {
@@ -77,6 +77,18 @@ describe('validateRskChecksum function should', () => {
       expect(e.message).toBe('Invalid RSK address checksum')
       expect(e.details).toBe(`The following addresses doesn't have a valid checksum address: ${rskMainnetAddress}, ${ethAddress}`)
     }
+  })
+})
+
+describe('compareIgnoreCase function should', () => {
+  test('return true for equal strings regardless of case', () => {
+    expect(compareIgnoreCase('0xABC', '0xabc')).toBe(true)
+    expect(compareIgnoreCase('Any Address', 'any address')).toBe(true)
+  })
+
+  test('return false for different strings', () => {
+    expect(compareIgnoreCase('0xABC', '0xABD')).toBe(false)
+    expect(compareIgnoreCase('any address', 'other address')).toBe(false)
   })
 })
 

@@ -11,7 +11,7 @@ import {
   type PeginQuoteRequest, type Quote, type LiquidityProvider, Routes, providerRequiredFields
 } from '../api'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
-import { validateRskChecksum } from '../utils/validation'
+import { compareIgnoreCase, validateRskChecksum } from '../utils/validation'
 
 export async function getQuote (
   config: FlyoverConfig,
@@ -27,7 +27,7 @@ export async function getQuote (
   const url = provider.apiBaseUrl + Routes.getQuote
   const quotes = await httpClient.post<Quote[]>(url, quoteRequest)
   for (const quote of quotes) {
-    if (!validateQuoteResponse(config, quoteRequest, quote)) {
+    if (!validateQuoteResponse({ config, provider }, quoteRequest, quote)) {
       throw FlyoverError.manipulatedQuoteResonseError(provider.apiBaseUrl)
     }
 
@@ -44,14 +44,15 @@ async function validateQuoteHash (lbc: LiquidityBridgeContract, quote: Quote): P
   return hash === quote.quoteHash
 }
 
-function validateQuoteResponse (config: FlyoverConfig, quoteRequest: PeginQuoteRequest, quoteResponse: Quote): boolean {
+function validateQuoteResponse (context: {config: FlyoverConfig, provider: LiquidityProvider}, quoteRequest: PeginQuoteRequest, quoteResponse: Quote): boolean {
   const { quote } = quoteResponse
   return quoteRequest.callContractArguments === quote.data &&
     quoteRequest.callEoaOrContractAddress === quote.contractAddr &&
     quoteRequest.rskRefundAddress === quote.rskRefundAddr &&
     quoteRequest.valueToTransfer === quote.value &&
     quote.callOnRegister === false &&
-    isBtcZeroAddress(config, quote.btcRefundAddr)
+    compareIgnoreCase(context.provider.provider, quote.lpRSKAddr) &&
+    isBtcZeroAddress(context.config, quote.btcRefundAddr)
 }
 
 function validateRskAddresses (config: FlyoverConfig, quoteRequest: PeginQuoteRequest): void {
