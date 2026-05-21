@@ -272,7 +272,7 @@ describe('getPegoutQuote function should', () => {
     const mockClient = getMockClient()
     mockClient.post = jest.fn<HttpClient['post']>().mockResolvedValue([response]) as jest.MockedFunction<HttpClient['post']>
 
-    await expect(getPegoutQuote(configMock, mockClient, lbcMock, providerMock, quoteRequestMock)).resolves.not.toThrow()
+    await expect(getPegoutQuote(configMock, mockClient, lbcMock, providerMock, quoteRequestMock)).resolves.toBeDefined()
   })
 
   test('validate response fields', async () => {

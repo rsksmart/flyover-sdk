@@ -229,7 +229,7 @@ describe('getQuote function should', () => {
   test('accept lpRSKAddr with different casing than provider', async () => {
     const oldQuote = quoteResponseMock.quote
     quoteResponseMock.quote = { ...oldQuote, lpRSKAddr: LP_RSK_ADDRESS.toLowerCase() }
-    await expect(getQuote(configMock, mockClient, lbcMock, providerMock, quoteRequestMock)).resolves.not.toThrow()
+    await expect(getQuote(configMock, mockClient, lbcMock, providerMock, quoteRequestMock)).resolves.toBeDefined()
     quoteResponseMock.quote = oldQuote
   })
 
