@@ -2,7 +2,7 @@ import { describe, test, expect, jest } from '@jest/globals'
 import { type FlyoverConfig } from '@rsksmart/bridges-core-sdk'
 import * as core from '@rsksmart/bridges-core-sdk'
 import { FlyoverError } from '..'
-import { compareIgnoreCase, isHex, validateRskChecksum } from './validation'
+import { isTextEqualNoCase, isHex, validateRskChecksum } from './validation'
 
 jest.mock('@rsksmart/bridges-core-sdk', () => {
   return {
@@ -80,30 +80,30 @@ describe('validateRskChecksum function should', () => {
   })
 })
 
-describe('compareIgnoreCase function should', () => {
+describe('isTextEqualNoCase function should', () => {
   test('return true for equal strings regardless of case', () => {
-    expect(compareIgnoreCase('0xABC', '0xabc')).toBe(true)
-    expect(compareIgnoreCase('Any Address', 'any address')).toBe(true)
-    expect(compareIgnoreCase('', '')).toBe(true)
+    expect(isTextEqualNoCase('0xABC', '0xabc')).toBe(true)
+    expect(isTextEqualNoCase('Any Address', 'any address')).toBe(true)
+    expect(isTextEqualNoCase('', '')).toBe(true)
   })
 
   test('return false for different strings', () => {
-    expect(compareIgnoreCase('0xABC', '0xABD')).toBe(false)
-    expect(compareIgnoreCase('any address', 'other address')).toBe(false)
+    expect(isTextEqualNoCase('0xABC', '0xABD')).toBe(false)
+    expect(isTextEqualNoCase('any address', 'other address')).toBe(false)
   })
 
   test('return true when both values are null or undefined at runtime', () => {
-    expect(compareIgnoreCase(null as unknown as string, null as unknown as string)).toBe(true)
-    expect(compareIgnoreCase(undefined as unknown as string, undefined as unknown as string)).toBe(true)
+    expect(isTextEqualNoCase(null as unknown as string, null as unknown as string)).toBe(true)
+    expect(isTextEqualNoCase(undefined as unknown as string, undefined as unknown as string)).toBe(true)
   })
 
   test('return false when only one value is null or undefined at runtime', () => {
-    expect(compareIgnoreCase(null as unknown as string, '0xabc')).toBe(false)
-    expect(compareIgnoreCase(undefined as unknown as string, '0xabc')).toBe(false)
-    expect(compareIgnoreCase('0xabc', null as unknown as string)).toBe(false)
-    expect(compareIgnoreCase('0xabc', undefined as unknown as string)).toBe(false)
-    expect(compareIgnoreCase(null as unknown as string, undefined as unknown as string)).toBe(false)
-    expect(compareIgnoreCase(undefined as unknown as string, null as unknown as string)).toBe(false)
+    expect(isTextEqualNoCase(null as unknown as string, '0xabc')).toBe(false)
+    expect(isTextEqualNoCase(undefined as unknown as string, '0xabc')).toBe(false)
+    expect(isTextEqualNoCase('0xabc', null as unknown as string)).toBe(false)
+    expect(isTextEqualNoCase('0xabc', undefined as unknown as string)).toBe(false)
+    expect(isTextEqualNoCase(null as unknown as string, undefined as unknown as string)).toBe(false)
+    expect(isTextEqualNoCase(undefined as unknown as string, null as unknown as string)).toBe(false)
   })
 })
 

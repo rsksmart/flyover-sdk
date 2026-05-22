@@ -2,7 +2,7 @@ import { type FlyoverConfig, isBtcMainnetAddress, isBtcTestnetAddress, type Http
 import { type PegoutQuote, type PegoutQuoteRequest, type LiquidityProvider, providerRequiredFields, Routes, pegoutQuoteRequestRequiredFields } from '../api'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
 import { FlyoverError } from '../client/httpClient'
-import { compareIgnoreCase, validateRskChecksum } from '../utils/validation'
+import { isTextEqualNoCase, validateRskChecksum } from '../utils/validation'
 
 export async function getPegoutQuote (
   config: FlyoverConfig,
@@ -40,7 +40,7 @@ function validateQuoteResponse (context: {provider: LiquidityProvider}, quoteReq
   return quoteRequest.to === quote.btcRefundAddress &&
     quoteRequest.rskRefundAddress === quote.rskRefundAddress &&
     quoteRequest.to === quote.depositAddr &&
-    compareIgnoreCase(context.provider.provider, quote.liquidityProviderRskAddress) &&
+    isTextEqualNoCase(context.provider.provider, quote.liquidityProviderRskAddress) &&
     quoteRequest.valueToTransfer === quote.value
 }
 

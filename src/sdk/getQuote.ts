@@ -11,7 +11,7 @@ import {
   type PeginQuoteRequest, type Quote, type LiquidityProvider, Routes, providerRequiredFields
 } from '../api'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
-import { compareIgnoreCase, validateRskChecksum } from '../utils/validation'
+import { isTextEqualNoCase, validateRskChecksum } from '../utils/validation'
 
 export async function getQuote (
   config: FlyoverConfig,
@@ -51,7 +51,7 @@ function validateQuoteResponse (context: {config: FlyoverConfig, provider: Liqui
     quoteRequest.rskRefundAddress === quote.rskRefundAddr &&
     quoteRequest.valueToTransfer === quote.value &&
     quote.callOnRegister === false &&
-    compareIgnoreCase(context.provider.provider, quote.lpRSKAddr) &&
+    isTextEqualNoCase(context.provider.provider, quote.lpRSKAddr) &&
     isBtcZeroAddress(context.config, quote.btcRefundAddr)
 }
 
