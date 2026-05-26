@@ -269,6 +269,8 @@ export class Flyover implements Bridge {
   ): Promise<PeginPaymentData> {
     this.checkLiquidityProvider()
     this.checkLbc()
+    // checkLiquidityProvider() throws if liquidityProvider is undefined; checkLbc() throws if rskConnection is
+    // undefined and initializes liquidityBridgeContract otherwise — both are guaranteed non-null here
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return getPeginPaymentData(this.liquidityBridgeContract!, this.liquidityProvider!, quote, acceptedQuote, options)
   }
@@ -291,6 +293,8 @@ export class Flyover implements Bridge {
   ): Promise<PegoutPaymentData> {
     this.checkLiquidityProvider()
     this.checkLbc()
+    // checkLiquidityProvider() throws if liquidityProvider is undefined; checkLbc() throws if rskConnection is
+    // undefined and initializes liquidityBridgeContract otherwise — both are guaranteed non-null here
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return getPegoutPaymentData(this.liquidityBridgeContract!, this.liquidityProvider!, quote, acceptedQuote)
   }
