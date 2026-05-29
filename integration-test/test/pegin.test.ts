@@ -103,6 +103,24 @@ describe('Flyover pegin process should', () => {
     expect(acceptedQuote.bitcoinDepositAddressHash).not.toBeUndefined()
   })
 
+  test('get pegin payment data for accepted quote', async () => {
+    const paymentData = await flyover.getPeginPaymentData(quote, acceptedQuote)
+    expect(paymentData.address).toBe(acceptedQuote.bitcoinDepositAddressHash)
+    expect(FlyoverUtils.isBtcAddress(paymentData.address)).toBe(true)
+    expect(BigInt(paymentData.amount)).toBeGreaterThan(BigInt(0))
+  })
+
+  test('get pegin payment data in all supported units with cross-validation', async () => {
+    const satData = await flyover.getPeginPaymentData(quote, acceptedQuote, { amountUnit: 'SAT' })
+    const weiData = await flyover.getPeginPaymentData(quote, acceptedQuote, { amountUnit: 'WEI' })
+    const btcData = await flyover.getPeginPaymentData(quote, acceptedQuote, { amountUnit: 'BTC' })
+
+    const satToWei = BigInt(10) ** BigInt(10)
+    expect(BigInt(weiData.amount)).toBe(FlyoverUtils.getQuoteTotal(quote))
+    expect(BigInt(satData.amount)).toBe(BigInt(weiData.amount) / satToWei)
+    expect(parseFloat(btcData.amount) * 1e8).toBeCloseTo(Number(satData.amount), 0)
+  })
+
   test('get status of the accepted quote', async () => {
     const quoteHash = quote.quoteHash
     assertTruthy(quoteHash)

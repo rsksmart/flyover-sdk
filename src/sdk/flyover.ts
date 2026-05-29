@@ -13,7 +13,8 @@ import {
 } from '../api'
 import { getPegoutQuote } from './getPegoutQuote'
 import { acceptPegoutQuote } from './acceptPegoutQuote'
-import { toDataURL } from 'qrcode'
+import { getPeginPaymentData, type PeginAmountUnit, type PeginPaymentData } from './getPeginPaymentData'
+import { getPegoutPaymentData, type PegoutPaymentData } from './getPegoutPaymentData'
 import { LiquidityBridgeContract } from '../blockchain/lbc'
 import { depositPegout } from './depositPegout'
 import { refundPegout } from './refundPegout'
@@ -21,7 +22,7 @@ import { getUserQuotes } from './getUserQuotes'
 import { processError } from '../utils/errorHandling'
 import {
   type CaptchaTokenResolver, type FlyoverConfig,
-  getHttpClient, type HttpClient, isBtcAddress, isRskAddress, isSecureUrl,
+  getHttpClient, type HttpClient, isSecureUrl,
   type Network, type Connection, type Bridge, type BridgeMetadata
 } from '@rsksmart/bridges-core-sdk'
 import { FlyoverError } from '../client/httpClient'
@@ -247,6 +248,58 @@ export class Flyover implements Bridge {
   }
 
   /**
+   * Get the payment data needed to pay for a pegin quote. The returned data contains
+   * the BTC deposit address and the amount to send, which can be encoded into a QR code
+   * by the client application.
+   *
+   * @param { Quote } quote The pegin quote to pay for
+   * @param { AcceptedQuote } acceptedQuote The accepted quote returned by {@link Flyover.acceptQuote} or {@link Flyover.acceptAuthenticatedQuote}
+   * @param { object } options Optional configuration
+   * @param { PeginAmountUnit } options.amountUnit Unit for the returned amount ('BTC', 'SAT', or 'WEI'). Defaults to 'SAT'
+   *
+   * @returns { PeginPaymentData } The address and amount to pay
+   *
+   * @throws { FlyoverError } If the signature on the accepted quote is invalid
+   * @throws { FlyoverError } If the deposit address cannot be validated
+   */
+  async getPeginPaymentData (
+    quote: Quote,
+    acceptedQuote: AcceptedQuote,
+    options?: { amountUnit?: PeginAmountUnit }
+  ): Promise<PeginPaymentData> {
+    this.checkLiquidityProvider()
+    this.checkLbc()
+    // checkLiquidityProvider() throws if liquidityProvider is undefined; checkLbc() throws if rskConnection is
+    // undefined and initializes liquidityBridgeContract otherwise — both are guaranteed non-null here
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return getPeginPaymentData(this.liquidityBridgeContract!, this.liquidityProvider!, quote, acceptedQuote, options)
+  }
+
+  /**
+   * Get the payment data needed to pay for a pegout quote. The returned data contains
+   * the EVM transaction fields (to, data, value) which can be encoded into a QR code
+   * by the client application or used to build a transaction.
+   *
+   * @param { PegoutQuote } quote The pegout quote to pay for
+   * @param { AcceptedPegoutQuote } acceptedQuote The accepted quote returned by {@link Flyover.acceptPegoutQuote} or {@link Flyover.acceptAuthenticatedPegoutQuote}
+   *
+   * @returns { PegoutPaymentData } The transaction fields (to, data, value)
+   *
+   * @throws { FlyoverError } If the signature on the accepted quote is invalid
+   */
+  async getPegoutPaymentData (
+    quote: PegoutQuote,
+    acceptedQuote: AcceptedPegoutQuote
+  ): Promise<PegoutPaymentData> {
+    this.checkLiquidityProvider()
+    this.checkLbc()
+    // checkLiquidityProvider() throws if liquidityProvider is undefined; checkLbc() throws if rskConnection is
+    // undefined and initializes liquidityBridgeContract otherwise — both are guaranteed non-null here
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return getPegoutPaymentData(this.liquidityBridgeContract!, this.liquidityProvider!, quote, acceptedQuote)
+  }
+
+  /**
    * Set provider whose LPS will be used to get/accept quotes
    *
    * @param { LiquidityProvider } provider Provider to use its apiBaseUrl
@@ -267,35 +320,6 @@ export class Flyover implements Bridge {
       throw FlyoverError.withReason('unsupported network')
     }
     this.config.network = network
-  }
-
-  /**
-   * Generate QR code for given address. The supported networks are Bitcoin and RSK
-   *
-   * @param { string } address Adrress to generate QR code from
-   * @param { string } amount Amount to use ex. "1.405"
-   * @param { string } blockchain Blockchain to use for QR code
-   *
-   */
-  async generateQrCode (
-    address: string,
-    amount: string,
-    blockchain: string
-  ): Promise<string> {
-    if (!(isRskAddress(address) || isBtcAddress(address))) {
-      throw new Error('Only Bitcoin and RSK addresses are supported')
-    }
-    let text = `${blockchain}:${address}`
-
-    const encodedAmount = encodeURIComponent(amount.toString())
-    text += `?amount=${encodedAmount}`
-
-    try {
-      const qrCodeUrl = await toDataURL(text.toString())
-      return qrCodeUrl
-    } catch (err: unknown) {
-      throw new Error('Error generating QR code: ' + (err as Error).message)
-    }
   }
 
   /**
