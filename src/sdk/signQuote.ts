@@ -46,6 +46,9 @@ async function signPeginQuote(
         throw FlyoverError.invalidQuoteHashError(lp.apiBaseUrl)
     }
     const domain = await lbc.pegInContract.getEip712Domain()
+    if (BigInt(domain.chainId) !== BigInt(quote.quote.chainId)) {
+        throw FlyoverError.withReason('Chain id of domain does not match chain id of quote')
+    }
     return signer._signTypedData(
         domain,
         {
@@ -72,6 +75,9 @@ async function signPegoutQuote(
         throw FlyoverError.invalidQuoteHashError(lp.apiBaseUrl)
     }
     const domain = await lbc.pegOutContract.getEip712Domain()
+    if (BigInt(domain.chainId) !== BigInt(quote.quote.chainId)) {
+        throw FlyoverError.withReason('Chain id of domain does not match chain id of quote')
+    }
     const signature = await signer._signTypedData(
         domain,
         {

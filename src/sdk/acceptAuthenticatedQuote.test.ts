@@ -55,7 +55,7 @@ const quoteMock: Quote = {
   quote: {
     fedBTCAddr: 'any address',
     lbcAddr: 'any address',
-    lpRSKAddr: 'any address',
+    lpRSKAddr: providerMock.provider,
     btcRefundAddr: 'any address',
     rskRefundAddr: 'any address',
     lpBTCAddr: 'any address',
@@ -119,6 +119,22 @@ describe('acceptAuthenticatedQuote function should', () => {
     const invalidQuote = { ...quoteMock, quote: {} as QuoteDetail }
     await expect(acceptAuthenticatedQuote(mockClient, lbcMock, providerMock, invalidQuote, signatureMock))
       .rejects.toThrow(`Validation failed for object with following missing properties: ${quoteDetailRequiredFields.join(', ')}`)
+  })
+
+  test('validate signature against quote lp address', async () => {
+    const lpAddress = '0xd6F117d8194Eba2fCA8bD63B2E259Dbea40E07d9'
+    const quote = { ...quoteMock, quote: { ...quoteMock.quote, lpRSKAddr: lpAddress } }
+    const eip712Hash = '0xeip712hash'
+    jest.spyOn(bridgesCoreSdk, 'isValidSignature').mockReturnValue(true)
+    jest.spyOn(lbcMock.pegInContract, 'hashPeginQuoteEIP712').mockResolvedValue(eip712Hash)
+
+    await acceptAuthenticatedQuote(mockClient, lbcMock, providerMock, quote, signatureMock)
+
+    expect(bridgesCoreSdk.isValidSignature).toHaveBeenCalledWith(
+      lpAddress,
+      eip712Hash,
+      '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
+    )
   })
 
   test('fail when signature is invalid', async () => {
