@@ -1,0 +1,114 @@
+name: Flyover SDK Integration Tests
+
+on:
+  pull_request:
+
+permissions: read-all
+
+env:
+  LPS_REF: v2.6.0
+
+jobs:
+  integration:
+    name: Integration tests (regtest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Setup node
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: '22.12.0'
+
+      - name: NPM Login
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm config set //npm.pkg.github.com/:_authToken $GITHUB_TOKEN
+
+      - name: Clone LPS at pinned ref
+        run: |
+          git clone --depth 1 --branch "$LPS_REF" \
+            https://github.com/rsksmart/liquidity-provider-server.git lps
+
+      - name: Prepare .env.regtest file
+        working-directory: lps/docker-compose/local
+        run: |
+          cp ../../sample-config.env .env.regtest
+          # Powpeg + segwit federation migration are mandatory for the SDK tests
+          sed -i 's/^CREATE_POWPEG=.*/CREATE_POWPEG=true/' .env.regtest
+          sed -i 's/^MIGRATE_FEDERATION=.*/MIGRATE_FEDERATION=true/' .env.regtest
+          # Route LPS logs to stdout so `docker compose logs` captures them
+          sed -i 's|^LOG_FILE=.*|LOG_FILE=|' .env.regtest
+          # Pre-create all volume directories with open permissions so Docker doesn't
+          # create them as root, which causes "permission denied" for container users
+          mkdir -p volumes/lps/logs volumes/lps/db volumes/localstack volumes/bitcoind \
+            volumes/rskj/db volumes/rskj/logs volumes/mongo
+          chmod -R 777 volumes/
+          # lps_configuration_data is mounted as /tmp inside the LPS container;
+          # must be writable by the lps user (uid 1000) for management_password.txt
+          mkdir -p lps/lps_configuration_data
+          chmod 777 lps/lps_configuration_data
+
+      - name: Run lps-local.sh script
+        working-directory: lps/docker-compose/local
+        run: bash lps-local.sh
+
+      - name: Mine BTC blocks for fee estimation
+        working-directory: lps/docker-compose/local
+        run: |
+          BTC_CLI="docker exec bitcoind01 bitcoin-cli -rpcuser=test -rpcpassword=test -rpcport=5555"
+          ADDR="mni1YpzHTXrrTtP2AVzwzdkTY6ni5uhJ3U"
+          # Unlock the wallet encrypted by wallet-funder with this passphrase.
+          $BTC_CLI -rpcwallet=main walletpassphrase "test-password" 300000
+          # Mine 100 blocks with fee-paying transactions so Bitcoin's estimatesmartfee
+          # has sufficient data
+          for i in $(seq 1 100); do
+            $BTC_CLI -rpcwallet=main generatetoaddress 1 "$ADDR" > /dev/null
+            $BTC_CLI -rpcwallet=main -named sendtoaddress \
+              address="$ADDR" amount=0.00001 fee_rate=25 > /dev/null
+          done
+          echo "Mined 100 BTC blocks with fee-paying transactions for estimatesmartfee"
+
+      - name: Generate integration-test/.env
+        run: |
+          PEGIN_CONTRACT_ADDRESS=$(grep '^PEGIN_CONTRACT_ADDRESS=' lps/docker-compose/local/.env.regtest | cut -d= -f2)
+          cat > integration-test/.env << EOF
+          TEST_NETWORK=Regtest
+          TEST_MNEMONIC="test test test test test test test test test test test junk"
+          TEST_PROVIDER_ID=1
+          TEST_NODE_URL=http://localhost:4444
+          TEST_RSK_ADDRESS=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+          TEST_BTC_ADDRESS=n1jGDaxCW6jemLZyd9wmDHddseZwEMV9C6
+          TEST_PEGIN_AMOUNT=600000000000000000
+          TEST_PEGOUT_AMOUNT=600000000000000000
+          TEST_MEMPOOL_SPACE_URL=http://localhost:1
+          TEST_CONTRACT_ADDRESS=$PEGIN_CONTRACT_ADDRESS
+          TEST_BTC_RPC_PORT=5555
+          TEST_BTC_RPC_USER=test
+          TEST_BTC_RPC_PASSWORD=test
+          TEST_BTC_RPC_CONNECT=127.0.0.1
+          EOF
+
+      - name: Build SDK and run integration tests
+        run: |
+          npm ci && npm run build
+          cd integration-test && npm ci
+          set -a; source .env; set +a
+          npx jest --verbose --testPathPattern="/pegin\.test|/pegout\.test|/rsk\.test|/providers\.test|/user\.test|/client\.test" 2>&1 | tee ../jest-output.txt
+          exit ${PIPESTATUS[0]}
+
+      - name: Collect failure logs
+        if: failure()
+        run: docker compose -p local logs > lps/docker-compose/local/container-logs.txt 2>&1 || true
+
+      - name: Upload artifacts
+        if: failure()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: integration-test-failure
+          path: |
+            jest-output.txt
+            lps/docker-compose/local/container-logs.txt
+          retention-days: 7

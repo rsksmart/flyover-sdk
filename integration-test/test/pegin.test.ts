@@ -165,7 +165,8 @@ describe('Flyover pegin process should', () => {
     expect(creationData.feePercentage).not.toBeUndefined()
   })
 
-  test('validate the PegIn deposit transaction', async () => {
+  // Skipped in CI: requires fetching UTXOs from mempool.space which has no regtest equivalent.
+  test.skip('validate the PegIn deposit transaction', async () => {
     const tx = new Transaction()
     const options: ValidatePeginTransactionOptions = {
       throwError: true
@@ -221,7 +222,8 @@ describe('Flyover pegin process should', () => {
     expect(result.recommendedQuoteValue.toString()).toEqual(quote.quote.value.toString());
   }, EXTENDED_TIMEOUT)
 
-  test('get a smart contract interaction quote', async () => {
+  // Skipped in CI: requires a TestContract deployed to regtest (TEST_CONTRACT_ADDRESS).
+  test.skip('get a smart contract interaction quote', async () => {
     const smartContractData = new ethers.utils.Interface(TEST_CONTRACT_ABI)
       .encodeFunctionData('save', [integrationTestConfig.rskAddress])
     flyover.useLiquidityProvider(provider)
