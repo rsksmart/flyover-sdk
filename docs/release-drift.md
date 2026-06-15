@@ -51,7 +51,8 @@ Two consequences worth knowing when reading a report:
 ## Files
 
 - `scripts/check-release-drift.mjs` — the detector. Self-contained Node
-  script; only needs `git` and Node 20+. No npm dependencies. Copied verbatim
+  script; needs `git` and Node 16.6+ (CI uses the version pinned in `.nvmrc`).
+  No npm dependencies. Copied verbatim
   from the upstream `liquidity-provider-server` implementation so the two stay
   in sync — per-repo configuration lives in the workflow, not the script.
 - `.github/workflows/release-drift.yml` — scheduled + manual workflow. Runs the

@@ -71,7 +71,7 @@ const gitLines = (...args) => gitOk(...args).split('\n').filter((l) => l.length 
 
 function semverCmp(a, b) {
   const parse = (v) => {
-    const stripped = v.replace(/^v/, '');
+    const stripped = v.replace(/^[^0-9]*/, '');
     const dash = stripped.indexOf('-');
     const core = dash >= 0 ? stripped.slice(0, dash) : stripped;
     const pre  = dash >= 0 ? stripped.slice(dash + 1) : '';
@@ -224,7 +224,7 @@ function wasRevertedOn(branch, sha) {
 
 const extractPrNumber = (subject) => subject.match(/\(#(\d+)\)\s*$/)?.[1] ?? '';
 
-const mdEscapeCell = (s) => String(s).replace(/\|/g, '\\|').replace(/\n/g, ' ');
+const mdEscapeCell = (s) => String(s).replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
 function renderSha(sha) {
   const short = sha.slice(0, 12);
