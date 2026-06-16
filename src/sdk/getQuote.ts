@@ -20,6 +20,8 @@ export async function getQuote (
   provider: LiquidityProvider,
   quoteRequest: PeginQuoteRequest
 ): Promise<Quote[]> {
+  // FLY-2278: deliberate CI break to validate integration workflow — revert before merge
+  throw FlyoverError.withReason('[FLY-2278] Deliberate integration test failure for CI validation (PR #198)')
   validateRequiredFields(quoteRequest, ...quoteRequestRequiredFields)
   validateRequiredFields(provider, ...providerRequiredFields)
   validateRskAddresses(config, quoteRequest)
