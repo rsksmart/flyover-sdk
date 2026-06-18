@@ -19,7 +19,7 @@ import {
       { includeCaptcha: false }
     )
     const eip712Hash = await lbc.pegInContract.hashPeginQuoteEIP712(quote)
-    if (!isValidSignature(provider.provider, eip712Hash, acceptedQuote.signature)) {
+    if (!isValidSignature(quote.quote.lpRSKAddr, eip712Hash, acceptedQuote.signature)) {
       throw FlyoverError.invalidSignatureError({
         serverUrl: provider.apiBaseUrl,
         address: quote.quote.lpRSKAddr,
