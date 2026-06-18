@@ -2,7 +2,7 @@ import { type FlyoverConfig, isBtcMainnetAddress, isBtcTestnetAddress, type Http
 import { type PegoutQuote, type PegoutQuoteRequest, type LiquidityProvider, providerRequiredFields, Routes, pegoutQuoteRequestRequiredFields } from '../api'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
 import { FlyoverError } from '../client/httpClient'
-import { validateRskChecksum } from '../utils/validation'
+import { isTextEqualNoCase, validateRskChecksum } from '../utils/validation'
 
 export async function getPegoutQuote (
   config: FlyoverConfig,
@@ -19,7 +19,7 @@ export async function getPegoutQuote (
   const url = provider.apiBaseUrl + Routes.getPegoutQuote
   const quotes = await httpClient.post<PegoutQuote[]>(url, quoteRequest)
   for (const quote of quotes) {
-    if (!validateQuoteResponse(quoteRequest, quote)) {
+    if (!validateQuoteResponse({provider}, quoteRequest, quote)) {
       throw FlyoverError.manipulatedQuoteResonseError(provider.apiBaseUrl)
     }
     const validHash = await validateQuoteHash(lbc, quote)
@@ -35,11 +35,12 @@ async function validateQuoteHash (lbc: LiquidityBridgeContract, quote: PegoutQuo
   return hash === quote.quoteHash
 }
 
-function validateQuoteResponse (quoteRequest: PegoutQuoteRequest, quoteResponse: PegoutQuote): boolean {
+function validateQuoteResponse (context: {provider: LiquidityProvider}, quoteRequest: PegoutQuoteRequest, quoteResponse: PegoutQuote): boolean {
   const { quote } = quoteResponse
   return quoteRequest.to === quote.btcRefundAddress &&
     quoteRequest.rskRefundAddress === quote.rskRefundAddress &&
     quoteRequest.to === quote.depositAddr &&
+    isTextEqualNoCase(context.provider.provider, quote.liquidityProviderRskAddress) &&
     quoteRequest.valueToTransfer === quote.value
 }
 

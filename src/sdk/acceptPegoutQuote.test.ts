@@ -21,31 +21,6 @@ const mockClient: HttpClient = {
   getCaptchaToken: async () => Promise.resolve('')
 }
 
-const quoteMock: PegoutQuote = {
-  quote: {
-    agreementTimestamp: 1,
-    btcRefundAddress: 'any address',
-    callFee: BigInt(1),
-    depositAddr: 'any address',
-    depositConfirmations: 1,
-    depositDateLimit: 1,
-    expireBlocks: 1,
-    expireDate: 1,
-    gasFee: BigInt(1),
-    lbcAddress: 'any address',
-    liquidityProviderRskAddress: 'any address',
-    lpBtcAddr: 'any address',
-    nonce: BigInt(1),
-    penaltyFee: BigInt(1),
-    rskRefundAddress: 'any address',
-    transferConfirmations: 1,
-    transferTime: 1,
-    value: BigInt(1),
-    chainId: 31,
-  },
-  quoteHash: '8e7a1f104628f98780cb8ecf438534e9480b43525ede379995ee5838a407ef32'
-}
-
 const providerMock: LiquidityProvider = {
   id: 1,
   provider: '0x57f9F71E683E2A8ff3d2f394aE45C58b2d913A35',
@@ -71,6 +46,31 @@ const providerMock: LiquidityProvider = {
     feePercentage: 1.25,
     requiredConfirmations: 5
   }
+}
+
+const quoteMock: PegoutQuote = {
+  quote: {
+    agreementTimestamp: 1,
+    btcRefundAddress: 'any address',
+    callFee: BigInt(1),
+    depositAddr: 'any address',
+    depositConfirmations: 1,
+    depositDateLimit: 1,
+    expireBlocks: 1,
+    expireDate: 1,
+    gasFee: BigInt(1),
+    lbcAddress: 'any address',
+    liquidityProviderRskAddress: providerMock.provider,
+    lpBtcAddr: 'any address',
+    nonce: BigInt(1),
+    penaltyFee: BigInt(1),
+    rskRefundAddress: 'any address',
+    transferConfirmations: 1,
+    transferTime: 1,
+    value: BigInt(1),
+    chainId: 31,
+  },
+  quoteHash: '8e7a1f104628f98780cb8ecf438534e9480b43525ede379995ee5838a407ef32'
 }
 
 const MOCK_LIQUIDITY_BRIDGE_CONTRACT: LiquidityBridgeContract = {
@@ -117,7 +117,8 @@ describe('acceptPegoutQuote function should', () => {
   test('fail if signature is not valid', async () => {
     expect.assertions(2)
     const otherProvider: LiquidityProvider = { ...providerMock, provider: '0xd6F117d8194Eba2fCA8bD63B2E259Dbea40E07d9' }
-    await acceptPegoutQuote(mockClient,  MOCK_LIQUIDITY_BRIDGE_CONTRACT, otherProvider, quoteMock)
+    const otherQuote: PegoutQuote = { ...quoteMock, quote: { ...quoteMock.quote, liquidityProviderRskAddress: otherProvider.provider } }
+    await acceptPegoutQuote(mockClient,  MOCK_LIQUIDITY_BRIDGE_CONTRACT, otherProvider, otherQuote)
       .catch(e => {
         expect(e).toBeInstanceOf(FlyoverError)
         expect(e.message).toBe('Invalid signature')

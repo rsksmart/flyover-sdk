@@ -2,7 +2,7 @@ import { describe, test, expect, jest } from '@jest/globals'
 import { type FlyoverConfig } from '@rsksmart/bridges-core-sdk'
 import * as core from '@rsksmart/bridges-core-sdk'
 import { FlyoverError } from '..'
-import { isHex, validateRskChecksum } from './validation'
+import { isTextEqualNoCase, isHex, validateRskChecksum } from './validation'
 
 jest.mock('@rsksmart/bridges-core-sdk', () => {
   return {
@@ -77,6 +77,33 @@ describe('validateRskChecksum function should', () => {
       expect(e.message).toBe('Invalid RSK address checksum')
       expect(e.details).toBe(`The following addresses doesn't have a valid checksum address: ${rskMainnetAddress}, ${ethAddress}`)
     }
+  })
+})
+
+describe('isTextEqualNoCase function should', () => {
+  test('return true for equal strings regardless of case', () => {
+    expect(isTextEqualNoCase('0xABC', '0xabc')).toBe(true)
+    expect(isTextEqualNoCase('Any Address', 'any address')).toBe(true)
+    expect(isTextEqualNoCase('', '')).toBe(true)
+  })
+
+  test('return false for different strings', () => {
+    expect(isTextEqualNoCase('0xABC', '0xABD')).toBe(false)
+    expect(isTextEqualNoCase('any address', 'other address')).toBe(false)
+  })
+
+  test('return true when both values are null or undefined at runtime', () => {
+    expect(isTextEqualNoCase(null as unknown as string, null as unknown as string)).toBe(true)
+    expect(isTextEqualNoCase(undefined as unknown as string, undefined as unknown as string)).toBe(true)
+  })
+
+  test('return false when only one value is null or undefined at runtime', () => {
+    expect(isTextEqualNoCase(null as unknown as string, '0xabc')).toBe(false)
+    expect(isTextEqualNoCase(undefined as unknown as string, '0xabc')).toBe(false)
+    expect(isTextEqualNoCase('0xabc', null as unknown as string)).toBe(false)
+    expect(isTextEqualNoCase('0xabc', undefined as unknown as string)).toBe(false)
+    expect(isTextEqualNoCase(null as unknown as string, undefined as unknown as string)).toBe(false)
+    expect(isTextEqualNoCase(undefined as unknown as string, null as unknown as string)).toBe(false)
   })
 })
 

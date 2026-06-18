@@ -18,32 +18,6 @@ const mockClient: HttpClient = {
   getCaptchaToken: async () => Promise.resolve('')
 }
 
-const quoteMock: Quote = {
-  quote: {
-    fedBTCAddr: 'any addres',
-    lbcAddr: 'any addres',
-    lpRSKAddr: 'any addres',
-    btcRefundAddr: 'any addres',
-    rskRefundAddr: 'any addres',
-    lpBTCAddr: 'any addres',
-    callFee: BigInt(1),
-    penaltyFee: BigInt(1),
-    contractAddr: 'any addres',
-    data: 'any data',
-    gasLimit: 1,
-    nonce: BigInt(1),
-    gasFee: BigInt(1),
-    value: BigInt('9007199254750000'),
-    agreementTimestamp: 1,
-    timeForDeposit: 1,
-    lpCallTime: 1,
-    confirmations: 1,
-    callOnRegister: true,
-    chainId: 31,
-  },
-  quoteHash: 'a1a6210bc03964779067d5acf23e5076639e4621a500f8ef3f87861eaabdb6e7'
-}
-
 const providerMock: LiquidityProvider = {
   id: 1,
   provider: '0x57f9F71E683E2A8ff3d2f394aE45C58b2d913A35',
@@ -69,6 +43,32 @@ const providerMock: LiquidityProvider = {
     feePercentage: 1.25,
     requiredConfirmations: 5
   }
+}
+
+const quoteMock: Quote = {
+  quote: {
+    fedBTCAddr: 'any addres',
+    lbcAddr: 'any addres',
+    lpRSKAddr: providerMock.provider,
+    btcRefundAddr: 'any addres',
+    rskRefundAddr: 'any addres',
+    lpBTCAddr: 'any addres',
+    callFee: BigInt(1),
+    penaltyFee: BigInt(1),
+    contractAddr: 'any addres',
+    data: 'any data',
+    gasLimit: 1,
+    nonce: BigInt(1),
+    gasFee: BigInt(1),
+    value: BigInt('9007199254750000'),
+    agreementTimestamp: 1,
+    timeForDeposit: 1,
+    lpCallTime: 1,
+    confirmations: 1,
+    callOnRegister: true,
+    chainId: 31,
+  },
+  quoteHash: 'a1a6210bc03964779067d5acf23e5076639e4621a500f8ef3f87861eaabdb6e7'
 }
 
 const lbcMock = {
@@ -110,7 +110,8 @@ describe('acceptQuote function should', () => {
   test('fail if signature is not valid', async () => {
     expect.assertions(2)
     const otherProvider: LiquidityProvider = { ...providerMock, provider: '0xd6F117d8194Eba2fCA8bD63B2E259Dbea40E07d9' }
-    await acceptQuote(mockClient, lbcMock, otherProvider, quoteMock)
+    const otherQuote: Quote = { ...quoteMock, quote: { ...quoteMock.quote, lpRSKAddr: otherProvider.provider } }
+    await acceptQuote(mockClient, lbcMock, otherProvider, otherQuote)
       .catch(e => {
         expect(e).toBeInstanceOf(FlyoverError)
         expect(e.message).toBe('Invalid signature')

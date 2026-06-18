@@ -67,7 +67,7 @@ const pegoutQuoteMock: PegoutQuote = {
     expireDate: 1,
     gasFee: BigInt('1'),
     lbcAddress: 'any address',
-    liquidityProviderRskAddress: 'any address',
+    liquidityProviderRskAddress: providerMock.provider,
     lpBtcAddr: 'any address',
     nonce: BigInt(1),
     penaltyFee: BigInt(1),
@@ -116,6 +116,22 @@ describe('acceptAuthenticatedPegoutQuote function should', () => {
     const invalidQuote = { ...pegoutQuoteMock, quote: {} as PegoutQuoteDetail }
     await expect(acceptAuthenticatedPegoutQuote(mockClient, MOCK_LIQUIDITY_BRIDGE_CONTRACT, providerMock, invalidQuote, signatureMock))
       .rejects.toThrow(`Validation failed for object with following missing properties: ${pegoutQuoteDetailRequiredFields.join(', ')}`)
+  })
+
+  test('validate signature against quote lp address', async () => {
+    const lpAddress = '0xd6F117d8194Eba2fCA8bD63B2E259Dbea40E07d9'
+    const quote = { ...pegoutQuoteMock, quote: { ...pegoutQuoteMock.quote, liquidityProviderRskAddress: lpAddress } }
+    const eip712Hash = '0xeip712hash'
+    jest.spyOn(bridgesCoreSdk, 'isValidSignature').mockReturnValue(true)
+    jest.spyOn(MOCK_LIQUIDITY_BRIDGE_CONTRACT.pegOutContract, 'hashPegoutQuoteEIP712').mockResolvedValue(eip712Hash)
+
+    await acceptAuthenticatedPegoutQuote(mockClient, MOCK_LIQUIDITY_BRIDGE_CONTRACT, providerMock, quote, signatureMock)
+
+    expect(bridgesCoreSdk.isValidSignature).toHaveBeenCalledWith(
+      lpAddress,
+      eip712Hash,
+      '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
+    )
   })
 
   test('fail when signature is invalid', async () => {
