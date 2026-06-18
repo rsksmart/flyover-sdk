@@ -53,6 +53,17 @@ export class FlyoverError extends BridgeError {
     })
   }
 
+  static untrustedLbcAddressError (args: { serverUrl: string, received: string, expected: string }): FlyoverError {
+    return new FlyoverError({
+      timestamp: Date.now(),
+      recoverable: false,
+      serverUrl: args.serverUrl,
+      message: 'Untrusted LBC address',
+      details: `The LBC address returned by the server (${args.received}) does not match the trusted contract address (${args.expected}).
+        ${args.serverUrl} is potentially a malicious liquidity provider.`
+    })
+  }
+
   static unsupportedBtcAddressError (address: string): FlyoverError {
     return new FlyoverError({
       timestamp: Date.now(),

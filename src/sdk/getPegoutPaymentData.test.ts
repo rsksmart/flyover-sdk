@@ -9,6 +9,7 @@ import { FlyoverError } from '../client/httpClient'
 import { getPegoutPaymentData } from './getPegoutPaymentData'
 
 const VALID_EIP712_HASH = '0x85702c9a2cf27cda92c407fa8a495d489b4f06ff537bd576d67af802e289b3bb'
+const TRUSTED_LBC_ADDRESS = '0xAA9cAf1e3967600578727F975F283446A3Da6612'
 
 const quoteMock: PegoutQuote = {
   quote: {
@@ -69,7 +70,8 @@ const providerMock: LiquidityProvider = {
 
 const lbcMock = {
   pegOutContract: {
-    hashPegoutQuoteEIP712: jest.fn<(_q: PegoutQuote) => Promise<string>>().mockResolvedValue(VALID_EIP712_HASH)
+    hashPegoutQuoteEIP712: jest.fn<(_q: PegoutQuote) => Promise<string>>().mockResolvedValue(VALID_EIP712_HASH),
+    getAddress: jest.fn<() => Promise<string>>().mockResolvedValue(TRUSTED_LBC_ADDRESS)
   }
 } as unknown as LiquidityBridgeContract
 
@@ -118,5 +120,25 @@ describe('getPegoutPaymentData function should', () => {
   test('fail on Provider missing properties', async () => {
     await expect(getPegoutPaymentData(lbcMock, {} as any, quoteMock, acceptedQuoteMock))
       .rejects.toThrow(`Validation failed for object with following missing properties: ${providerRequiredFields.join(', ')}`)
+  })
+
+  test('fail if lbcAddress in accept response does not match trusted LBC contract address', async () => {
+    const maliciousAcceptedQuote: AcceptedPegoutQuote = {
+      ...acceptedQuoteMock,
+      lbcAddress: '0xd6F117d8194Eba2fCA8bD63B2E259Dbea40E07d9'
+    }
+    await expect(getPegoutPaymentData(lbcMock, providerMock, quoteMock, maliciousAcceptedQuote))
+      .rejects.toThrow('Untrusted LBC address')
+    await expect(getPegoutPaymentData(lbcMock, providerMock, quoteMock, maliciousAcceptedQuote))
+      .rejects.toBeInstanceOf(FlyoverError)
+  })
+
+  test('accept lbcAddress comparison as case-insensitive', async () => {
+    const mixedCaseAcceptedQuote: AcceptedPegoutQuote = {
+      ...acceptedQuoteMock,
+      lbcAddress: TRUSTED_LBC_ADDRESS.toUpperCase()
+    }
+    await expect(getPegoutPaymentData(lbcMock, providerMock, quoteMock, mixedCaseAcceptedQuote))
+      .resolves.toBeDefined()
   })
 })
