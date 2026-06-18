@@ -6,6 +6,8 @@ import { fakeTokenResolver, getUtxosFromMempoolSpace } from './common/utils'
 import { Transaction, payments, networks } from 'bitcoinjs-lib'
 import { EXTENDED_TIMEOUT, TEST_CONTRACT_ABI } from './common/constants'
 
+const skipInCI = process.env.CI != null ? test.skip : test
+
 describe('Flyover pegin process should', () => {
   let flyover: Flyover
   let provider: LiquidityProvider
@@ -166,7 +168,8 @@ describe('Flyover pegin process should', () => {
   })
 
   // Skipped in CI: requires fetching UTXOs from mempool.space which has no regtest equivalent.
-  test.skip('validate the PegIn deposit transaction', async () => {
+  // Runs locally when TEST_MEMPOOL_SPACE_URL points to a real mempool.space instance.
+  skipInCI('validate the PegIn deposit transaction', async () => {
     const tx = new Transaction()
     const options: ValidatePeginTransactionOptions = {
       throwError: true
@@ -222,8 +225,9 @@ describe('Flyover pegin process should', () => {
     expect(result.recommendedQuoteValue.toString()).toEqual(quote.quote.value.toString());
   }, EXTENDED_TIMEOUT)
 
-  // Skipped in CI: requires a TestContract deployed to regtest (TEST_CONTRACT_ADDRESS).
-  test.skip('get a smart contract interaction quote', async () => {
+  // Skipped in CI: requires a TestContract deployed and TEST_CONTRACT_ADDRESS set to its address.
+  // Runs locally when the contract is available.
+  skipInCI('get a smart contract interaction quote', async () => {
     const smartContractData = new ethers.utils.Interface(TEST_CONTRACT_ABI)
       .encodeFunctionData('save', [integrationTestConfig.rskAddress])
     flyover.useLiquidityProvider(provider)
