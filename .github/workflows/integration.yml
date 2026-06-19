@@ -44,7 +44,9 @@ jobs:
           # Pre-create all volume directories with open permissions so Docker doesn't
           # create them as root, which causes "permission denied" for container users
           mkdir -p volumes/lps/logs volumes/lps/db volumes/localstack volumes/bitcoind \
-            volumes/rskj/db volumes/rskj/logs volumes/mongo
+            volumes/rskj/db volumes/rskj/logs volumes/mongo \
+            volumes/powpeg/pegin/db volumes/powpeg/pegin/logs \
+            volumes/powpeg/pegout/db volumes/powpeg/pegout/logs
           chmod -R 777 volumes/
           # lps_configuration_data is mounted as /tmp inside the LPS container;
           # must be writable by the lps user (uid 1000) for management_password.txt
