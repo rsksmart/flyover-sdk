@@ -41,6 +41,10 @@ jobs:
           sed -i 's/^MIGRATE_FEDERATION=.*/MIGRATE_FEDERATION=true/' .env.regtest
           # Route LPS logs to stdout so `docker compose logs` captures them
           sed -i 's|^LOG_FILE=.*|LOG_FILE=|' .env.regtest
+          # The lbc-deployer bind-mounts this file and writes the deployed contract
+          # addresses back to it; make it writable by the container user. Must run
+          # after the sed -i edits above, which rewrite the file and reset its mode.
+          chmod 666 .env.regtest
           # Pre-create all volume directories with open permissions so Docker doesn't
           # create them as root, which causes "permission denied" for container users
           mkdir -p volumes/lps/logs volumes/lps/db volumes/localstack volumes/bitcoind \
