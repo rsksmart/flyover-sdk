@@ -10,6 +10,7 @@ import { FlyoverError } from '../client/httpClient'
 import { getQuoteTotal } from '../utils/quote'
 import { toContractPegoutQuote } from '../blockchain/pegout'
 import pegoutAbi from '../blockchain/pegout-abi'
+import { isTextEqualNoCase } from '../utils/validation'
 
 export interface PegoutPaymentData {
   to: string
@@ -41,7 +42,7 @@ export async function getPegoutPaymentData (
   // covered by the EIP-712 signature, so it must be validated independently against the
   // trusted contract address the SDK obtained from its network configuration.
   const trustedLbcAddress = await lbc.pegOutContract.getAddress()
-  if (acceptedQuote.lbcAddress.toLowerCase() !== trustedLbcAddress.toLowerCase()) {
+  if (!isTextEqualNoCase(acceptedQuote.lbcAddress, trustedLbcAddress)) {
     throw FlyoverError.untrustedLbcAddressError({
       serverUrl: provider.apiBaseUrl,
       received: acceptedQuote.lbcAddress,
