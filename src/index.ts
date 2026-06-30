@@ -1,7 +1,22 @@
 
-export { Flyover } from './sdk/flyover'
+export { Flyover, type PeginEstimate } from './sdk/flyover'
 
-export { type FlyoverNetworks } from './constants/networks'
+export { type FlyoverNetworks, type FlyoverPeginConfig } from './constants/networks'
+
+export {
+  type PeginScCall,
+  type PeginUtxo,
+  type BuildPeginBtcTransactionParams,
+  buildPeginOpReturnPayload,
+  buildPeginOpReturnScript,
+  buildPeginBtcTransaction,
+  OP_RETURN_STANDARD_LIMIT,
+  DEST_CONTRACT_BYTES,
+  MAX_GAS_FEE_BYTES
+} from './bitcoin/peginTransaction'
+
+export { type PegInConfiguration, type ConfirmationTier } from './blockchain/flyoverConfigurations'
+export { PegInAddressEncoding, decodePegInAddress } from './blockchain/peginAddressRegistry'
 
 export { type RegisterPeginParams } from './sdk/registerPegin'
 export { type IsPeginRefundableParams } from './sdk/isPeginRefundable'
