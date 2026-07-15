@@ -189,7 +189,7 @@ const ghPrereleases = new Set();
 
 if (ghSlug) {
   let ghAvailable = false;
-  try { execFileSync('gh', ['auth', 'status'], { stdio: 'ignore' }); ghAvailable = true; } catch {}
+  try { execFileSync('gh', ['auth', 'status'], { stdio: 'ignore' }); ghAvailable = true; } catch { ghAvailable = false; }
   if (ghAvailable) {
     try {
       const raw = execFileSync('gh', [
@@ -341,7 +341,7 @@ function checkMergeability(older, newer) {
         currentPath = null;
         continue;
       }
-      const meta = line.match(/^  (?:our|their|base)\s+\d+\s+[0-9a-f]+\s+(.+)$/);
+      const meta = line.match(/^ {2}(?:our|their|base)\s+\d+\s+[0-9a-f]+\s+(.+)$/);
       if (meta) {
         if (inConflictSection) currentPath = meta[1];
         continue;
@@ -390,11 +390,14 @@ for (const { older, newer, kind } of pairs) {
   }
 
   const merge = checkMergeability(older, newer);
-  const mergeLabel = merge.clean === true
-    ? 'clean'
-    : merge.clean === false
-      ? `${merge.conflicts.length} conflict(s)`
-      : 'unknown';
+  let mergeLabel;
+  if (merge.clean === true) {
+    mergeLabel = 'clean';
+  } else if (merge.clean === false) {
+    mergeLabel = `${merge.conflicts.length} conflict(s)`;
+  } else {
+    mergeLabel = 'unknown';
+  }
   log.info(`  ${older} → ${newer}: ${commits.length} drifted commit(s), merge ${mergeLabel}`);
   results.push({ older, newer, kind, commits, merge });
 }

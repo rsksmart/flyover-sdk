@@ -52,9 +52,10 @@ Two consequences worth knowing when reading a report:
 
 - `scripts/check-release-drift.mjs` — the detector. Self-contained Node
   script; needs `git` and Node 16.6+ (CI uses the version pinned in `.nvmrc`).
-  No npm dependencies. Copied verbatim
-  from the upstream `liquidity-provider-server` implementation so the two stay
-  in sync — per-repo configuration lives in the workflow, not the script.
+  No npm dependencies. Adapted from the upstream `liquidity-provider-server`
+  implementation (with small SDK-specific adjustments, e.g. branch-name prefix
+  handling in `semverCmp` and markdown cell escaping) — per-repo configuration
+  lives in the workflow, not the script, to keep the two easy to diff.
 - `.github/workflows/release-drift.yml` — scheduled + manual workflow. Runs the
   script and uploads `drift-report.md` + `merge-status.json` as the
   `release-drift-report` artifact.
@@ -168,7 +169,7 @@ and falls back cleanly when it can't. Three things can go wrong:
 |---|---|
 | `gh` not on PATH | Logs `gh CLI unavailable or unauthenticated — tag-only release info`, skips the enrichment step. |
 | `gh` installed but not authenticated (`gh auth status` fails) | Same — silent fallback to tag-only mode. |
-| `gh release list` fails (network / auth / API error) | Logs a warning, continues without release markers. |
+| `gh release list` fails (network / auth / API error) | Logs `gh release list failed (auth or network) — continuing without release marks` (info level), continues without release markers. |
 
 In every fallback path you still get:
 
