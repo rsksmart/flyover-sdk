@@ -207,7 +207,7 @@ if (ghSlug) {
     log.info('gh CLI unavailable or unauthenticated — tag-only release info');
   }
 } else {
-  log.info('gh CLI unavailable or unauthenticated — tag-only release info');
+  log.info('Remote is not a GitHub repo — tag-only release info');
 }
 
 // ---------------------------------------------------------------------------

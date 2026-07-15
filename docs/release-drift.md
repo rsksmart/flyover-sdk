@@ -181,8 +181,8 @@ What you lose without `gh`: only the **★ latest** and **(pre)** marker
 decorations on those tag links. The data itself is unchanged.
 
 In the CI workflow, `gh` is preinstalled on `ubuntu-latest` runners and
-authenticated via `GITHUB_TOKEN` (already provided to the workflow), so
-enrichment Just Works. For local runs without `gh`, simply
+authenticated via the `GH_TOKEN` env var (set from `secrets.GITHUB_TOKEN` in
+the workflow), so enrichment Just Works. For local runs without `gh`, simply
 `brew install gh && gh auth login` if you want the markers, otherwise skip
 it.
 
