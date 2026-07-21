@@ -214,12 +214,26 @@ if (ghSlug) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function wasRevertedOn(branch, sha) {
-  const out = gitLines(
-    'log', '--no-merges', `--grep=This reverts commit ${sha}`,
-    '--pretty=%H', `${sha}..${cfg.remote}/${branch}`,
-  );
-  return out.length > 0;
+// Reverted SHAs are collected once per branch (single `git log` each) so the
+// per-commit check below is an in-memory lookup, not a git invocation.
+const revertedShasByBranch = new Map();
+
+function revertedShasOn(branch) {
+  let shas = revertedShasByBranch.get(branch);
+  if (!shas) {
+    shas = new Set();
+    const bodies = gitLines(
+      'log', '--no-merges', '--grep=This reverts commit',
+      '--pretty=%B', `${cfg.remote}/${branch}`,
+    );
+    for (const line of bodies) {
+      for (const m of line.matchAll(/This reverts commit ([0-9a-f]{40})/g)) {
+        shas.add(m[1]);
+      }
+    }
+    revertedShasByBranch.set(branch, shas);
+  }
+  return shas;
 }
 
 const extractPrNumber = (subject) => subject.match(/\(#(\d+)\)\s*$/)?.[1] ?? '';
@@ -381,7 +395,7 @@ for (const { older, newer, kind } of pairs) {
     const [sha, author, email, date, ...rest] = parts;
     const subject = rest.join('\t');
     if (subject.startsWith('Revert "')) continue;
-    if (wasRevertedOn(older, sha)) continue;
+    if (revertedShasOn(older).has(sha)) continue;
     commits.push({
       sha, author, email, date, subject,
       pr: extractPrNumber(subject),
