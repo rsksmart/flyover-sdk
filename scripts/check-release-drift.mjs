@@ -260,12 +260,18 @@ function renderCompareLink(older, newer) {
 }
 
 // Earliest semver tag containing $sha; prefers stable over pre-release.
+// Memoized: the same SHA can appear in several comparisons (adjacent pair
+// + vs-trunk) and `git tag --contains` is expensive.
+const releasedInCache = new Map();
+
 function releasedInForSha(sha) {
+  if (releasedInCache.has(sha)) return releasedInCache.get(sha);
   const tags = gitLines('tag', '--contains', sha, '--list', cfg.tagPattern);
-  if (tags.length === 0) return '';
   const stable = tags.filter((t) => !t.includes('-'));
   const pick = stable.length ? stable : tags;
-  return [...pick].sort(semverCmp)[0] ?? '';
+  const released = [...pick].sort(semverCmp)[0] ?? '';
+  releasedInCache.set(sha, released);
+  return released;
 }
 
 // Latest semver tag merged into $branch; same stable-then-pre preference.
@@ -304,10 +310,10 @@ const hasModernMergeTree =
 
 // Dry-run the forward-merge `older → newer` without touching the working
 // tree or HEAD. Modern path (git >= 2.38): `merge-tree --write-tree
-// --name-only` exits 1 on conflict with the path list on stdout. Legacy
-// path (git < 2.38): use the 3-arg form and scan its output for
-// `<<<<<<<` markers, attributing each to the most recent metadata line's
-// path.
+// --name-only` exits 1 on conflict; stdout is the resulting tree OID on
+// the first line followed by the conflicted paths. Legacy path
+// (git < 2.38): use the 3-arg form and scan its output for `<<<<<<<`
+// markers, attributing each to the most recent metadata line's path.
 function checkMergeability(older, newer) {
   const olderRef = `${cfg.remote}/${older}`;
   const newerRef = `${cfg.remote}/${newer}`;
@@ -321,7 +327,10 @@ function checkMergeability(older, newer) {
     } catch (err) {
       if (err.status === 1 && typeof err.stdout === 'string') {
         const lines = err.stdout.split('\n').filter((l) => l.length > 0);
-        return { clean: false, conflicts: lines.slice(1) };
+        // First line is the resulting tree OID (40-hex, 64 on sha256
+        // repos); only strip it when it actually looks like one.
+        const paths = /^[0-9a-f]{40,64}$/.test(lines[0] ?? '') ? lines.slice(1) : lines;
+        return { clean: false, conflicts: paths };
       }
       return { clean: null, error: (err.stderr || err.message || '').toString().trim() };
     }
