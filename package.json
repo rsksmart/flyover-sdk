@@ -64,7 +64,7 @@
         "typescript-eslint": "^8.27.0"
     },
     "dependencies": {
-        "@rsksmart/bridges-core-sdk": "^0.6.0",
+        "@rsksmart/bridges-core-sdk": "^0.7.0-beta",
         "@rsksmart/pmt-builder": "^3.0.1",
         "bitcoinjs-lib": "^6.1.6"
     }
