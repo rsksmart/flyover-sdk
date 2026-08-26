@@ -48,6 +48,22 @@ import { estimateRecommendedPegout, RecommendedPegoutExtraArgs } from './recomme
 import { PegInContract } from '../blockchain/pegin'
 import { PegOutContract } from '../blockchain/pegout'
 import { DiscoveryContract } from '../blockchain/discovery'
+import { PegInAddressRegistryContract } from '../blockchain/peginAddressRegistry'
+import { FlyoverConfigurationsContract } from '../blockchain/flyoverConfigurations'
+import { buildPeginBtcTransaction, type BuildPeginBtcTransactionParams, buildPeginOpReturnPayload, buildPeginOpReturnScript, type PeginScCall } from '../bitcoin/peginTransaction'
+import { Psbt } from 'bitcoinjs-lib'
+
+/** Result of a commit-first peg-in estimate, read from the on-chain FlyoverConfigurations contract. */
+export interface PeginEstimate {
+  /** The peg-in amount in wei (RBTC). */
+  amount: bigint
+  /** The protocol fee in wei. */
+  fee: bigint
+  /** The total to send, in wei (amount + fee). */
+  total: bigint
+  /** The BTC confirmations required before the peg-in can be claimed. */
+  requiredConfirmations: bigint
+}
 
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
@@ -400,6 +416,32 @@ export class Flyover implements Bridge {
     }
   }
 
+  private ensurePegInAddressRegistry (): PegInAddressRegistryContract {
+    if (this.config.rskConnection === undefined) {
+      throw new Error('Not connected to RSK')
+    }
+    this.checkLbc()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const lbc = this.liquidityBridgeContract!
+    if (lbc.pegInAddressRegistry === undefined) {
+      lbc.pegInAddressRegistry = new PegInAddressRegistryContract(this.config.rskConnection, this.config)
+    }
+    return lbc.pegInAddressRegistry
+  }
+
+  private ensureFlyoverConfigurations (): FlyoverConfigurationsContract {
+    if (this.config.rskConnection === undefined) {
+      throw new Error('Not connected to RSK')
+    }
+    this.checkLbc()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const lbc = this.liquidityBridgeContract!
+    if (lbc.flyoverConfigurations === undefined) {
+      lbc.flyoverConfigurations = new FlyoverConfigurationsContract(this.config.rskConnection, this.config)
+    }
+    return lbc.flyoverConfigurations
+  }
+
   private ensureRskBridge (): void {
     if (this.config.rskConnection === undefined) {
       throw new Error('Not connected to RSK')
@@ -648,6 +690,96 @@ export class Flyover implements Bridge {
   async estimateRecommendedPegout(amount: bigint, extraArgs: RecommendedPegoutExtraArgs): Promise<RecommendedOperation> {
     this.checkLiquidityProvider()
     return estimateRecommendedPegout(this.getFlyoverContext(), amount, extraArgs)
+  }
+
+  /**
+   * Commit-first peg-in: derive, live, the BTC deposit address for the given RSK address from the
+   * on-chain PegInAddressRegistry. The registry derives the address against the current powpeg, so
+   * the result reflects the active federation. No LP quote is involved.
+   *
+   * Requires a connection to RSK ({@link Flyover.connectToRsk}) and that the PegInAddressRegistry is
+   * deployed for the configured network (or provided via `customPegInAddressRegistryAddress`).
+   *
+   * @param { string } rskAddress the user's RSK address
+   * @returns { string } the human readable BTC deposit address
+   */
+  async getPegInDepositAddress (rskAddress: string): Promise<string> {
+    const registry = this.ensurePegInAddressRegistry()
+    return registry.getPegInDepositAddress(rskAddress)
+  }
+
+  /**
+   * Whether the given RSK address has been registered in the on-chain PegInAddressRegistry.
+   *
+   * @param { string } rskAddress the user's RSK address
+   * @returns { boolean }
+   */
+  async isRegistered (rskAddress: string): Promise<boolean> {
+    const registry = this.ensurePegInAddressRegistry()
+    return registry.isRegistered(rskAddress)
+  }
+
+  /**
+   * Commit-first peg-in estimate. Reads the protocol fee and the required BTC confirmations for the
+   * given amount directly from the on-chain FlyoverConfigurations contract. This replaces the old
+   * per-LP getQuotes negotiation.
+   *
+   * Requires a connection to RSK ({@link Flyover.connectToRsk}) and that the FlyoverConfigurations
+   * contract is deployed for the configured network (or provided via
+   * `customFlyoverConfigurationsAddress`).
+   *
+   * @param { bigint } amount the peg-in amount in wei (RBTC)
+   * @returns { PeginEstimate } the fee, total and required confirmations
+   */
+  async estimatePegIn (amount: bigint): Promise<PeginEstimate> {
+    const configurations = this.ensureFlyoverConfigurations()
+    const [fee, requiredConfirmations] = await Promise.all([
+      configurations.calculatePegInFee(amount),
+      configurations.getRequiredPegInConfirmations(amount)
+    ])
+    return {
+      amount,
+      fee,
+      total: amount + fee,
+      requiredConfirmations
+    }
+  }
+
+  /**
+   * Builds the `OP_RETURN` output script for a smart-contract peg-in
+   * (`destinationContract(20) + maxGasFee(32) + callData`), validating it fits the standard
+   * `OP_RETURN` budget. Throws a clear error above the cap.
+   *
+   * @param { PeginScCall } scCall the smart-contract call parameters
+   * @returns { Buffer } the OP_RETURN output script
+   */
+  buildPeginOpReturnScript (scCall: PeginScCall): Buffer {
+    return buildPeginOpReturnScript(scCall)
+  }
+
+  /**
+   * Builds just the raw `OP_RETURN` payload bytes
+   * (`destinationContract(20) + maxGasFee(32) + callData`) for a smart-contract peg-in,
+   * validating it fits the standard `OP_RETURN` budget. Throws a clear error above the cap.
+   *
+   * @param { PeginScCall } scCall the smart-contract call parameters
+   * @returns { Buffer } the OP_RETURN payload bytes
+   */
+  buildPeginOpReturnPayload (scCall: PeginScCall): Buffer {
+    return buildPeginOpReturnPayload(scCall)
+  }
+
+  /**
+   * Builds an unsigned peg-in BTC transaction (a {@link Psbt}) that pays the derived deposit address.
+   * When `params.scCall` is provided an `OP_RETURN` carrying the smart-contract call is added (validated
+   * against the standard limit); otherwise it is a plain peg-in with no `OP_RETURN`. The returned Psbt
+   * is unsigned — the caller funds/signs it with their own wallet.
+   *
+   * @param { BuildPeginBtcTransactionParams } params see {@link BuildPeginBtcTransactionParams}
+   * @returns { Psbt } the unsigned transaction
+   */
+  buildPeginBtcTransaction (params: BuildPeginBtcTransactionParams): Psbt {
+    return buildPeginBtcTransaction(params)
   }
 
   private getFlyoverContext (): FlyoverSDKContext {
