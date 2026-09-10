@@ -160,6 +160,29 @@ describe('LocalBTCDataSource', () => {
       expect(secondCallBody.params).toEqual([mockRawTransaction.blockhash])
     })
 
+    it('should retrieve mempool transaction without calling getblock', async () => {
+      const mempoolTx = {
+        ...mockRawTransaction,
+        confirmations: 0
+      }
+      delete (mempoolTx as { blockhash?: string }).blockhash
+
+      mockFetch.mockImplementationOnce(async () => {
+        return {
+          json: async () => ({ result: mempoolTx })
+        } as Response
+      })
+
+      const result = await bitcoinRpcDataSource.getTransaction(FAKE_TX_ID)
+
+      expect(result.txid).toBe(FAKE_TX_ID)
+      expect(result.isConfirmed).toBe(false)
+      expect(result.blockHash).toBeUndefined()
+      expect(result.blockHeight).toBeUndefined()
+      expect(result.vout).toHaveLength(2)
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
     it('should handle network errors', async () => {
       mockFetch.mockImplementationOnce(async () => {
         throw new Error(FAKE_ERROR_MESSAGE)
