@@ -255,7 +255,9 @@ export class Flyover implements Bridge {
    * @param { Quote } quote The pegin quote to pay for
    * @param { AcceptedQuote } acceptedQuote The accepted quote returned by {@link Flyover.acceptQuote} or {@link Flyover.acceptAuthenticatedQuote}
    * @param { object } options Optional configuration
-   * @param { PeginAmountUnit } options.amountUnit Unit for the returned amount ('BTC', 'SAT', or 'WEI'). Defaults to 'SAT'
+   * @param { PeginAmountUnit } options.amountUnit Unit for the returned amount ('BTC', 'SAT', or 'WEI'). Defaults to 'SAT'.
+   * 'BTC' and 'SAT' amounts are rounded up to the next satoshi so the payment always covers the quote total.
+   * 'WEI' returns the exact quote total, which may not be payable as a whole number of satoshis
    *
    * @returns { PeginPaymentData } The address and amount to pay
    *
