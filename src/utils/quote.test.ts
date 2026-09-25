@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals'
-import { getQuoteTotal, isPeginQuote, isPeginStillPayable, satsToWei } from './quote'
+import { getQuoteTotal, isPeginQuote, isPeginStillPayable, satsToWei, weiToSatsCeil, weiToBtcCeil } from './quote'
 import { type QuoteDetail, type PegoutQuote, type Quote } from '../api'
 
     const peginQuote: Quote = {
@@ -142,34 +142,70 @@ describe('satsToWei function should', () => {
   test('fail if sats is negative', () => {
     expect(() => { satsToWei(BigInt(-1)) }).toThrow('Negative sats value')
   })
+})
 
-  describe('isPeginQuote function should', () => {
-    test('return true for a pegin quote', () => {
-      expect(isPeginQuote(peginQuote)).toBe(true)
-    })
+describe('weiToSatsCeil function should', () => {
+  test('convert wei to sats rounding up', () => {
+    const cases: [string, string][] = [
+      ['0', '0'],
+      ['1', '1'],
+      ['9999999999', '1'],
+      ['10000000000', '1'],
+      ['10000000001', '2'],
+      ['10023097964000000', '1002310'],
+      ['10023090000000000', '1002309']
+    ]
+    for (const [wei, sats] of cases) {
+      expect(weiToSatsCeil(BigInt(wei))).toBe(BigInt(sats))
+    }
+  })
+  test('fail if wei is negative', () => {
+    expect(() => { weiToSatsCeil(BigInt(-1)) }).toThrow('Negative wei value')
+  })
+})
 
-    test('return false for a pegout quote', () => {
-      expect(isPeginQuote(pegoutQuote)).toBe(false)
-    })
+describe('weiToBtcCeil function should', () => {
+  test('convert wei to BTC string rounding up to the satoshi', () => {
+    const cases: [string, string][] = [
+      ['0', '0.00000000'],
+      ['1', '0.00000001'],
+      ['8101341211956000', '0.00810135'],
+      ['8101340000000000', '0.00810134'],
+      ['1000000000000000000', '1.00000000'],
+      ['1000000000000000001', '1.00000001']
+    ]
+    for (const [wei, btc] of cases) {
+      expect(weiToBtcCeil(BigInt(wei))).toBe(btc)
+    }
+  })
+})
 
-    test('return false if fedBTCAddr is missing', () => {
-      const notPeginQuote = {
-        quote: {
-          lbcAddr: 'any addres'
-        },
-        quoteHash: 'hash'
-      }
-      expect(isPeginQuote(notPeginQuote as any)).toBe(false)
-    })
+describe('isPeginQuote function should', () => {
+  test('return true for a pegin quote', () => {
+    expect(isPeginQuote(peginQuote)).toBe(true)
+  })
 
-    test('return false if fedBTCAddr is undefined', () => {
-      const notPeginQuote = {
-        quote: {
-          fedBTCAddr: undefined
-        },
-        quoteHash: 'hash'
-      }
-      expect(isPeginQuote(notPeginQuote as any)).toBe(false)
-    })
+  test('return false for a pegout quote', () => {
+    expect(isPeginQuote(pegoutQuote)).toBe(false)
+  })
+
+  test('return false if fedBTCAddr is missing', () => {
+    const notPeginQuote = {
+      quote: {
+        lbcAddr: 'any addres'
+      },
+      quoteHash: 'hash'
+    }
+    expect(isPeginQuote(notPeginQuote as any)).toBe(false)
+  })
+
+  test('return false if fedBTCAddr is undefined', () => {
+    const notPeginQuote = {
+      quote: {
+        fedBTCAddr: undefined
+      },
+      quoteHash: 'hash'
+    }
+    expect(isPeginQuote(notPeginQuote as any)).toBe(false)
   })
 })

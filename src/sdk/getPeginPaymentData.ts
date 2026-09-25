@@ -5,7 +5,7 @@ import {
 } from '../api'
 import { type LiquidityBridgeContract } from '../blockchain/lbc'
 import { FlyoverError } from '../client/httpClient'
-import { getQuoteTotal, weiToSats, weiToBtc } from '../utils/quote'
+import { getQuoteTotal, weiToSatsCeil, weiToBtcCeil } from '../utils/quote'
 
 export type PeginAmountUnit = 'BTC' | 'SAT' | 'WEI'
 
@@ -19,9 +19,9 @@ function convertWeiToUnit (wei: bigint, unit: PeginAmountUnit): string {
     case 'WEI':
       return wei.toString()
     case 'SAT':
-      return weiToSats(wei).toString()
+      return weiToSatsCeil(wei).toString()
     case 'BTC':
-      return weiToBtc(wei)
+      return weiToBtcCeil(wei)
   }
 }
 

@@ -26,12 +26,20 @@ export function satsToWei (sats: bigint): bigint {
   return sats * SAT_TO_WEI
 }
 
-export function weiToSats (wei: bigint): bigint {
-  return wei / SAT_TO_WEI
+export function weiToSatsCeil (wei: bigint): bigint {
+  if (wei < 0) {
+    throw new Error('Negative wei value')
+  }
+
+  const remainder = wei % SAT_TO_WEI
+  if (remainder === BigInt(0)) {
+    return wei / SAT_TO_WEI
+  }
+  return (wei + SAT_TO_WEI - remainder) / SAT_TO_WEI
 }
 
-export function weiToBtc (wei: bigint): string {
-  const sats = weiToSats(wei)
+export function weiToBtcCeil (wei: bigint): string {
+  const sats = weiToSatsCeil(wei)
   const whole = sats / SATS_PER_BTC
   const fraction = sats % SATS_PER_BTC
   return `${whole}.${fraction.toString().padStart(BTC_DECIMALS, '0')}`
