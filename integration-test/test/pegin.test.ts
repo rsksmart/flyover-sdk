@@ -7,6 +7,15 @@ import { Transaction, payments, networks } from 'bitcoinjs-lib'
 import { EXTENDED_TIMEOUT, TEST_CONTRACT_ABI } from './common/constants'
 
 const skipInCI = process.env.CI != null ? test.skip : test
+const SAT_TO_WEI = BigInt(10) ** BigInt(10)
+
+function weiToSatsCeil (wei: bigint): bigint {
+  const remainder = wei % SAT_TO_WEI
+  if (remainder === BigInt(0)) {
+    return wei / SAT_TO_WEI
+  }
+  return (wei + SAT_TO_WEI - remainder) / SAT_TO_WEI
+}
 
 describe('Flyover pegin process should', () => {
   let flyover: Flyover
@@ -117,9 +126,9 @@ describe('Flyover pegin process should', () => {
     const weiData = await flyover.getPeginPaymentData(quote, acceptedQuote, { amountUnit: 'WEI' })
     const btcData = await flyover.getPeginPaymentData(quote, acceptedQuote, { amountUnit: 'BTC' })
 
-    const satToWei = BigInt(10) ** BigInt(10)
-    expect(BigInt(weiData.amount)).toBe(FlyoverUtils.getQuoteTotal(quote))
-    expect(BigInt(satData.amount)).toBe(BigInt(weiData.amount) / satToWei)
+    const weiAmount = BigInt(weiData.amount)
+    expect(weiAmount).toBe(FlyoverUtils.getQuoteTotal(quote))
+    expect(BigInt(satData.amount)).toBe(weiToSatsCeil(weiAmount))
     expect(parseFloat(btcData.amount) * 1e8).toBeCloseTo(Number(satData.amount), 0)
   })
 
@@ -176,11 +185,7 @@ describe('Flyover pegin process should', () => {
     }
 
     const weiTotal = FlyoverUtils.getQuoteTotal(quote)
-    const satToWeiConversion = BigInt(10) ** BigInt(10)
-    let satsTotal = weiTotal / satToWeiConversion
-    if (weiTotal % satToWeiConversion !== BigInt(0)) {
-      satsTotal += BigInt(1)
-    }
+    const satsTotal = weiToSatsCeil(weiTotal)
     const payment = payments.p2sh({ address: acceptedQuote.bitcoinDepositAddressHash, network: networks.testnet })
     assertTruthy(payment.output)
     tx.addOutput(payment.output, Number(satsTotal))
