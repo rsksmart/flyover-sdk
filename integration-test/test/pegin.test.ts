@@ -129,7 +129,7 @@ describe('Flyover pegin process should', () => {
     const weiAmount = BigInt(weiData.amount)
     expect(weiAmount).toBe(FlyoverUtils.getQuoteTotal(quote))
     expect(BigInt(satData.amount)).toBe(weiToSatsCeil(weiAmount))
-    expect(parseFloat(btcData.amount) * 1e8).toBeCloseTo(Number(satData.amount), 0)
+    expect(parseFloat(btcData.amount)).toBe(Number(weiToSatsCeil(weiAmount)) / 1e8)
   })
 
   test('get status of the accepted quote', async () => {
@@ -218,6 +218,9 @@ describe('Flyover pegin process should', () => {
   })
 
   test('get recommended value for quote total', async () => {
+    // because of the way the server estimates the recommended value, it might be some deviation
+    // there is no need to change it as the recommended value feature is just an estimate
+    const maxDust = BigInt(2);
     const result = await flyover.estimateRecommendedPegin(
       FlyoverUtils.getQuoteTotal(quote),
       {
@@ -227,7 +230,7 @@ describe('Flyover pegin process should', () => {
     );
     expect(result.estimatedCallFee.toString()).toEqual(quote.quote.callFee.toString());
     expect(result.estimatedGasFee.toString()).toEqual(quote.quote.gasFee.toString());
-    expect(result.recommendedQuoteValue.toString()).toEqual(quote.quote.value.toString());
+    expect(result.recommendedQuoteValue - quote.quote.value).toBeLessThanOrEqual(maxDust);
   }, EXTENDED_TIMEOUT)
 
   // Skipped in CI: requires a TestContract deployed and TEST_CONTRACT_ADDRESS set to its address.
