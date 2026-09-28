@@ -80,18 +80,22 @@ describe('getPeginPaymentData function should', () => {
     expect(result.address).toBe(acceptedQuoteMock.bitcoinDepositAddressHash)
   })
 
-  test('return amount in SAT by default', async () => {
+  test('return amount in SAT by default, rounded up', async () => {
     const result = await getPeginPaymentData(lbcMock, providerMock, quoteMock, acceptedQuoteMock)
-    const expectedWei = BigInt('100000000000000') + BigInt('1341211956000') + BigInt('8000000000000000')
-    const expectedSat = expectedWei / (BigInt(10) ** BigInt(10))
-    expect(result.amount).toBe(expectedSat.toString())
+    expect(result.amount).toBe('810135')
   })
 
-  test('return amount in SAT when requested', async () => {
+  test('return amount in SAT when requested, rounded up', async () => {
     const result = await getPeginPaymentData(lbcMock, providerMock, quoteMock, acceptedQuoteMock, { amountUnit: 'SAT' })
-    const expectedWei = BigInt('100000000000000') + BigInt('1341211956000') + BigInt('8000000000000000')
-    const expectedSat = expectedWei / (BigInt(10) ** BigInt(10))
-    expect(result.amount).toBe(expectedSat.toString())
+    expect(result.amount).toBe('810135')
+  })
+
+  test('not round up amount already aligned to SAT', async () => {
+    const alignedQuote: Quote = { ...quoteMock, quote: { ...quoteMock.quote, gasFee: BigInt('1340000000000') } }
+    const sat = await getPeginPaymentData(lbcMock, providerMock, alignedQuote, acceptedQuoteMock, { amountUnit: 'SAT' })
+    const btc = await getPeginPaymentData(lbcMock, providerMock, alignedQuote, acceptedQuoteMock, { amountUnit: 'BTC' })
+    expect(sat.amount).toBe('810134')
+    expect(btc.amount).toBe('0.00810134')
   })
 
   test('return amount in WEI when requested', async () => {
@@ -100,9 +104,9 @@ describe('getPeginPaymentData function should', () => {
     expect(result.amount).toBe(expectedWei.toString())
   })
 
-  test('return amount in BTC when requested', async () => {
+  test('return amount in BTC when requested, rounded up', async () => {
     const result = await getPeginPaymentData(lbcMock, providerMock, quoteMock, acceptedQuoteMock, { amountUnit: 'BTC' })
-    expect(result.amount).toBe('0.00810134')
+    expect(result.amount).toBe('0.00810135')
   })
 
   test('validate signature via EIP712 hash', async () => {
