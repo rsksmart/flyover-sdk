@@ -38,6 +38,8 @@ import { estimateRecommendedPegout, RecommendedPegoutExtraArgs } from './recomme
 import { PegInContract } from '../blockchain/pegin'
 import { PegOutContract } from '../blockchain/pegout'
 import { DiscoveryContract } from '../blockchain/discovery'
+import { RskBridge } from '../blockchain/bridge'
+import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
 
 /** Class that represents the entrypoint to the Flyover SDK */
 export class Flyover implements Bridge {
@@ -45,6 +47,7 @@ export class Flyover implements Bridge {
   private liquidityBridgeContract?: LiquidityBridgeContract
   private readonly httpClient: HttpClient
   private lastPegoutQuote: PegoutQuote | null
+  private rskBridge?: RskBridge
 
   /**
    * Create a Flyover client instance.
@@ -295,6 +298,14 @@ export class Flyover implements Bridge {
     }
   }
 
+  private ensureRskBridge (): void {
+    if (this.config.rskConnection === undefined) {
+      throw new Error('Not connected to RSK')
+    } else if (this.rskBridge === undefined) {
+      this.rskBridge = new RskBridge(this.config.rskConnection)
+    }
+  }
+
   private checkLbc (): void {
     if (this.config.rskConnection === undefined) {
       throw new Error('Not connected to RSK')
@@ -452,11 +463,34 @@ export class Flyover implements Bridge {
     return estimateRecommendedPegout(this.getFlyoverContext(), amount, extraArgs)
   }
 
+  /**
+   * Checks if a Bitcoin transaction is valid for a specific PegIn. This check involves the following conditions:
+   * - The transaction is a well formed Bitcoin transaction
+   * - The transaction pays the deposit address derived for the RSK address
+   * - The transaction sends the expected amount of satoshis to that address
+   * - All the UTXOs sent to the derivation address are above the RSK Bridge minimum
+   *
+   * This function can be used either before or after of funding and signing the transaction.
+   *
+   * @param { ValidatePeginTransactionParams } params The parameters required for the validation
+   * @param { ValidatePeginTransactionOptions } options The options for the validation
+   *
+   * @throws { FlyoverError } If {@link options.throwError} is true and the validation fails
+   *
+   * @returns { string } The error message if the validation fails and {@link options.throwError} is false
+   */
+  async validatePeginTransaction (params: ValidatePeginTransactionParams, options?: ValidatePeginTransactionOptions): Promise<string> {
+    this.checkLbc()
+    this.ensureRskBridge()
+    return validatePeginTransaction(this.getFlyoverContext(), params, options)
+  }
+
   private getFlyoverContext (): FlyoverSDKContext {
     return {
       config: this.config,
       lbc: this.liquidityBridgeContract,
       provider: this.liquidityProvider,
+      bridge: this.rskBridge,
       httpClient: this.httpClient,
       rskConnection: this.config.rskConnection,
       btcConnection: this.bitcoinDataSource

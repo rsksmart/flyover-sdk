@@ -23,6 +23,9 @@ import { estimateRecommendedPegout, RecommendedPegoutExtraArgs } from './recomme
 import { getPegoutPaymentData } from './getPegoutPaymentData'
 import { PegOutContract } from '../blockchain/pegout'
 import { DiscoveryContract } from '../blockchain/discovery'
+import { PegInContract } from '../blockchain/pegin'
+import { RskBridge } from '../blockchain/bridge'
+import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
 
 jest.mock('ethers')
 
@@ -39,6 +42,7 @@ jest.mock('./getPegoutStatus')
 jest.mock('./getAvailableLiquidity')
 jest.mock('./isPegoutQuotePaid')
 jest.mock('./isPegoutRefundable')
+jest.mock('./validatePeginTransaction')
 jest.mock('./recommendedPegout')
 jest.mock('./signQuote')
 jest.mock('./getPegoutPaymentData')
@@ -52,6 +56,7 @@ const rskConnectionMock = jest.mocked({
   }
 } as BlockchainConnection)
 
+const rskAddressMock = '0x79568c2989232dCa1840087D73d403602364c0D4'
 const signatureMock = 'fa751697c71da60568814c1c18161a4be6af252177e6483b66ee554d6ff141a72879c152ac436ae07816dd69984d9440f9651e47ac24e7216825093f13f9147b1c'
 
 const pegoutQuoteMock: PegoutQuote = {
@@ -447,6 +452,52 @@ describe('Flyover object should', () => {
       flyover.useLiquidityProvider(provider)
       await expect(flyover.getAvailableLiquidity()).rejects
         .toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
+    })
+  })
+
+  describe('validatePeginTransaction method should', () => {
+    const params: ValidatePeginTransactionParams = {
+      rskAddress: rskAddressMock,
+      expectedAmount: BigInt(1),
+      btcTx: '010203'
+    }
+    const options: ValidatePeginTransactionOptions = { throwError: true }
+    test('invoke correctly validatePeginTransaction', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      await flyover.validatePeginTransaction(params, options)
+      expect(validatePeginTransaction).toBeCalledTimes(1)
+      expect(validatePeginTransaction).toBeCalledWith(
+        expect.objectContaining({
+          config: expect.objectContaining({
+            network: 'Regtest',
+            allowInsecureConnections: true
+          }),
+          bridge: expect.any(RskBridge),
+          lbc: expect.objectContaining({
+            pegOutContract: expect.any(PegOutContract),
+            pegInContract: expect.any(PegInContract),
+            discoveryContract: expect.any(DiscoveryContract)
+          }),
+          provider: providerMock
+        }),
+        params,
+        options
+      )
+    })
+    test('create LBC instance if not created before', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      expect(flyover).not.toHaveProperty('liquidityBridgeContract')
+      await flyover.validatePeginTransaction(params)
+      expect(flyover).not.toHaveProperty('liquidityBridgeContract', undefined)
+    })
+    test('create RskBridge instance if not created before', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      expect(flyover).not.toHaveProperty('rskBridge')
+      await flyover.validatePeginTransaction(params)
+      expect(flyover).not.toHaveProperty('rskBridge', undefined)
     })
   })
 

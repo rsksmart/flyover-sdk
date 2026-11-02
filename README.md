@@ -81,6 +81,9 @@ There are two types of connection; the [BlockchainConnection](https://github.com
 ### Flyover utils
 FlyoverSDK exports an object with a collection of util functions that the client application might use during the integration with the SDK. You can see the list of the utility functions [here](./docs/modules.md#flyoverutils) and also when importing the `FlyoverUtils` object from the SDK package every function has a JsDoc explaining its usage.
 
+### Transaction validation
+Both PegIn and PegOut payments should be validated to ensure they accomplish with all the requirements to complete the Flyover process. In the case of the PegOut, since the payment is done directly on the Liquidity Bridge Contract, all the validations for it reside in the implementation of the `depositPegout` function. However, in the case of the PegIn, since the transaction is constructed inside the user wallet, the smart contract doesn't have a way to tell if the transaction is valid or not until it is broadcasted and registered. Therefore, the SDK contains the `validatePeginTransaction` method to validate if a PegIn payment transaction is valid or not before broadcasting it to prevent the users or client applications from constructing incorrect transactions that would end up requiring a refund.
+
 ## Supported addresses
 Currently, not all the types of Bitcoin addresses are supported in Flyover Protocol. The address support is summarized in the following table:
 | Address type | Testnet prefix | Mainnet prefix |     Supported      |                        Testnet example                         |                        Mainnet example                         |
