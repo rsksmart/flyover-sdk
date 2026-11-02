@@ -49,5 +49,17 @@ export const FlyoverErrors = deepFreeze({
   PEG_OUT_REFUND_FAILED: {
     code: 'FLYOVER-SDK-0012',
     description: 'Simulated refund failed'
+  },
+  PEG_IN_REFUND_ALREADY_PAID: {
+    code: 'FLYOVER-SDK-0013',
+    description: 'Pegin quote was already paid, so is not applicable for refund.'
+  },
+  PEG_IN_REFUND_CALL_TO_REGISTER_PEGIN_FAILED: {
+    code: 'FLYOVER-SDK-0014',
+    description: 'Call to registerPegin failed.'
+  },
+  PEG_IN_REFUND_DOES_NOT_HAVE_ENOUGH_CONFIRMATIONS: {
+    code: 'FLYOVER-SDK-0015',
+    description: 'The Bitcoin transaction does not have enough confirmations, so is not applicable for refund yet.'
   }
 } as const)

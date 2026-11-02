@@ -26,6 +26,8 @@ export {
 export { FlyoverUtils } from './sdk/flyoverUtils'
 
 export { type IsQuotePaidResponse, type IsQuoteRefundableResponse } from './utils/interfaces'
+export { type RegisterPeginParams } from './sdk/registerPegin'
+export { type IsPeginRefundableParams } from './sdk/isPeginRefundable'
 export { type ValidatePeginTransactionParams, type ValidatePeginTransactionOptions } from './sdk/validatePeginTransaction'
 
 export { FlyoverErrors } from './constants/errors'
