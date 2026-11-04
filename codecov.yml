@@ -1,0 +1,24 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto    # baseline is always the current main value
+        threshold: 1%   # allow up to 1% drop before failing the check
+    patch:
+      default:
+        target: 80%     # new/changed lines in a PR must be at least 80% covered
+        threshold: 5%   # allow up to 5% below target before failing
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: true  # only post a comment when coverage actually changes
+
+ignore:
+  - "src/api/bindings/**"        # generated from the LPS OpenAPI spec
+  - "src/blockchain/bindings/**" # typechain-generated contract bindings
+  - "src/index.ts"               # re-export barrel only
+  - "**/*.test.ts"
+  - "integration-test/**"
+  - "lib/**"                     # build output
+  - "scripts/**"

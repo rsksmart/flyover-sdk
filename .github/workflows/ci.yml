@@ -26,5 +26,24 @@ jobs:
         run: npm ci && npm run build
       - name: Validate code format
         run: npm run lint:validation
-      - name: Run unit tests
-        run: npm run test
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+      - name: Check for Codecov token
+        id: codecov_token
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          if [ -n "$CODECOV_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Coverage not uploaded::CODECOV_TOKEN is not available, so the Codecov upload was skipped. Expected on pull requests from forks, where Actions secrets are not exposed; otherwise the repository still needs to be onboarded to Codecov and the secret added."
+            echo ":warning: **Coverage not uploaded** — \`CODECOV_TOKEN\` is not available, so the Codecov upload was skipped." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload coverage to Codecov
+        if: steps.codecov_token.outputs.configured == 'true'
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: true
