@@ -14,6 +14,8 @@ export interface IntegrationTestConfig {
   testContractAddress: string
   flyoverConfigurationsAddress?: string
   pegOutEscrowAddress?: string
+  pegOutContractAddress?: string
+  lpsUrl?: string
   pegoutClaimTimeoutSeconds?: number
 }
 
@@ -31,6 +33,8 @@ function getConfig (): IntegrationTestConfig {
     TEST_CONTRACT_ADDRESS: testContractAddress,
     TEST_FLYOVER_CONFIGURATIONS_ADDRESS: flyoverConfigurationsAddress,
     TEST_PEGOUT_ESCROW_ADDRESS: pegOutEscrowAddress,
+    TEST_PEGOUT_CONTRACT_ADDRESS: pegOutContractAddress,
+    TEST_LPS_URL: lpsUrl,
     TEST_PEGOUT_CLAIM_TIMEOUT_SECONDS: pegoutClaimTimeoutSeconds
   } = process.env
   assertTruthy(mnemonic, 'Missing test configuration: TEST_MNEMONIC')
@@ -56,6 +60,8 @@ function getConfig (): IntegrationTestConfig {
     testContractAddress,
     flyoverConfigurationsAddress,
     pegOutEscrowAddress,
+    pegOutContractAddress,
+    lpsUrl,
     pegoutClaimTimeoutSeconds: pegoutClaimTimeoutSeconds ? Number(pegoutClaimTimeoutSeconds) : undefined
   }
 }

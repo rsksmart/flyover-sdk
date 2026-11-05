@@ -5,11 +5,17 @@ import { type PegOutConfiguration } from '@rsksmart/flyover-sdk'
 export const PEGOUT_ESCROW_ABI = [
   'function requestPegOut(bytes destinationAddress, address refundAddress) payable returns (bytes32)',
   'function cancelPegOut(bytes32 requestHash)',
+  'function getPegOutQuote(bytes32 requestHash) view returns (tuple(uint256 chainId, uint256 callFee, uint256 penaltyFee, uint256 value, uint256 gasFee, address lbcAddress, address lpRskAddress, address rskRefundAddress, int64 nonce, uint32 agreementTimestamp, uint32 depositDateLimit, uint32 transferTime, uint32 expireDate, uint32 expireBlock, uint16 depositConfirmations, uint16 transferConfirmations, bytes depositAddress, bytes btcRefundAddress, bytes lpBtcAddress))',
   'event PegOutCancelled(bytes32 indexed requestHash)',
+  'event PegOutClaimed(address indexed lpAddress, bytes32 indexed requestHash)',
   'error NotServiceable(uint256 amount, uint256 minAmount, uint256 maxAmount)',
   'error InvalidState(bytes32 requestHash, uint8 expected, uint8 actual)',
   // declared in the Flyover library, so it is not part of IPegOutEscrow
   'error InvalidSender(address expected, address actual)'
+]
+
+export const PEGOUT_CONTRACT_ABI = [
+  'event PegOutRefunded(bytes32 indexed quoteHash)'
 ]
 
 export const FLYOVER_CONFIGURATIONS_ABI = [
@@ -43,6 +49,12 @@ export async function staticCall (contract: ethers.Contract, method: string, ...
   const fn = contract.callStatic[method]
   assertTruthy(fn, `Unknown function ${method}`)
   return fn(...args)
+}
+
+export function eventFilter (contract: ethers.Contract, event: string, ...args: unknown[]): ethers.EventFilter {
+  const filter = contract.filters[event]
+  assertTruthy(filter, `Unknown event ${event}`)
+  return filter(...args)
 }
 
 /** Name of the custom error the call reverts with, decoded with the contract's ABI. */

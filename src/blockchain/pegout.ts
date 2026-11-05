@@ -34,7 +34,8 @@ export class PegOutContract {
   private readonly pegoutContract: Contract
 
   constructor (rskConnection: Connection, config: FlyoverConfig) {
-    const address = FlyoverNetworks[config.network as FlyoverSupportedNetworks]?.pegOutContractAddress
+    const address = config.customPegOutContractAddress ??
+      FlyoverNetworks[config.network as FlyoverSupportedNetworks]?.pegOutContractAddress
     if (address === undefined || !isRskAddress(address)) {
       throw new Error('invalid address')
     }

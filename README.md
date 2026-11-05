@@ -42,6 +42,7 @@ interface FlyoverConfig extends BridgesConfig {
   disableChecksum?: boolean
   customFlyoverConfigurationsAddress?: string
   customPegOutEscrowAddress?: string
+  customPegOutContractAddress?: string
 }
 ```
 - **network**: this is the name of the network your going to connect to. It can be any of the following:
@@ -59,6 +60,7 @@ However we advice to only use `Mainnet` or `Testnet` for integration purposes as
 - **disableChecksum**: this parameter tells the FlyoverSDK whether to disable the RSK checksum validation for the RSK addresses involved in the PegIn and PegOut operations or not. It is false by default.
 - **customFlyoverConfigurationsAddress**: address of the `FlyoverConfigurations` contract, which holds the commit-first protocol parameters. It is required until that contract has a canonical deployment on the selected network.
 - **customPegOutEscrowAddress**: address of the `PegOutEscrow` contract, which holds commit-first peg-out requests. It is required until that contract has a canonical deployment on the selected network.
+- **customPegOutContractAddress**: address of the `PegOutContract`. If you provide this parameter, the SDK uses it instead of the selected network's default address, for example to connect to a local regtest deployment.
 
 ## Connect to RSK
 If you need to connect to RSK to execute some operation then you need to create a Connection object and provide it to the Flyover object

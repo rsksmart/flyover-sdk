@@ -7,6 +7,7 @@ import { deepFreeze } from '@rsksmart/bridges-core-sdk'
  *
  * Regtest url will be overrided if  {@link FlyoverConfig.customRegtestUrl} is provided to the client in {@link FlyoverConfig}
  * Regtest LBC address will be overrided if  {@link FlyoverConfig.customLbcAddress} is provided to the client in {@link FlyoverConfig}
+ * PegOutContract address will be overrided if {@link FlyoverConfig.customPegOutContractAddress} is provided to the client in {@link FlyoverConfig}
  *
  * The commit-first contracts ({@link flyoverConfigurationsAddress} and {@link pegOutEscrowAddress}) are
  * not deployed on any network yet, so they are optional per network and can be provided through

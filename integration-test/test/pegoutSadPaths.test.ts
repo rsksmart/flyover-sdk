@@ -49,8 +49,8 @@ describe('Commit-first peg-out sad paths should', () => {
     const rsk = await BlockchainConnection.createUsingPassphrase(testMnemonic, nodeUrl)
     // unfunded on purpose: every call it makes is rejected before a transaction is sent, so it never pays gas
     const other = await BlockchainConnection.createUsingPassphrase(ethers.Wallet.createRandom().mnemonic.phrase, nodeUrl)
-    flyover = new Flyover(config)
-    flyoverOtherSender = new Flyover(config)
+    flyover = new Flyover({ ...config })
+    flyoverOtherSender = new Flyover({ ...config })
     await flyover.connectToRsk(rsk)
     await flyoverOtherSender.connectToRsk(other)
 
@@ -62,7 +62,7 @@ describe('Commit-first peg-out sad paths should', () => {
     limits = await readPegOutLimits(new ethers.Contract(flyoverConfigurationsAddress, FLYOVER_CONFIGURATIONS_ABI, provider))
     refundAddress = await rsk.getConnectedAddress()
     inRangeValue = pegoutValueForAmount(limits.minAmount, limits)
-  })
+  }, EXTENDED_TIMEOUT)
 
   test('refund the whole deposit when the refund address cancels a REQUESTED peg-out, slashing nobody', async () => {
     const balanceBefore = await balanceOf(refundAddress)
