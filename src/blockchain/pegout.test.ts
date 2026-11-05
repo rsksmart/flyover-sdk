@@ -358,4 +358,19 @@ describe('PegOutContract class should', () => {
       }))
     })
   })
+
+  test('read dustThreshold at the given block', async () => {
+    const { BigNumber } = jest.requireActual<typeof ethers>('ethers')
+    const contractMock = {
+      dustThreshold: jest.fn().mockImplementation(async () => Promise.resolve(BigNumber.from('10000')))
+    }
+    jest.mocked(ethers.Contract).mockImplementation(() => contractMock as any)
+    const config: FlyoverConfig = { network: 'Regtest', captchaTokenResolver: async () => Promise.resolve('') }
+    const lbc = new PegOutContract(connectionMock, config)
+
+    const threshold = await lbc.getDustThreshold(77)
+
+    expect(contractMock.dustThreshold).toBeCalledWith({ blockTag: 77 })
+    expect(threshold).toBe(BigInt(10000))
+  })
 })

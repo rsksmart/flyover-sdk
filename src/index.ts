@@ -41,4 +41,14 @@ export { BitcoindRpcDataSource } from './bitcoin/BitcoinRpcDataSource'
 export { type BitcoinDataSource } from './bitcoin/BitcoinDataSource'
 export { type RecommendedPeginExtraArgs } from './sdk/recommendedPegin'
 export { type RecommendedPegoutExtraArgs } from './sdk/recommendedPegout'
+export {
+  type PegoutEstimate,
+  type PegoutValueSplit,
+  calculatePegoutFee,
+  splitPegoutValue,
+  pegoutValueForAmount
+} from './sdk/estimatePegout'
+export { type PegOutConfiguration, type ConfirmationTier } from './blockchain/flyoverConfigurations'
+export { SAT_TO_WEI } from './constants/units'
+export { type PegoutRequest, type PegoutState } from './blockchain/pegoutEscrow'
 export { type BtcAddressType } from './bitcoin/address'

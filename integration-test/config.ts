@@ -12,6 +12,11 @@ export interface IntegrationTestConfig {
   pegoutAmount: bigint
   mempoolSpaceUrl: string
   testContractAddress: string
+  flyoverConfigurationsAddress?: string
+  pegOutEscrowAddress?: string
+  pegOutContractAddress?: string
+  lpsUrl?: string
+  pegoutClaimTimeoutSeconds?: number
 }
 
 function getConfig (): IntegrationTestConfig {
@@ -25,7 +30,12 @@ function getConfig (): IntegrationTestConfig {
     TEST_PEGIN_AMOUNT: peginAmount,
     TEST_PEGOUT_AMOUNT: pegoutAmount,
     TEST_MEMPOOL_SPACE_URL: mempoolSpaceUrl,
-    TEST_CONTRACT_ADDRESS: testContractAddress
+    TEST_CONTRACT_ADDRESS: testContractAddress,
+    TEST_FLYOVER_CONFIGURATIONS_ADDRESS: flyoverConfigurationsAddress,
+    TEST_PEGOUT_ESCROW_ADDRESS: pegOutEscrowAddress,
+    TEST_PEGOUT_CONTRACT_ADDRESS: pegOutContractAddress,
+    TEST_LPS_URL: lpsUrl,
+    TEST_PEGOUT_CLAIM_TIMEOUT_SECONDS: pegoutClaimTimeoutSeconds
   } = process.env
   assertTruthy(mnemonic, 'Missing test configuration: TEST_MNEMONIC')
   assertTruthy(providerId, 'Missing test configuration: TEST_PROVIDER_ID')
@@ -47,7 +57,12 @@ function getConfig (): IntegrationTestConfig {
     rskAddress,
     btcAddress,
     mempoolSpaceUrl,
-    testContractAddress
+    testContractAddress,
+    flyoverConfigurationsAddress,
+    pegOutEscrowAddress,
+    pegOutContractAddress,
+    lpsUrl,
+    pegoutClaimTimeoutSeconds: pegoutClaimTimeoutSeconds ? Number(pegoutClaimTimeoutSeconds) : undefined
   }
 }
 

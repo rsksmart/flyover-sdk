@@ -40,6 +40,9 @@ interface FlyoverConfig extends BridgesConfig {
   customRegtestUrl?: string
   captchaTokenResolver: CaptchaTokenResolver
   disableChecksum?: boolean
+  customFlyoverConfigurationsAddress?: string
+  customPegOutEscrowAddress?: string
+  customPegOutContractAddress?: string
 }
 ```
 - **network**: this is the name of the network your going to connect to. It can be any of the following:
@@ -55,6 +58,9 @@ However we advice to only use `Mainnet` or `Testnet` for integration purposes as
 - **customRegtestUrl**: this parameter is deprecated and will be removed in future versions. You can disregard it.
 - **captchaTokenResolver**: some liquidity providers might want their quotes to be human-generated only for security reasons. For this cases the FlyoverSDK needs a function to get the captcha token returned from a successful captcha challenge from wherever the client application decided to store it. The SDK only expects the token to be returned to that function so the signature is `() => Promise<string>`
 - **disableChecksum**: this parameter tells the FlyoverSDK whether to disable the RSK checksum validation for the RSK addresses involved in the PegIn and PegOut operations or not. It is false by default.
+- **customFlyoverConfigurationsAddress**: address of the `FlyoverConfigurations` contract, which holds the commit-first protocol parameters. It is required until that contract has a canonical deployment on the selected network.
+- **customPegOutEscrowAddress**: address of the `PegOutEscrow` contract, which holds commit-first peg-out requests. It is required until that contract has a canonical deployment on the selected network.
+- **customPegOutContractAddress**: address of the `PegOutContract`. If you provide this parameter, the SDK uses it instead of the selected network's default address, for example to connect to a local regtest deployment.
 
 ## Connect to RSK
 If you need to connect to RSK to execute some operation then you need to create a Connection object and provide it to the Flyover object
@@ -83,6 +89,35 @@ FlyoverSDK exports an object with a collection of util functions that the client
 
 ### Transaction validation
 Both PegIn and PegOut payments should be validated to ensure they accomplish with all the requirements to complete the Flyover process. In the case of the PegOut, since the payment is done directly on the Liquidity Bridge Contract, all the validations for it reside in the implementation of the `depositPegout` function. However, in the case of the PegIn, since the transaction is constructed inside the user wallet, the smart contract doesn't have a way to tell if the transaction is valid or not until it is broadcasted and registered. Therefore, the SDK contains the `validatePeginTransaction` method to validate if a PegIn payment transaction is valid or not before broadcasting it to prevent the users or client applications from constructing incorrect transactions that would end up requiring a refund.
+
+## Peg-out migration (commit-first)
+In the commit-first peg-out the user's RBTC deposit into the `PegOutEscrow` is the only commitment, and any liquidity provider can serve it afterwards. When the user asks for numbers there is no liquidity provider involved yet, so there is no quote to request or accept. The numbers come from the on-chain `FlyoverConfigurations` contract and are the same for every liquidity provider.
+
+`estimatePegOut` replaces `getPegoutQuotes`, `acceptPegoutQuote`, `acceptAuthenticatedPegoutQuote` and `estimateRecommendedPegout`. Those methods are deprecated and will be removed in a future release. `estimatePegOut` makes no request to a liquidity provider. It needs an RSK connection and the `FlyoverConfigurations` address (`customFlyoverConfigurationsAddress`).
+```javascript
+    const flyover = new Flyover({
+        rskConnection: rsk,
+        network: 'Regtest',
+        customFlyoverConfigurationsAddress: '0x...'
+    })
+    // the BTC to deliver, in wei, as a whole number of satoshis
+    const estimate = await flyover.estimatePegOut(BigInt('5000000000000000'))
+    // estimate.value is the RBTC to send with the peg-out request
+```
+What changes for the fees:
+- The user sends `amount + callFee + gasFee`. This is `estimate.value`, which also includes `estimate.change`: a rounding remainder of at most one satoshi. The escrow refunds it in the same transaction when it reaches the dust threshold, and otherwise adds it to `callFee`. Neither fee is deducted from the BTC: the destination receives at least `amount` (`estimate.minimumBtcReceived`).
+- `callFee` is `fixedFee + percentageFee · amount / 10000`. It now also covers the liquidity provider's RSK gas for its two transactions, the claim and the proof.
+- `gasFee` is still a separate figure, but it no longer pays for RSK gas. It now holds `maxMinerFee`, the BTC miner-fee reserve, fixed when the user makes the request. How this reserve is split is still under review in the contracts, so the amount may change.
+
+The estimate also returns the BTC confirmations the payment needs and two deadlines. If no liquidity provider claims the peg-out by `depositDateLimit`, it can be refunded. If one claims it but does not prove the payment by both `expireDate` and `expireBlock`, the user can be refunded. The deadlines assume the request is mined in the block the estimate was read at (`estimate.blockNumber`). The escrow fixes the real values when the request lands.
+
+`requestPegOut` replaces `depositPegout`, which is deprecated. It sends one transaction to the `PegOutEscrow` with `estimate.value`, so there is no liquidity provider signature and no quote to deposit against. It needs a signing RSK connection and the `PegOutEscrow` address (`customPegOutEscrowAddress`). Before sending, it checks the addresses and the value against the current configuration, so a request the escrow would reject throws without spending gas.
+```javascript
+    const { requestHash, txHash, nonce } = await flyover.requestPegOut(btcDestinationAddress, rskRefundAddress, estimate.value)
+```
+- `requestHash` identifies the peg-out until a liquidity provider claims it. Keep it: the refund address can cancel the request with it while it is unclaimed.
+- `nonce` keeps tracking the peg-out after a claim, when the escrow moves it to a new id: `flyover.getPegOutState(requestHash, nonce)` returns its state for its whole life.
+- `rskRefundAddress` is the only address that can cancel, and it receives every refund. It cannot be the zero address.
 
 ## Supported addresses
 Currently, not all the types of Bitcoin addresses are supported in Flyover Protocol. The address support is summarized in the following table:

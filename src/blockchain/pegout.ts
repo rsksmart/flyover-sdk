@@ -1,4 +1,4 @@
-import { BytesLike, Contract, utils } from "ethers"
+import { BigNumber, BytesLike, Contract, utils } from "ethers"
 import abi from './pegout-abi'
 import { callContractFunction, Connection, decodeBtcAddress, executeContractFunction, executeContractView, FlyoverConfig, isRskAddress, TxResult } from "@rsksmart/bridges-core-sdk"
 import { Quotes } from "./bindings/Pegout"
@@ -34,7 +34,8 @@ export class PegOutContract {
   private readonly pegoutContract: Contract
 
   constructor (rskConnection: Connection, config: FlyoverConfig) {
-    const address = FlyoverNetworks[config.network as FlyoverSupportedNetworks]?.pegOutContractAddress
+    const address = config.customPegOutContractAddress ??
+      FlyoverNetworks[config.network as FlyoverSupportedNetworks]?.pegOutContractAddress
     if (address === undefined || !isRskAddress(address)) {
       throw new Error('invalid address')
     }
@@ -94,4 +95,15 @@ export class PegOutContract {
     return executeContractView(this.pegoutContract, 'isQuoteCompleted', hashBytes)
   }
 
+  /**
+   * Reads the change threshold of the PegOutContract: change at or above it is refunded,
+   * smaller change is kept as part of the call fee.
+   *
+   * @param blockTag block number to read at
+   * @returns the dust threshold in wei
+   */
+  async getDustThreshold (blockTag: number): Promise<bigint> {
+    const threshold = await executeContractView<BigNumber>(this.pegoutContract, 'dustThreshold', { blockTag })
+    return threshold.toBigInt()
+  }
 }

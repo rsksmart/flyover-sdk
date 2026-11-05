@@ -95,31 +95,33 @@ export declare namespace Quotes {
 export interface PegoutInterface extends utils.Interface {
   functions: {
     "depositPegOut((uint256,uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes),bytes)": FunctionFragment;
+    "dustThreshold()": FunctionFragment;
     "eip712Domain()": FunctionFragment;
+    "getBalance(address)": FunctionFragment;
     "hashPegOutQuote((uint256,uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes))": FunctionFragment;
     "hashPegOutQuoteEIP712((uint256,uint256,uint256,uint256,uint256,address,address,address,int64,uint32,uint32,uint32,uint32,uint32,uint16,uint16,bytes,bytes,bytes))": FunctionFragment;
     "isQuoteCompleted(bytes32)": FunctionFragment;
-    "pause(string)": FunctionFragment;
     "pauseStatus()": FunctionFragment;
     "refundPegOut(bytes32,bytes,bytes32,uint256,bytes32[])": FunctionFragment;
     "refundUserPegOut(bytes32)": FunctionFragment;
-    "unpause()": FunctionFragment;
     "validatePegout(bytes32,bytes)": FunctionFragment;
+    "withdraw(address,uint256)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "depositPegOut"
+      | "dustThreshold"
       | "eip712Domain"
+      | "getBalance"
       | "hashPegOutQuote"
       | "hashPegOutQuoteEIP712"
       | "isQuoteCompleted"
-      | "pause"
       | "pauseStatus"
       | "refundPegOut"
       | "refundUserPegOut"
-      | "unpause"
       | "validatePegout"
+      | "withdraw"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -127,9 +129,14 @@ export interface PegoutInterface extends utils.Interface {
     values: [Quotes.PegOutQuoteStruct, BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "dustThreshold",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "eip712Domain",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "getBalance", values: [string]): string;
   encodeFunctionData(
     functionFragment: "hashPegOutQuote",
     values: [Quotes.PegOutQuoteStruct]
@@ -142,7 +149,6 @@ export interface PegoutInterface extends utils.Interface {
     functionFragment: "isQuoteCompleted",
     values: [BytesLike]
   ): string;
-  encodeFunctionData(functionFragment: "pause", values: [string]): string;
   encodeFunctionData(
     functionFragment: "pauseStatus",
     values?: undefined
@@ -155,10 +161,13 @@ export interface PegoutInterface extends utils.Interface {
     functionFragment: "refundUserPegOut",
     values: [BytesLike]
   ): string;
-  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "validatePegout",
     values: [BytesLike, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "withdraw",
+    values: [string, BigNumberish]
   ): string;
 
   decodeFunctionResult(
@@ -166,9 +175,14 @@ export interface PegoutInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "dustThreshold",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "eip712Domain",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getBalance", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "hashPegOutQuote",
     data: BytesLike
@@ -181,7 +195,6 @@ export interface PegoutInterface extends utils.Interface {
     functionFragment: "isQuoteCompleted",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "pauseStatus",
     data: BytesLike
@@ -194,26 +207,54 @@ export interface PegoutInterface extends utils.Interface {
     functionFragment: "refundUserPegOut",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "validatePegout",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
+    "BalanceDecrease(address,uint256)": EventFragment;
+    "BalanceIncrease(address,uint256)": EventFragment;
     "EIP712DomainChanged()": EventFragment;
     "PegOutChangePaid(bytes32,address,uint256)": EventFragment;
     "PegOutDeposit(bytes32,address,uint256,uint256)": EventFragment;
     "PegOutRefunded(bytes32)": EventFragment;
     "PegOutUserRefunded(bytes32,address,uint256)": EventFragment;
+    "Withdrawal(address,address,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "BalanceDecrease"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BalanceIncrease"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "EIP712DomainChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PegOutChangePaid"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PegOutDeposit"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PegOutRefunded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PegOutUserRefunded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Withdrawal"): EventFragment;
 }
+
+export interface BalanceDecreaseEventObject {
+  dest: string;
+  amount: BigNumber;
+}
+export type BalanceDecreaseEvent = TypedEvent<
+  [string, BigNumber],
+  BalanceDecreaseEventObject
+>;
+
+export type BalanceDecreaseEventFilter = TypedEventFilter<BalanceDecreaseEvent>;
+
+export interface BalanceIncreaseEventObject {
+  dest: string;
+  amount: BigNumber;
+}
+export type BalanceIncreaseEvent = TypedEvent<
+  [string, BigNumber],
+  BalanceIncreaseEventObject
+>;
+
+export type BalanceIncreaseEventFilter = TypedEventFilter<BalanceIncreaseEvent>;
 
 export interface EIP712DomainChangedEventObject {}
 export type EIP712DomainChangedEvent = TypedEvent<
@@ -273,6 +314,18 @@ export type PegOutUserRefundedEvent = TypedEvent<
 export type PegOutUserRefundedEventFilter =
   TypedEventFilter<PegOutUserRefundedEvent>;
 
+export interface WithdrawalEventObject {
+  from: string;
+  to: string;
+  amount: BigNumber;
+}
+export type WithdrawalEvent = TypedEvent<
+  [string, string, BigNumber],
+  WithdrawalEventObject
+>;
+
+export type WithdrawalEventFilter = TypedEventFilter<WithdrawalEvent>;
+
 export interface Pegout extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
@@ -306,6 +359,8 @@ export interface Pegout extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<ContractTransaction>;
 
+    dustThreshold(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     eip712Domain(
       overrides?: CallOverrides
     ): Promise<
@@ -319,6 +374,8 @@ export interface Pegout extends BaseContract {
         extensions: BigNumber[];
       }
     >;
+
+    getBalance(addr: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
@@ -334,11 +391,6 @@ export interface Pegout extends BaseContract {
       quoteHash: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    pause(
-      reason: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
 
     pauseStatus(
       overrides?: CallOverrides
@@ -364,10 +416,6 @@ export interface Pegout extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
-    unpause(
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
-
     validatePegout(
       quoteHash: BytesLike,
       btcTx: BytesLike,
@@ -377,6 +425,12 @@ export interface Pegout extends BaseContract {
         quote: Quotes.PegOutQuoteStructOutput;
       }
     >;
+
+    withdraw(
+      addr: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
   };
 
   depositPegOut(
@@ -384,6 +438,8 @@ export interface Pegout extends BaseContract {
     signature: BytesLike,
     overrides?: PayableOverrides & { from?: string }
   ): Promise<ContractTransaction>;
+
+  dustThreshold(overrides?: CallOverrides): Promise<BigNumber>;
 
   eip712Domain(
     overrides?: CallOverrides
@@ -399,6 +455,8 @@ export interface Pegout extends BaseContract {
     }
   >;
 
+  getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
+
   hashPegOutQuote(
     quote: Quotes.PegOutQuoteStruct,
     overrides?: CallOverrides
@@ -413,11 +471,6 @@ export interface Pegout extends BaseContract {
     quoteHash: BytesLike,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  pause(
-    reason: string,
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
 
   pauseStatus(
     overrides?: CallOverrides
@@ -443,15 +496,17 @@ export interface Pegout extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
-  unpause(
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
-
   validatePegout(
     quoteHash: BytesLike,
     btcTx: BytesLike,
     overrides?: CallOverrides
   ): Promise<Quotes.PegOutQuoteStructOutput>;
+
+  withdraw(
+    addr: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
     depositPegOut(
@@ -459,6 +514,8 @@ export interface Pegout extends BaseContract {
       signature: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    dustThreshold(overrides?: CallOverrides): Promise<BigNumber>;
 
     eip712Domain(
       overrides?: CallOverrides
@@ -474,6 +531,8 @@ export interface Pegout extends BaseContract {
       }
     >;
 
+    getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
+
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
       overrides?: CallOverrides
@@ -488,8 +547,6 @@ export interface Pegout extends BaseContract {
       quoteHash: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    pause(reason: string, overrides?: CallOverrides): Promise<void>;
 
     pauseStatus(
       overrides?: CallOverrides
@@ -515,16 +572,38 @@ export interface Pegout extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    unpause(overrides?: CallOverrides): Promise<void>;
-
     validatePegout(
       quoteHash: BytesLike,
       btcTx: BytesLike,
       overrides?: CallOverrides
     ): Promise<Quotes.PegOutQuoteStructOutput>;
+
+    withdraw(
+      addr: string,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
+    "BalanceDecrease(address,uint256)"(
+      dest?: string | null,
+      amount?: BigNumberish | null
+    ): BalanceDecreaseEventFilter;
+    BalanceDecrease(
+      dest?: string | null,
+      amount?: BigNumberish | null
+    ): BalanceDecreaseEventFilter;
+
+    "BalanceIncrease(address,uint256)"(
+      dest?: string | null,
+      amount?: BigNumberish | null
+    ): BalanceIncreaseEventFilter;
+    BalanceIncrease(
+      dest?: string | null,
+      amount?: BigNumberish | null
+    ): BalanceIncreaseEventFilter;
+
     "EIP712DomainChanged()"(): EIP712DomainChangedEventFilter;
     EIP712DomainChanged(): EIP712DomainChangedEventFilter;
 
@@ -567,6 +646,17 @@ export interface Pegout extends BaseContract {
       userAddress?: string | null,
       value?: BigNumberish | null
     ): PegOutUserRefundedEventFilter;
+
+    "Withdrawal(address,address,uint256)"(
+      from?: string | null,
+      to?: string | null,
+      amount?: BigNumberish | null
+    ): WithdrawalEventFilter;
+    Withdrawal(
+      from?: string | null,
+      to?: string | null,
+      amount?: BigNumberish | null
+    ): WithdrawalEventFilter;
   };
 
   estimateGas: {
@@ -576,7 +666,11 @@ export interface Pegout extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<BigNumber>;
 
+    dustThreshold(overrides?: CallOverrides): Promise<BigNumber>;
+
     eip712Domain(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getBalance(addr: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
@@ -591,11 +685,6 @@ export interface Pegout extends BaseContract {
     isQuoteCompleted(
       quoteHash: BytesLike,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    pause(
-      reason: string,
-      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
     pauseStatus(overrides?: CallOverrides): Promise<BigNumber>;
@@ -614,12 +703,16 @@ export interface Pegout extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
-    unpause(overrides?: Overrides & { from?: string }): Promise<BigNumber>;
-
     validatePegout(
       quoteHash: BytesLike,
       btcTx: BytesLike,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    withdraw(
+      addr: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
   };
 
@@ -630,7 +723,14 @@ export interface Pegout extends BaseContract {
       overrides?: PayableOverrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
+    dustThreshold(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     eip712Domain(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getBalance(
+      addr: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     hashPegOutQuote(
       quote: Quotes.PegOutQuoteStruct,
@@ -645,11 +745,6 @@ export interface Pegout extends BaseContract {
     isQuoteCompleted(
       quoteHash: BytesLike,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    pause(
-      reason: string,
-      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
     pauseStatus(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -668,14 +763,16 @@ export interface Pegout extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
-    unpause(
-      overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
     validatePegout(
       quoteHash: BytesLike,
       btcTx: BytesLike,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    withdraw(
+      addr: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -123,6 +123,19 @@ const _abi = [
   },
   {
     type: "function",
+    name: "dustThreshold",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "eip712Domain",
     inputs: [],
     outputs: [
@@ -160,6 +173,25 @@ const _abi = [
         name: "extensions",
         type: "uint256[]",
         internalType: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getBalance",
+    inputs: [
+      {
+        name: "addr",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
       },
     ],
     stateMutability: "view",
@@ -417,19 +449,6 @@ const _abi = [
   },
   {
     type: "function",
-    name: "pause",
-    inputs: [
-      {
-        name: "reason",
-        type: "string",
-        internalType: "string",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
     name: "pauseStatus",
     inputs: [],
     outputs: [
@@ -494,13 +513,6 @@ const _abi = [
         internalType: "bytes32",
       },
     ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "unpause",
-    inputs: [],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -626,6 +638,62 @@ const _abi = [
     stateMutability: "view",
   },
   {
+    type: "function",
+    name: "withdraw",
+    inputs: [
+      {
+        name: "addr",
+        type: "address",
+        internalType: "address payable",
+      },
+      {
+        name: "amount",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "event",
+    name: "BalanceDecrease",
+    inputs: [
+      {
+        name: "dest",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "amount",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "BalanceIncrease",
+    inputs: [
+      {
+        name: "dest",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "amount",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
     type: "event",
     name: "EIP712DomainChanged",
     inputs: [],
@@ -724,6 +792,42 @@ const _abi = [
       },
     ],
     anonymous: false,
+  },
+  {
+    type: "event",
+    name: "Withdrawal",
+    inputs: [
+      {
+        name: "from",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "to",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "amount",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "error",
+    name: "InsufficientCollateral",
+    inputs: [
+      {
+        name: "amount",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
   },
   {
     type: "error",
@@ -854,6 +958,11 @@ const _abi = [
         internalType: "int256",
       },
     ],
+  },
+  {
+    type: "error",
+    name: "UnfairQuote",
+    inputs: [],
   },
 ] as const;
 
