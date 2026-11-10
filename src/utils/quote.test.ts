@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals'
-import { getQuoteTotal, isPeginQuote, isPeginStillPayable, satsToWei, weiToSatsCeil, weiToBtcCeil } from './quote'
+import { getQuoteTotal, isPeginStillPayable, satsToWei, weiToSatsCeil, weiToBtcCeil } from './quote'
 import { type QuoteDetail, type PegoutQuote, type Quote } from '../api'
 
     const peginQuote: Quote = {
@@ -177,35 +177,5 @@ describe('weiToBtcCeil function should', () => {
     for (const [wei, btc] of cases) {
       expect(weiToBtcCeil(BigInt(wei))).toBe(btc)
     }
-  })
-})
-
-describe('isPeginQuote function should', () => {
-  test('return true for a pegin quote', () => {
-    expect(isPeginQuote(peginQuote)).toBe(true)
-  })
-
-  test('return false for a pegout quote', () => {
-    expect(isPeginQuote(pegoutQuote)).toBe(false)
-  })
-
-  test('return false if fedBTCAddr is missing', () => {
-    const notPeginQuote = {
-      quote: {
-        lbcAddr: 'any addres'
-      },
-      quoteHash: 'hash'
-    }
-    expect(isPeginQuote(notPeginQuote as any)).toBe(false)
-  })
-
-  test('return false if fedBTCAddr is undefined', () => {
-    const notPeginQuote = {
-      quote: {
-        fedBTCAddr: undefined
-      },
-      quoteHash: 'hash'
-    }
-    expect(isPeginQuote(notPeginQuote as any)).toBe(false)
   })
 })

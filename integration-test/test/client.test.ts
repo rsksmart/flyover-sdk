@@ -27,17 +27,6 @@ describe('Flyover SDK client should', () => {
     assertTruthy(provider, 'Provider not found')
     flyover.useLiquidityProvider(provider)
 
-    const peginQuotes = await flyover.getQuotes({
-      callEoaOrContractAddress: integrationTestConfig.rskAddress,
-      callContractArguments: '',
-      valueToTransfer: integrationTestConfig.peginAmount,
-      rskRefundAddress: integrationTestConfig.rskAddress
-    })
-    if (peginQuotes?.length === 0) {
-      throw new Error('invalid getQuote response')
-    }
-    const peginQuote = peginQuotes.at(0)
-
     const pegoutQuotes = await flyover.getPegoutQuotes({
       to: integrationTestConfig.btcAddress,
       valueToTransfer: integrationTestConfig.pegoutAmount,
@@ -47,10 +36,6 @@ describe('Flyover SDK client should', () => {
       throw new Error('invalid getPegoutQuote response')
     }
     const pegoutQuote = pegoutQuotes.at(0)
-
-    expect(typeof peginQuote?.quote.value).toBe('bigint')
-    expect(peginQuote?.quote.value.toString()).toBe(integrationTestConfig.peginAmount.toString())
-    expect(typeof peginQuote?.quote.gasLimit).toBe('number')
 
     expect(typeof pegoutQuote?.quote.value).toBe('bigint')
     expect(pegoutQuote?.quote.value.toString()).toBe(integrationTestConfig.pegoutAmount.toString())

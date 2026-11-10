@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals'
-import { type PegoutQuote, type LiquidityProvider, type Quote } from '../api'
+import { type PegoutQuote, type LiquidityProvider } from '../api'
 import { getMetadata } from './getMetadata'
 import JSONbig from 'json-bigint'
 
@@ -57,35 +57,9 @@ const pegoutQuoteMock: PegoutQuote = {
   quoteHash: 'any hash'
 }
 
-const peginQuoteMock: Quote = {
-  quote: {
-    agreementTimestamp: 1,
-    btcRefundAddr: 'any address',
-    callFee: BigInt(1),
-    contractAddr: 'any address',
-    confirmations: 1,
-    gasLimit: 1,
-    lbcAddr: 'any address',
-    lpRSKAddr: 'any address',
-    nonce: BigInt(1),
-    penaltyFee: BigInt(1),
-    rskRefundAddr: 'any address',
-    timeForDeposit: 1,
-    value: BigInt(1),
-    callOnRegister: true,
-    data: '0x',
-    fedBTCAddr: 'any address',
-    lpBTCAddr: 'any address',
-    lpCallTime: 1,
-    gasFee: BigInt(1),
-    chainId: 31,
-  },
-  quoteHash: 'any hash'
-}
-
 describe('getMetadata function should', () => {
   test('return pegin and pegout fees', async () => {
-    const metadata = await getMetadata(providerMock, null, null)
+    const metadata = await getMetadata(providerMock, null)
     expect(metadata.length).toBe(2)
     expect(serializer.stringify(metadata.at(0))).toEqual(serializer.stringify({
       operation: 'PegIn',
@@ -132,19 +106,8 @@ describe('getMetadata function should', () => {
     }))
   })
 
-  test('include service fee if pegin quote is provided', async () => {
-    const metadata = await getMetadata(providerMock, peginQuoteMock, null)
-    expect(serializer.stringify(metadata.at(0)?.fees.at(1))).toEqual(serializer.stringify({
-      amount: peginQuoteMock.quote.gasFee,
-      decimals: 0,
-      type: 'Fixed',
-      description: 'Service fee. Pays for the cost of making transactions on behalf of the user',
-      unit: 'Wei'
-    }))
-  })
-
   test('include service fee if pegout quote is provided', async () => {
-    const metadata = await getMetadata(providerMock, null, pegoutQuoteMock)
+    const metadata = await getMetadata(providerMock, pegoutQuoteMock)
     expect(serializer.stringify(metadata.at(1)?.fees.at(1))).toEqual(serializer.stringify({
       amount: pegoutQuoteMock.quote.gasFee,
       decimals: 0,

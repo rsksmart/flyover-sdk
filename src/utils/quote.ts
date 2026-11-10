@@ -44,7 +44,3 @@ export function weiToBtcCeil (wei: bigint): string {
   const fraction = sats % SATS_PER_BTC
   return `${whole}.${fraction.toString().padStart(BTC_DECIMALS, '0')}`
 }
-
-export function isPeginQuote (quote: Quote | PegoutQuote): quote is Quote {
-  return "fedBTCAddr" in quote.quote && quote.quote.fedBTCAddr !== undefined
-}

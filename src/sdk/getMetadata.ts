@@ -1,9 +1,8 @@
 import { type BridgeMetadata } from '@rsksmart/bridges-core-sdk'
-import { type LiquidityProvider, type PegoutQuote, type Quote } from '../api'
+import { type LiquidityProvider, type PegoutQuote } from '../api'
 
 export async function getMetadata (
   liquidityProvider: LiquidityProvider,
-  lastPeginQuote: Quote | null,
   lastPegoutQuote: PegoutQuote | null
 ): Promise<BridgeMetadata[]> {
   const peginMetadata: BridgeMetadata = {
@@ -50,16 +49,6 @@ export async function getMetadata (
   }
 
   const serviceFeeDescription = 'Service fee. Pays for the cost of making transactions on behalf of the user'
-  if (lastPeginQuote !== null) {
-    peginMetadata.fees[1] = {
-      amount: lastPeginQuote.quote.gasFee,
-      decimals: 0,
-      type: 'Fixed',
-      description: serviceFeeDescription,
-      unit: 'Wei'
-    }
-  }
-
   if (lastPegoutQuote !== null) {
     pegoutMetadata.fees[1] = {
       amount: lastPegoutQuote.quote.gasFee,

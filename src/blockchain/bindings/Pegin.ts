@@ -26,115 +26,26 @@ import type {
   OnEvent,
 } from "./common";
 
-export declare namespace Quotes {
-  export type PegInQuoteStruct = {
-    chainId: BigNumberish;
-    callFee: BigNumberish;
-    penaltyFee: BigNumberish;
-    value: BigNumberish;
-    gasFee: BigNumberish;
-    fedBtcAddress: BytesLike;
-    lbcAddress: string;
-    liquidityProviderRskAddress: string;
-    contractAddress: string;
-    rskRefundAddress: string;
-    nonce: BigNumberish;
-    gasLimit: BigNumberish;
-    agreementTimestamp: BigNumberish;
-    timeForDeposit: BigNumberish;
-    callTime: BigNumberish;
-    depositConfirmations: BigNumberish;
-    callOnRegister: boolean;
-    btcRefundAddress: BytesLike;
-    liquidityProviderBtcAddress: BytesLike;
-    data: BytesLike;
-  };
-
-  export type PegInQuoteStructOutput = [
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    string,
-    string,
-    string,
-    string,
-    string,
-    BigNumber,
-    number,
-    number,
-    number,
-    number,
-    number,
-    boolean,
-    string,
-    string,
-    string
-  ] & {
-    chainId: BigNumber;
-    callFee: BigNumber;
-    penaltyFee: BigNumber;
-    value: BigNumber;
-    gasFee: BigNumber;
-    fedBtcAddress: string;
-    lbcAddress: string;
-    liquidityProviderRskAddress: string;
-    contractAddress: string;
-    rskRefundAddress: string;
-    nonce: BigNumber;
-    gasLimit: number;
-    agreementTimestamp: number;
-    timeForDeposit: number;
-    callTime: number;
-    depositConfirmations: number;
-    callOnRegister: boolean;
-    btcRefundAddress: string;
-    liquidityProviderBtcAddress: string;
-    data: string;
-  };
-}
-
 export interface PeginInterface extends utils.Interface {
   functions: {
-    "callForUser((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
     "deposit()": FunctionFragment;
     "eip712Domain()": FunctionFragment;
     "getBalance(address)": FunctionFragment;
     "getMinPegIn()": FunctionFragment;
-    "getQuoteStatus(bytes32)": FunctionFragment;
-    "hashPegInQuote((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
-    "hashPegInQuoteEIP712((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes))": FunctionFragment;
-    "pause(string)": FunctionFragment;
     "pauseStatus()": FunctionFragment;
-    "registerPegIn((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes,bytes,bytes,uint256)": FunctionFragment;
-    "unpause()": FunctionFragment;
-    "validatePegInDepositAddress((uint256,uint256,uint256,uint256,uint256,bytes20,address,address,address,address,int64,uint32,uint32,uint32,uint32,uint16,bool,bytes,bytes,bytes),bytes)": FunctionFragment;
     "withdraw(uint256)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "callForUser"
       | "deposit"
       | "eip712Domain"
       | "getBalance"
       | "getMinPegIn"
-      | "getQuoteStatus"
-      | "hashPegInQuote"
-      | "hashPegInQuoteEIP712"
-      | "pause"
       | "pauseStatus"
-      | "registerPegIn"
-      | "unpause"
-      | "validatePegInDepositAddress"
       | "withdraw"
   ): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: "callForUser",
-    values: [Quotes.PegInQuoteStruct]
-  ): string;
   encodeFunctionData(functionFragment: "deposit", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "eip712Domain",
@@ -146,46 +57,14 @@ export interface PeginInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getQuoteStatus",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "hashPegInQuote",
-    values: [Quotes.PegInQuoteStruct]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "hashPegInQuoteEIP712",
-    values: [Quotes.PegInQuoteStruct]
-  ): string;
-  encodeFunctionData(functionFragment: "pause", values: [string]): string;
-  encodeFunctionData(
     functionFragment: "pauseStatus",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "registerPegIn",
-    values: [
-      Quotes.PegInQuoteStruct,
-      BytesLike,
-      BytesLike,
-      BytesLike,
-      BigNumberish
-    ]
-  ): string;
-  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "validatePegInDepositAddress",
-    values: [Quotes.PegInQuoteStruct, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "withdraw",
     values: [BigNumberish]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "callForUser",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "eip712Domain",
@@ -197,29 +76,7 @@ export interface PeginInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getQuoteStatus",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "hashPegInQuote",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "hashPegInQuoteEIP712",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
-  decodeFunctionResult(
     functionFragment: "pauseStatus",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "registerPegIn",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "validatePegInDepositAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
@@ -227,21 +84,13 @@ export interface PeginInterface extends utils.Interface {
   events: {
     "BalanceDecrease(address,uint256)": EventFragment;
     "BalanceIncrease(address,uint256)": EventFragment;
-    "BridgeCapExceeded(bytes32,int256)": EventFragment;
-    "CallForUser(address,address,bytes32,uint256,uint256,bytes,bool)": EventFragment;
     "EIP712DomainChanged()": EventFragment;
-    "PegInRegistered(bytes32,uint256)": EventFragment;
-    "Refund(address,bytes32,uint256,bool)": EventFragment;
     "Withdrawal(address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "BalanceDecrease"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BalanceIncrease"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "BridgeCapExceeded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "CallForUser"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "EIP712DomainChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "PegInRegistered"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Refund"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdrawal"): EventFragment;
 }
 
@@ -267,34 +116,6 @@ export type BalanceIncreaseEvent = TypedEvent<
 
 export type BalanceIncreaseEventFilter = TypedEventFilter<BalanceIncreaseEvent>;
 
-export interface BridgeCapExceededEventObject {
-  quoteHash: string;
-  errorCode: BigNumber;
-}
-export type BridgeCapExceededEvent = TypedEvent<
-  [string, BigNumber],
-  BridgeCapExceededEventObject
->;
-
-export type BridgeCapExceededEventFilter =
-  TypedEventFilter<BridgeCapExceededEvent>;
-
-export interface CallForUserEventObject {
-  from: string;
-  dest: string;
-  quoteHash: string;
-  gasLimit: BigNumber;
-  value: BigNumber;
-  data: string;
-  success: boolean;
-}
-export type CallForUserEvent = TypedEvent<
-  [string, string, string, BigNumber, BigNumber, string, boolean],
-  CallForUserEventObject
->;
-
-export type CallForUserEventFilter = TypedEventFilter<CallForUserEvent>;
-
 export interface EIP712DomainChangedEventObject {}
 export type EIP712DomainChangedEvent = TypedEvent<
   [],
@@ -303,30 +124,6 @@ export type EIP712DomainChangedEvent = TypedEvent<
 
 export type EIP712DomainChangedEventFilter =
   TypedEventFilter<EIP712DomainChangedEvent>;
-
-export interface PegInRegisteredEventObject {
-  quoteHash: string;
-  transferredAmount: BigNumber;
-}
-export type PegInRegisteredEvent = TypedEvent<
-  [string, BigNumber],
-  PegInRegisteredEventObject
->;
-
-export type PegInRegisteredEventFilter = TypedEventFilter<PegInRegisteredEvent>;
-
-export interface RefundEventObject {
-  dest: string;
-  quoteHash: string;
-  amount: BigNumber;
-  success: boolean;
-}
-export type RefundEvent = TypedEvent<
-  [string, string, BigNumber, boolean],
-  RefundEventObject
->;
-
-export type RefundEventFilter = TypedEventFilter<RefundEvent>;
 
 export interface WithdrawalEventObject {
   from: string;
@@ -366,11 +163,6 @@ export interface Pegin extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    callForUser(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: PayableOverrides & { from?: string }
-    ): Promise<ContractTransaction>;
-
     deposit(
       overrides?: PayableOverrides & { from?: string }
     ): Promise<ContractTransaction>;
@@ -393,26 +185,6 @@ export interface Pegin extends BaseContract {
 
     getMinPegIn(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    getQuoteStatus(
-      quoteHash: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[number]>;
-
-    hashPegInQuote(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    hashPegInQuoteEIP712(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    pause(
-      reason: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
-
     pauseStatus(
       overrides?: CallOverrides
     ): Promise<
@@ -423,35 +195,11 @@ export interface Pegin extends BaseContract {
       }
     >;
 
-    registerPegIn(
-      quote: Quotes.PegInQuoteStruct,
-      signature: BytesLike,
-      btcRawTransaction: BytesLike,
-      partialMerkleTree: BytesLike,
-      height: BigNumberish,
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
-
-    unpause(
-      overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>;
-
-    validatePegInDepositAddress(
-      quote: Quotes.PegInQuoteStruct,
-      depositAddress: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
     withdraw(
       amount: BigNumberish,
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
   };
-
-  callForUser(
-    quote: Quotes.PegInQuoteStruct,
-    overrides?: PayableOverrides & { from?: string }
-  ): Promise<ContractTransaction>;
 
   deposit(
     overrides?: PayableOverrides & { from?: string }
@@ -475,26 +223,6 @@ export interface Pegin extends BaseContract {
 
   getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
-  getQuoteStatus(
-    quoteHash: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<number>;
-
-  hashPegInQuote(
-    quote: Quotes.PegInQuoteStruct,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  hashPegInQuoteEIP712(
-    quote: Quotes.PegInQuoteStruct,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
-  pause(
-    reason: string,
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
-
   pauseStatus(
     overrides?: CallOverrides
   ): Promise<
@@ -505,36 +233,12 @@ export interface Pegin extends BaseContract {
     }
   >;
 
-  registerPegIn(
-    quote: Quotes.PegInQuoteStruct,
-    signature: BytesLike,
-    btcRawTransaction: BytesLike,
-    partialMerkleTree: BytesLike,
-    height: BigNumberish,
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
-
-  unpause(
-    overrides?: Overrides & { from?: string }
-  ): Promise<ContractTransaction>;
-
-  validatePegInDepositAddress(
-    quote: Quotes.PegInQuoteStruct,
-    depositAddress: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
   withdraw(
     amount: BigNumberish,
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    callForUser(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     deposit(overrides?: CallOverrides): Promise<void>;
 
     eip712Domain(
@@ -555,23 +259,6 @@ export interface Pegin extends BaseContract {
 
     getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getQuoteStatus(
-      quoteHash: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<number>;
-
-    hashPegInQuote(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    hashPegInQuoteEIP712(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    pause(reason: string, overrides?: CallOverrides): Promise<void>;
-
     pauseStatus(
       overrides?: CallOverrides
     ): Promise<
@@ -581,23 +268,6 @@ export interface Pegin extends BaseContract {
         since: BigNumber;
       }
     >;
-
-    registerPegIn(
-      quote: Quotes.PegInQuoteStruct,
-      signature: BytesLike,
-      btcRawTransaction: BytesLike,
-      partialMerkleTree: BytesLike,
-      height: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    unpause(overrides?: CallOverrides): Promise<void>;
-
-    validatePegInDepositAddress(
-      quote: Quotes.PegInQuoteStruct,
-      depositAddress: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
 
     withdraw(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
   };
@@ -621,58 +291,8 @@ export interface Pegin extends BaseContract {
       amount?: BigNumberish | null
     ): BalanceIncreaseEventFilter;
 
-    "BridgeCapExceeded(bytes32,int256)"(
-      quoteHash?: BytesLike | null,
-      errorCode?: BigNumberish | null
-    ): BridgeCapExceededEventFilter;
-    BridgeCapExceeded(
-      quoteHash?: BytesLike | null,
-      errorCode?: BigNumberish | null
-    ): BridgeCapExceededEventFilter;
-
-    "CallForUser(address,address,bytes32,uint256,uint256,bytes,bool)"(
-      from?: string | null,
-      dest?: string | null,
-      quoteHash?: BytesLike | null,
-      gasLimit?: null,
-      value?: null,
-      data?: null,
-      success?: null
-    ): CallForUserEventFilter;
-    CallForUser(
-      from?: string | null,
-      dest?: string | null,
-      quoteHash?: BytesLike | null,
-      gasLimit?: null,
-      value?: null,
-      data?: null,
-      success?: null
-    ): CallForUserEventFilter;
-
     "EIP712DomainChanged()"(): EIP712DomainChangedEventFilter;
     EIP712DomainChanged(): EIP712DomainChangedEventFilter;
-
-    "PegInRegistered(bytes32,uint256)"(
-      quoteHash?: BytesLike | null,
-      transferredAmount?: BigNumberish | null
-    ): PegInRegisteredEventFilter;
-    PegInRegistered(
-      quoteHash?: BytesLike | null,
-      transferredAmount?: BigNumberish | null
-    ): PegInRegisteredEventFilter;
-
-    "Refund(address,bytes32,uint256,bool)"(
-      dest?: string | null,
-      quoteHash?: BytesLike | null,
-      amount?: BigNumberish | null,
-      success?: null
-    ): RefundEventFilter;
-    Refund(
-      dest?: string | null,
-      quoteHash?: BytesLike | null,
-      amount?: BigNumberish | null,
-      success?: null
-    ): RefundEventFilter;
 
     "Withdrawal(address,uint256)"(
       from?: string | null,
@@ -685,11 +305,6 @@ export interface Pegin extends BaseContract {
   };
 
   estimateGas: {
-    callForUser(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: PayableOverrides & { from?: string }
-    ): Promise<BigNumber>;
-
     deposit(
       overrides?: PayableOverrides & { from?: string }
     ): Promise<BigNumber>;
@@ -700,44 +315,7 @@ export interface Pegin extends BaseContract {
 
     getMinPegIn(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getQuoteStatus(
-      quoteHash: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    hashPegInQuote(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    hashPegInQuoteEIP712(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    pause(
-      reason: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>;
-
     pauseStatus(overrides?: CallOverrides): Promise<BigNumber>;
-
-    registerPegIn(
-      quote: Quotes.PegInQuoteStruct,
-      signature: BytesLike,
-      btcRawTransaction: BytesLike,
-      partialMerkleTree: BytesLike,
-      height: BigNumberish,
-      overrides?: Overrides & { from?: string }
-    ): Promise<BigNumber>;
-
-    unpause(overrides?: Overrides & { from?: string }): Promise<BigNumber>;
-
-    validatePegInDepositAddress(
-      quote: Quotes.PegInQuoteStruct,
-      depositAddress: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     withdraw(
       amount: BigNumberish,
@@ -746,11 +324,6 @@ export interface Pegin extends BaseContract {
   };
 
   populateTransaction: {
-    callForUser(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: PayableOverrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
     deposit(
       overrides?: PayableOverrides & { from?: string }
     ): Promise<PopulatedTransaction>;
@@ -764,46 +337,7 @@ export interface Pegin extends BaseContract {
 
     getMinPegIn(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getQuoteStatus(
-      quoteHash: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    hashPegInQuote(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    hashPegInQuoteEIP712(
-      quote: Quotes.PegInQuoteStruct,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    pause(
-      reason: string,
-      overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
     pauseStatus(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    registerPegIn(
-      quote: Quotes.PegInQuoteStruct,
-      signature: BytesLike,
-      btcRawTransaction: BytesLike,
-      partialMerkleTree: BytesLike,
-      height: BigNumberish,
-      overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
-    unpause(
-      overrides?: Overrides & { from?: string }
-    ): Promise<PopulatedTransaction>;
-
-    validatePegInDepositAddress(
-      quote: Quotes.PegInQuoteStruct,
-      depositAddress: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     withdraw(
       amount: BigNumberish,

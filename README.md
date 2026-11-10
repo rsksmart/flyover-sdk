@@ -23,8 +23,8 @@ Then you can start doing operations with the client
 ```javascript
     const providers = await flyover.getLiquidityProviders()
     flyover.useLiquidityProvider(providers.at(0))
-    const quotes = await flyover.getQuotes({ /* QuoteRequest data... */ })
-    const acceptedQuote = await flyover.acceptQuote(quotes.at(0))
+    const quotes = await flyover.getPegoutQuotes({ /* PegoutQuoteRequest data... */ })
+    const acceptedQuote = await flyover.acceptPegoutQuote(quotes.at(0))
 ```
 You can read more about Flyover Protocol [here](https://dev.rootstock.io/developers/integrate/flyover/) or in its [integration manual](https://dev.rootstock.io/developers/integrate/flyover/sdk/).
 

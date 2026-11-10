@@ -1,7 +1,7 @@
 import { signQuote } from "./signQuote";
 import { describe, test, jest, expect, beforeAll } from '@jest/globals'
 import { assertTruthy, FlyoverConfig, isValidSignature, ethers } from "@rsksmart/bridges-core-sdk";
-import { LiquidityProvider, PegoutQuote, Quote } from "../api";
+import { LiquidityProvider, PegoutQuote } from "../api";
 import { LiquidityBridgeContract } from "../blockchain/lbc";
 
 const providerMock: LiquidityProvider = {
@@ -30,67 +30,6 @@ const providerMock: LiquidityProvider = {
     requiredConfirmations: 5
   }
 }
-
-const peginCases: {quote: Quote, signer: string, signature: string, connection?: any}[] =  [
-    {
-        quote: {
-            quote:{
-            fedBTCAddr: '2MvW72NchDEXiYuTv8SurroHwGw8rSuDKxz',
-            lbcAddr: '0x18D8212bC00106b93070123f325021C723D503a3',
-            lpRSKAddr: '0xAFf2c034FD8Bc690e62A897BbC5A6C4dF2321992',
-            btcRefundAddr: 'mfWxJ45yp2SFn7UciZyNpvDKrzbhyfKrY8',
-            rskRefundAddr: '0x79568c2989232dCa1840087D73d403602364c0D4',
-            lpBTCAddr: 'mwEceC31MwWmF6hc5SSQ8FmbgdsSoBSnbm',
-            callFee: BigInt("499600000000000000"),
-            penaltyFee: BigInt("1000000000000000"),
-            contractAddr: '0x79568c2989232dCa1840087D73d403602364c0D4',
-            data: '10',
-            gasLimit: 21016,
-            nonce: BigInt("601291104220190380"),
-            value: BigInt("500000000000000000"),
-            agreementTimestamp: 1748003098,
-            timeForDeposit: 3600,
-            lpCallTime: 7200,
-            confirmations: 3,
-            callOnRegister: false,
-            gasFee: BigInt("102071097248"),
-            chainId: 31,
-            },
-            quoteHash: 'bad965e00a5b1085cb2d4d448e2cdb7fd06b8875583055620f08516b18ee899f'
-        },
-        signer: '0xAFf2c034FD8Bc690e62A897BbC5A6C4dF2321992',
-        signature: 'aaebe63d6e226d0a88325f6657481cb038f6b3930ab4cdb5f9a4a49a57b45e387ecdfb084109068d8c6bbea5ea030cab9d5ca4d4be82134a67b9fef55e2287d41c',
-    },
-    {
-        quote: {
-            quote: {
-                fedBTCAddr: '2MvW72NchDEXiYuTv8SurroHwGw8rSuDKxz',
-                lbcAddr: '0x18D8212bC00106b93070123f325021C723D503a3',
-                lpRSKAddr: '0x57f9F71E683E2A8ff3d2f394aE45C58b2d913A35',
-                btcRefundAddr: 'mfWxJ45yp2SFn7UciZyNpvDKrzbhyfKrY8',
-                rskRefundAddr: '0x79568c2989232dCa1840087D73d403602364c0D4',
-                lpBTCAddr: 'mwEceC31MwWmF6hc5SSQ8FmbgdsSoBSnbm',
-                callFee: BigInt("0"),
-                penaltyFee: BigInt("1000000000000000"),
-                contractAddr: '0x79568c2989232dCa1840087D73d403602364c0D4',
-                data: '10',
-                gasLimit: 21016,
-                nonce: BigInt("1333727062419879207"),
-                value: BigInt("500000000000000000"),
-                agreementTimestamp: 1748251859,
-                timeForDeposit: 3600,
-                lpCallTime: 7200,
-                confirmations: 3,
-                callOnRegister: false,
-                gasFee: BigInt("547794649600"),
-                chainId: 31,
-            },
-            quoteHash: 'adf549ecbc1a4e734fa90b2985495732b1c1c9e84235fe77584c5eeedf4dbf3f'
-        },
-        signature: '40126b215bd55aa96c5e552249359677dc4fad7f99ce5dfaa85b3e6f6a92df9d35764a4bc0e47b66b045183bfbd8978c2238823e6068087a45a83d63df4c3d731b',
-        signer: '0x57f9F71E683E2A8ff3d2f394aE45C58b2d913A35'
-    }
-]
 
 const pegoutCases: {quote: PegoutQuote, signer: string, signature: string, connection?: any}[] =  [
 {
@@ -152,7 +91,7 @@ const pegoutCases: {quote: PegoutQuote, signer: string, signature: string, conne
 ]
 
 describe("signQuote", () => {
-  const peginQuote = peginCases[0]?.quote
+  const pegoutQuote = pegoutCases[0]?.quote
   let connections: {connection: any, address:string}[]
 
   beforeAll(async () => {
@@ -174,39 +113,11 @@ describe("signQuote", () => {
           }
         }
       ]
-    peginCases.forEach((peginCase) => {
-        peginCase.connection = connections.find((c) => c.address.toLowerCase() === peginCase.signer.toLowerCase())?.connection
-        jest.spyOn(peginCase.connection.signer, '_signTypedData').mockResolvedValueOnce(peginCase.signature)
-    })
     pegoutCases.forEach((pegoutCase) => {
         pegoutCase.connection = connections.find((c) => c.address.toLowerCase() === pegoutCase.signer.toLowerCase())?.connection
         jest.spyOn(pegoutCase.connection.signer, '_signTypedData').mockResolvedValueOnce(pegoutCase.signature)
     })
   }, 50_000);
-
-  test("signs a valid pegin quote", async () => {
-    for (const peginCase of peginCases) {
-        const lbcMock = {
-            pegInContract: {
-                hashPeginQuote: jest.fn<() => Promise<string>>().mockResolvedValue(peginCase.quote.quoteHash),
-                getEip712Domain: jest.fn<() => Promise<unknown>>().mockResolvedValue({ name: 'PegInContract', version: '1', chainId: 31, verifyingContract:'addr' }),
-            }
-        }
-
-        const signature = await signQuote(
-            { network: 'Development', rskConnection: peginCase.connection, captchaTokenResolver: () => Promise.resolve('') },
-            lbcMock as unknown as LiquidityBridgeContract,
-            providerMock,
-            peginCase.quote
-        );
-        const checksummedSigner = ethers.utils.getAddress(peginCase.signer);
-
-        expect(lbcMock.pegInContract.hashPeginQuote).toHaveBeenCalledWith(peginCase.quote);
-        expect(lbcMock.pegInContract.getEip712Domain).toHaveBeenCalled();
-        expect(signature).toBe(peginCase.signature);
-        await expect(isValidSignature(checksummedSigner, peginCase.quote.quoteHash, signature)).toBe(true);
-    }
-    });
 
     test("signs a valid pegout quote", async () => {
             for (const pegoutCase of pegoutCases) {
@@ -230,30 +141,6 @@ describe("signQuote", () => {
         expect(signature).toBe(pegoutCase.signature);
         await expect(isValidSignature(checksummedSigner, pegoutCase.quote.quoteHash, signature)).toBe(true);
     }
-    });
-
-    test("throws if pegin domain chain id does not match quote chain id", async () => {
-        const peginCase = peginCases[0];
-        assertTruthy(peginCase);
-        const lbcMock = {
-            pegInContract: {
-                hashPeginQuote: jest.fn<() => Promise<string>>().mockResolvedValue(peginCase.quote.quoteHash),
-                getEip712Domain: jest.fn<() => Promise<unknown>>().mockResolvedValue({ name: 'PegInContract', version: '1', chainId: 1234, verifyingContract:'addr' }),
-            }
-        };
-        const config: FlyoverConfig = { rskConnection: peginCase.connection } as unknown as FlyoverConfig;
-
-        await expect(signQuote(
-            config,
-            lbcMock as unknown as LiquidityBridgeContract,
-            providerMock,
-            peginCase.quote
-        )).rejects.toMatchObject({
-            message: 'Flyover error',
-            details: 'Chain id of domain does not match chain id of quote',
-            timestamp: expect.any(Number),
-            recoverable: true,
-        });
     });
 
     test("throws if pegout domain chain id does not match quote chain id", async () => {
@@ -281,18 +168,18 @@ describe("signQuote", () => {
     });
 
    test("throws if rskConnection is not set", async () => {
-        assertTruthy(peginQuote)
+        assertTruthy(pegoutQuote)
         const config = { rskConnection: undefined } as unknown as FlyoverConfig;
         await expect(
-            signQuote(config, {} as unknown as LiquidityBridgeContract, providerMock, peginQuote)
+            signQuote(config, {} as unknown as LiquidityBridgeContract, providerMock, pegoutQuote)
         ).rejects.toThrow("Rsk connection is not set");
     });
 
     test("throws if connection does not support signing", async () => {
-        assertTruthy(peginQuote)
+        assertTruthy(pegoutQuote)
         const config: FlyoverConfig = { rskConnection: { value: 'something' } } as unknown as FlyoverConfig;
         await expect(
-            signQuote(config, {} as unknown as LiquidityBridgeContract, providerMock, peginQuote)
+            signQuote(config, {} as unknown as LiquidityBridgeContract, providerMock, pegoutQuote)
         ).rejects.toMatchObject({
             message: 'Flyover error',
             details: 'the current connection does not support signing',
@@ -302,10 +189,10 @@ describe("signQuote", () => {
     });
 
     test("throws if quote hash does not match", async () => {
-        assertTruthy(peginQuote)
+        assertTruthy(pegoutQuote)
         const lbcMock = {
-            pegInContract: {
-                hashPeginQuote: jest.fn<() => Promise<string>>().mockResolvedValue('not a hash'),
+            pegOutContract: {
+                hashPegoutQuote: jest.fn<() => Promise<string>>().mockResolvedValue('not a hash'),
             }
         }
         const config: FlyoverConfig = { rskConnection: { signer: 'something' } } as unknown as FlyoverConfig;
@@ -313,7 +200,7 @@ describe("signQuote", () => {
             config,
             lbcMock as unknown as LiquidityBridgeContract,
             providerMock,
-            peginQuote
+            pegoutQuote
         )).rejects.toMatchObject({
             message: 'Quote hash mismatch',
             details: `Real quote hash doesn't match quote hash provided by server. ${providerMock.apiBaseUrl} is potentially a malicious liquidity provider.`,

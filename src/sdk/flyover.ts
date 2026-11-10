@@ -1,8 +1,6 @@
-import { getQuote } from './getQuote'
 import { getProviders } from './getProviders'
-import { acceptQuote } from './acceptQuote'
 import {
-  type AcceptedQuote, type Quote, type PeginQuoteRequest,
+  type AcceptedQuote, type Quote,
   type LiquidityProvider, type PegoutQuoteRequest, type PegoutQuote,
   type AcceptedPegoutQuote,
   type DepositEvent,
@@ -41,7 +39,6 @@ import { type FlyoverSDKContext, type IsQuoteRefundableResponse, type IsQuotePai
 import { isPegoutRefundable } from './isPegoutRefundable'
 import { isPeginRefundable, type IsPeginRefundableParams } from './isPeginRefundable'
 import { type RegisterPeginParams, registerPegin } from './registerPegin'
-import { acceptAuthenticatedQuote } from './acceptAuthenticatedQuote'
 import { acceptAuthenticatedPegoutQuote } from './acceptAuthenticatedPegoutQuote'
 import { signQuote } from './signQuote'
 import { estimateRecommendedPegin, RecommendedPeginExtraArgs } from './recommendedPegin'
@@ -56,7 +53,6 @@ export class Flyover implements Bridge {
   private liquidityBridgeContract?: LiquidityBridgeContract
   private rskBridge?: RskBridge
   private readonly httpClient: HttpClient
-  private lastPeginQuote: Quote | null
   private lastPegoutQuote: PegoutQuote | null
 
   /**
@@ -72,7 +68,6 @@ export class Flyover implements Bridge {
     config.allowInsecureConnections ??= false
     config.disableChecksum ??= false
     this.httpClient = getHttpClient(config.captchaTokenResolver)
-    this.lastPeginQuote = null
     this.lastPegoutQuote = null
   }
 
@@ -95,79 +90,6 @@ export class Flyover implements Bridge {
     this.checkLbc()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return getProviders(this.httpClient, this.liquidityBridgeContract!)
-  }
-
-  /**
-   * Get available quotes for given parameters
-   *
-   * @param { QuoteRequest } quoteRequest Quote request to compute available quotes
-   *
-   * @returns { Quote[] } List of available quotes
-   *
-   * @throws { Error } When provider has not been set in the Flyover instance
-   *
-   * @throws { Error } When quoteRequest has missing fields
-   *
-   * @example
-   *
-   * flyover.useProvider(provider)
-   * await flyover.getQuotes(quoteRequest)
-   */
-  async getQuotes (quoteRequest: PeginQuoteRequest): Promise<Quote[]> {
-    this.checkLiquidityProvider()
-    this.checkLbc()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const quotes = await getQuote(this.config, this.httpClient, this.liquidityBridgeContract!, this.liquidityProvider!, quoteRequest)
-    this.lastPeginQuote = quotes.at(0) ?? null
-    return quotes
-  }
-
-  /**
-   * Accept a specific pegin quote
-   *
-   * @param { Quote } quote Quote to be accepted
-   *
-   * @returns { AcceptedQuote } Accepted quote with confirmation data
-   *
-   * @throws { Error } When provider has not been set in the Flyover instance
-   *
-   * @throws { Error } When quote has missing fields
-   *
-   * @example
-   *
-   * flyover.useProvider(provider)
-   * const quotes = await flyover.getQuotes(quoteRequest)
-   * await flyover.acceptQuote(quotes[0])
-   */
-  async acceptQuote (quote: Quote): Promise<AcceptedQuote> {
-    this.checkLiquidityProvider()
-    this.checkLbc()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return acceptQuote(this.httpClient, this.liquidityBridgeContract!, this.liquidityProvider!, quote)
-  }
-
-  /**
-   * Accept a specific pegin quote from a trusted account
-   *
-   * @param { Quote } quote Quote to be accepted
-   * @param { string } signature The hash of the quote signed by the trusted account
-   *
-   * @returns { AcceptedQuote } Accepted quote with confirmation data
-   *
-   * @throws { Error } When provider has not been set in the Flyover instance
-   *
-   * @throws { Error } When quote has missing fields
-   *
-   * @throws { Error } When signature is invalid
-   *
-   * @throws { Error } When locking cap is not enough
-   *
-   **/
-  async acceptAuthenticatedQuote (quote: Quote, signature: string): Promise<AcceptedQuote> {
-    this.checkLiquidityProvider()
-    this.checkLbc()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return acceptAuthenticatedQuote(this.httpClient, this.liquidityBridgeContract!, this.liquidityProvider!, quote, signature)
   }
 
   /**
@@ -308,7 +230,6 @@ export class Flyover implements Bridge {
    */
   useLiquidityProvider (provider: LiquidityProvider): void {
     this.liquidityProvider = provider
-    this.lastPeginQuote = null
     this.lastPegoutQuote = null
   }
 
@@ -457,7 +378,7 @@ export class Flyover implements Bridge {
     if (this.liquidityProvider == null) {
       throw FlyoverError.withReason('You need to select a provider to fetch the metadata')
     }
-    return getMetadata(this.liquidityProvider, this.lastPeginQuote, this.lastPegoutQuote)
+    return getMetadata(this.liquidityProvider, this.lastPegoutQuote)
   }
 
   supportsNetwork (chainId: number): boolean {
@@ -688,12 +609,6 @@ export class Flyover implements Bridge {
     }
   }
 
-  async hashPeginQuote (quote: Quote): Promise<string> {
-    this.checkLbc()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.liquidityBridgeContract!.pegInContract.hashPeginQuote(quote)
-  }
-
   async hashPegoutQuote (quote: PegoutQuote): Promise<string> {
     this.checkLbc()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -704,13 +619,13 @@ export class Flyover implements Bridge {
    * Signs a quote hash with the connected signer. This is useful for the authenticated quote
    * feature, where the quote hash needs to be signed in order to accept a quote.
    *
-   * @param { Quote|PegoutQuote } quote The quote to sign
+   * @param { PegoutQuote } quote The quote to sign
    *
    * @throws { Error } If not connected to RSK
    *
    * @returns { string } The signature of the quote hash
    */
-  async signQuote (quote: Quote|PegoutQuote): Promise<string> {
+  async signQuote (quote: PegoutQuote): Promise<string> {
     this.checkLbc()
     this.checkLiquidityProvider()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

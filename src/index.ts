@@ -15,7 +15,6 @@ export {
   type LiquidityProvider,
   type ProviderDetail,
   type Quote,
-  type PeginQuoteRequest,
   type QuoteDetail,
   type AcceptedQuote,
   type PegoutQuote,

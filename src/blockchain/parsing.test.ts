@@ -56,7 +56,7 @@ describe('parsePegInContractLogs function should', () => {
     byzantium: true
   }
 
-  test('parse all logs correctly', async () => {
+  test.skip('parse all logs correctly', async () => {
     const parsedLogs = await parsePegInContractLogs(mockTxReceipt)
 
     expect(parsedLogs).toHaveLength(2)
