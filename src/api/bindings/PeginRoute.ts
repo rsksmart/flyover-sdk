@@ -10,14 +10,52 @@
  */
 
 import {
+  AcceptAuthenticatedQuoteRequest,
+  AcceptPeginRespose,
+  AcceptQuoteRequest,
   AddCollateralRequest,
   AddCollateralResponse,
   GetCollateralResponse,
+  GetPeginQuoteResponse,
   PeginConfigurationRequest,
+  PeginQuoteRequest,
   PeginQuoteStatusDTO,
+  RecommendedOperationDTO,
 } from "./data-contracts";
 
 export namespace Pegin {
+  /**
+   * @description  Accepts Quote with trusted account signature
+   * @name PostAcceptAuthenticatedQuote
+   * @summary Accept authenticated quote
+   * @request POST:/pegin/acceptAuthenticatedQuote
+   */
+  export namespace PostAcceptAuthenticatedQuote {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = AcceptAuthenticatedQuoteRequest;
+    export type RequestHeaders = {};
+    export type ResponseBody = AcceptPeginRespose;
+  }
+
+  export const PostAcceptAuthenticatedQuotePath = "/pegin/acceptAuthenticatedQuote";
+
+  /**
+   * @description  Accepts Quote
+   * @name PostAcceptQuote
+   * @summary Accept Quote
+   * @request POST:/pegin/acceptQuote
+   */
+  export namespace PostAcceptQuote {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = AcceptQuoteRequest;
+    export type RequestHeaders = {};
+    export type ResponseBody = AcceptPeginRespose;
+  }
+
+  export const PostAcceptQuotePath = "/pegin/acceptQuote";
+
   /**
    * @description  Adds PegIn Collateral
    * @name PostAddCollateral
@@ -65,6 +103,54 @@ export namespace Pegin {
   }
 
   export const PostConfigurationPath = "/pegin/configuration";
+
+  /**
+   * @description  Gets Pegin Quote
+   * @name PostGetQuote
+   * @summary Pegin GetQuote
+   * @request POST:/pegin/getQuote
+   */
+  export namespace PostGetQuote {
+    export type RequestParams = {};
+    export type RequestQuery = {};
+    export type RequestBody = PeginQuoteRequest;
+    export type RequestHeaders = {};
+    export type ResponseBody = GetPeginQuoteResponse;
+  }
+
+  export const PostGetQuotePath = "/pegin/getQuote";
+
+  /**
+   * @description  Returns the recommended quote value to create a quote whose total payment is the input amount
+   * @name RecommendedList
+   * @summary Recommended pegin
+   * @request GET:/pegin/recommended
+   */
+  export namespace RecommendedList {
+    export type RequestParams = {};
+    export type RequestQuery = {
+      /**
+       * Amount in wei expected to use as total payment for the quote
+       * @format string
+       */
+      amount: string;
+      /**
+       * Destination address for the pegin. Is optional, but if provided, it will increase the estimation accuracy.
+       * @format string
+       */
+      destination_address?: string;
+      /**
+       * Hex-encoded data payload to include in the pegin transaction. Is optional, but if provided, it will increase the estimation accuracy.
+       * @format string
+       */
+      data?: string;
+    };
+    export type RequestBody = never;
+    export type RequestHeaders = {};
+    export type ResponseBody = RecommendedOperationDTO;
+  }
+
+  export const RecommendedListPath = "/pegin/recommended";
 
   /**
    * @description  Returns the status of an accepted pegin quote

@@ -9,11 +9,13 @@ import {
 } from './bindings/data-contracts'
 
 export {
+  type AcceptPeginRespose as AcceptedQuote,
   type LiquidityProvider as LiquidityProviderBase,
   type ProviderDetail,
   type ProviderDetailResponse as LiquidityProviderDetail,
   type PeginQuoteDTO as QuoteDetail,
   type PegoutQuoteDTO as PegoutQuoteDetail,
+  type GetPeginQuoteResponse as Quote,
   type PegoutQuoteRequest,
   type GetPegoutQuoteResponse as PegoutQuote,
   type AcceptPegoutResponse as AcceptedPegoutQuote,
@@ -24,7 +26,9 @@ export {
   type AvailableLiquidityDTO as AvailableLiquidity,
   type PeginCreationDataDTO as PeginCreationData,
   type RecommendedOperationDTO as RecommendedOperation,
+  GetPeginQuoteResponseRequiredFields as quoteRequiredFields,
   PeginQuoteDtoRequiredFields as quoteDetailRequiredFields,
+  AcceptPeginResposeRequiredFields as acceptQuoteRequiredFields,
   LiquidityProviderRequiredFields as providerRequiredFields,
   PegoutQuoteRequestRequiredFields as pegoutQuoteRequestRequiredFields,
   PegoutQuoteDtoRequiredFields as pegoutQuoteDetailRequiredFields,
@@ -43,5 +47,6 @@ export const Routes = {
   peginStatus: Pegin.StatusListPath,
   pegoutStatus: Pegout.StatusListPath,
   availableLiquidity: Providers.LiquidityListPath,
+  recommendedPegin: Pegin.RecommendedListPath,
   recommendedPegout: Pegout.RecommendedListPath
 } as const
