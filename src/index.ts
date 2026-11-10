@@ -3,6 +3,9 @@ export { Flyover } from './sdk/flyover'
 
 export { type FlyoverNetworks } from './constants/networks'
 
+export { type RegisterPeginParams } from './sdk/registerPegin'
+export { type IsPeginRefundableParams } from './sdk/isPeginRefundable'
+export { type ValidatePeginTransactionParams, type ValidatePeginTransactionOptions } from './sdk/validatePeginTransaction'
 export { type PegoutPaymentData } from './sdk/getPegoutPaymentData'
 
 export { FlyoverError } from './client/httpClient'
@@ -10,7 +13,9 @@ export { FlyoverError } from './client/httpClient'
 export {
   type LiquidityProvider,
   type ProviderDetail,
+  type Quote,
   type QuoteDetail,
+  type AcceptedQuote,
   type PegoutQuote,
   type PegoutQuoteRequest,
   type PegoutQuoteDetail,
@@ -26,9 +31,6 @@ export {
 export { FlyoverUtils } from './sdk/flyoverUtils'
 
 export { type IsQuotePaidResponse, type IsQuoteRefundableResponse } from './utils/interfaces'
-export { type RegisterPeginParams } from './sdk/registerPegin'
-export { type IsPeginRefundableParams } from './sdk/isPeginRefundable'
-export { type ValidatePeginTransactionParams, type ValidatePeginTransactionOptions } from './sdk/validatePeginTransaction'
 
 export { FlyoverErrors } from './constants/errors'
 

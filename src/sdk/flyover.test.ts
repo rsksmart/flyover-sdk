@@ -5,9 +5,10 @@ import { acceptAuthenticatedPegoutQuote } from './acceptAuthenticatedPegoutQuote
 import { getPegoutQuote } from './getPegoutQuote'
 import { acceptPegoutQuote } from './acceptPegoutQuote'
 import { depositPegout } from './depositPegout'
-import { type LiquidityProvider, type PegoutQuote, type PegoutQuoteRequest, type AcceptedPegoutQuote } from '../api'
+import { type Quote, type LiquidityProvider, type PegoutQuote, type PegoutQuoteRequest, type AcceptedPegoutQuote } from '../api'
 import { LiquidityBridgeContract } from '../blockchain/lbc'
 import { refundPegout } from './refundPegout'
+import { registerPegin, type RegisterPeginParams } from './registerPegin'
 import { type BlockchainConnection } from '@rsksmart/bridges-core-sdk'
 import { FlyoverError } from '../client/httpClient'
 import { supportsConversion } from './supportsConversion'
@@ -15,19 +16,19 @@ import { getMetadata } from './getMetadata'
 import { getPeginStatus } from './getPeginStatus'
 import { getPegoutStatus } from './getPegoutStatus'
 import { getAvailableLiquidity } from './getAvailableLiquidity'
+import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
+import { RskBridge } from '../blockchain/bridge'
+import { isPeginQuotePaid } from './isPeginQuotePaid'
 import { isPegoutQuotePaid } from './isPegoutQuotePaid'
 import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
 import { isPegoutRefundable } from './isPegoutRefundable'
+import { isPeginRefundable, type IsPeginRefundableParams } from './isPeginRefundable'
 import { signQuote } from './signQuote'
 import { estimateRecommendedPegout, RecommendedPegoutExtraArgs } from './recommendedPegout'
 import { getPegoutPaymentData } from './getPegoutPaymentData'
 import { PegOutContract } from '../blockchain/pegout'
-import { DiscoveryContract } from '../blockchain/discovery'
 import { PegInContract } from '../blockchain/pegin'
-import { RskBridge } from '../blockchain/bridge'
-import { validatePeginTransaction, type ValidatePeginTransactionOptions, type ValidatePeginTransactionParams } from './validatePeginTransaction'
-import { isPeginRefundable, type IsPeginRefundableParams } from './isPeginRefundable'
-import { registerPegin, type RegisterPeginParams } from './registerPegin'
+import { DiscoveryContract } from '../blockchain/discovery'
 
 jest.mock('ethers')
 
@@ -37,15 +38,16 @@ jest.mock('./getPegoutQuote')
 jest.mock('./acceptPegoutQuote')
 jest.mock('./depositPegout')
 jest.mock('./refundPegout')
+jest.mock('./registerPegin')
 jest.mock('./supportsConversion')
 jest.mock('./getMetadata')
 jest.mock('./getPeginStatus')
 jest.mock('./getPegoutStatus')
 jest.mock('./getAvailableLiquidity')
+jest.mock('./validatePeginTransaction')
+jest.mock('./isPeginQuotePaid')
 jest.mock('./isPegoutQuotePaid')
 jest.mock('./isPegoutRefundable')
-jest.mock('./registerPegin')
-jest.mock('./validatePeginTransaction')
 jest.mock('./isPeginRefundable')
 jest.mock('./recommendedPegout')
 jest.mock('./signQuote')
@@ -60,8 +62,33 @@ const rskConnectionMock = jest.mocked({
   }
 } as BlockchainConnection)
 
-const rskAddressMock = '0x79568c2989232dCa1840087D73d403602364c0D4'
 const signatureMock = 'fa751697c71da60568814c1c18161a4be6af252177e6483b66ee554d6ff141a72879c152ac436ae07816dd69984d9440f9651e47ac24e7216825093f13f9147b1c'
+
+const quoteMock: Quote = {
+  quoteHash: 'any hash',
+  quote: {
+    fedBTCAddr: 'any address',
+    lbcAddr: 'any address',
+    lpRSKAddr: 'any address',
+    btcRefundAddr: 'any address',
+    rskRefundAddr: 'any address',
+    lpBTCAddr: 'any address',
+    contractAddr: 'any address',
+    callFee: BigInt(1),
+    penaltyFee: BigInt(1),
+    data: 'any data',
+    gasLimit: 1,
+    nonce: BigInt(1),
+    value: BigInt('9007199254740993'),
+    timeForDeposit: 1,
+    lpCallTime: 1,
+    agreementTimestamp: 1,
+    confirmations: 1,
+    callOnRegister: true,
+    gasFee: BigInt('1'),
+    chainId: 31,
+  }
+}
 
 const pegoutQuoteMock: PegoutQuote = {
   quote: {
@@ -314,6 +341,7 @@ describe('Flyover object should', () => {
       amount,
       expect.objectContaining({
         pegOutContract: expect.any(PegOutContract),
+        pegInContract: expect.any(PegInContract),
         discoveryContract: expect.any(DiscoveryContract)
       }),
     )
@@ -461,8 +489,11 @@ describe('Flyover object should', () => {
 
   describe('validatePeginTransaction method should', () => {
     const params: ValidatePeginTransactionParams = {
-      rskAddress: rskAddressMock,
-      expectedAmount: BigInt(1),
+      quoteInfo: quoteMock,
+      acceptInfo: {
+        signature: signatureMock,
+        bitcoinDepositAddressHash: '2MvkytopbHAGgTwrpQjpGVM5WZYvujPqf9u'
+      },
       btcTx: '010203'
     }
     const options: ValidatePeginTransactionOptions = { throwError: true }
@@ -489,6 +520,10 @@ describe('Flyover object should', () => {
         options
       )
     })
+    test('fail if LP has not been selected', async () => {
+      await flyover.connectToRsk(rskConnectionMock)
+      await expect(flyover.validatePeginTransaction(params)).rejects.toThrow('You need to select a provider to do this operation')
+    })
     test('create LBC instance if not created before', async () => {
       flyover.useLiquidityProvider(providerMock)
       await flyover.connectToRsk(rskConnectionMock)
@@ -510,8 +545,58 @@ describe('Flyover object should', () => {
 
     test('fail if liquidity provider has not been selected', async () => {
       await flyover.connectToRsk(rskConnectionMock)
-      await expect(flyover.isQuotePaid(MOCK_QUOTE_HASH, 'pegout'))
+      await expect(flyover.isQuotePaid(MOCK_QUOTE_HASH, 'pegin'))
         .rejects.toThrow('You need to select a provider to do this operation')
+    })
+
+    describe('pegin quotes', () => {
+      test('invoke correctly isQuotePaid external function', async () => {
+        flyover.useLiquidityProvider(providerMock)
+        await flyover.connectToRsk(rskConnectionMock)
+        await flyover.isQuotePaid(MOCK_QUOTE_HASH, 'pegin')
+
+        expect(isPeginQuotePaid).toBeCalledTimes(1)
+        expect(isPeginQuotePaid).toBeCalledWith(
+          MOCK_QUOTE_HASH,
+          expect.objectContaining({
+            httpClient: (flyover as any).httpClient,
+            provider: providerMock,
+            rskConnection: rskConnectionMock
+          })
+        )
+      })
+
+      test('fail when allowInsecureConnections is false and Provider apiBaseUrl is insecure', async () => {
+        (flyover as any).config.allowInsecureConnections = false
+        const provider = { ...providerMock }
+        provider.apiBaseUrl = 'http://localhost:1234'
+        flyover.useLiquidityProvider(provider)
+
+        await flyover.connectToRsk(rskConnectionMock)
+        await expect(flyover.isQuotePaid(MOCK_QUOTE_HASH, 'pegin'))
+          .rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
+      })
+
+      test('fail if not connected to RSK', async () => {
+        const disconnectedFlyover = new Flyover({
+          network: FAKE_NETWORK,
+          allowInsecureConnections: true,
+          captchaTokenResolver: async () => Promise.resolve('')
+        })
+
+        disconnectedFlyover.useLiquidityProvider(providerMock)
+
+        // Connect to RSK with a connection that returns undefined for chain height
+        const mockConnectionWithNoHeight = {
+          ...rskConnectionMock,
+          getChainHeight: jest.fn().mockImplementation(async () => Promise.resolve(undefined))
+        } as unknown as BlockchainConnection
+
+        await disconnectedFlyover.connectToRsk(mockConnectionWithNoHeight)
+
+        await expect(disconnectedFlyover.isQuotePaid('testQuoteHash', 'pegin'))
+          .rejects.toThrow('Before calling isQuotePaid for pegin quotes, you need to connect to RSK using Flyover.connectToRsk')
+      })
     })
 
     describe('pegout quotes', () => {
@@ -600,6 +685,7 @@ describe('Flyover object should', () => {
         expect.objectContaining({
           config: expect.anything(),
           lbc: expect.objectContaining({
+            pegInContract: expect.any(PegInContract),
             pegOutContract: expect.any(PegOutContract),
             discoveryContract: expect.any(DiscoveryContract)
           }),
@@ -644,9 +730,15 @@ describe('Flyover object should', () => {
       jest.clearAllMocks()
       ;(isPeginRefundable as jest.Mock).mockImplementation(async () => Promise.resolve({ isRefundable: true }))
       params = {
-        rskAddress: rskAddressMock,
+        quote: quoteMock,
+        providerSignature: signatureMock,
         btcTransactionHash: FAKE_BTC_TX_HASH
       }
+    })
+
+    test('fail if liquidity provider has not been selected', async () => {
+      await expect(flyover.isPeginRefundable(params))
+        .rejects.toThrow('You need to select a provider to do this operation')
     })
 
     test('invoke correctly isPeginRefundable external function', async () => {
@@ -659,7 +751,8 @@ describe('Flyover object should', () => {
       expect(result).toEqual({ isRefundable: true })
       expect(isPeginRefundable).toBeCalledTimes(1)
       expect(isPeginRefundable).toBeCalledWith({
-        rskAddress: rskAddressMock,
+        quote: quoteMock,
+        providerSignature: signatureMock,
         btcTransactionHash: FAKE_BTC_TX_HASH
       },
       (flyover as any).getFlyoverContext())
@@ -719,7 +812,8 @@ describe('Flyover object should', () => {
     } as unknown as BitcoinDataSource
 
     const registerPeginParams: RegisterPeginParams = {
-      rskAddress: rskAddressMock,
+      quote: quoteMock,
+      providerSignature: signatureMock,
       userBtcTransactionHash: FAKE_BTC_TX_HASH
     }
 
@@ -735,7 +829,8 @@ describe('Flyover object should', () => {
       expect(registerPegin).toHaveBeenCalledTimes(1)
       expect(registerPegin).toHaveBeenCalledWith(
         expect.objectContaining({
-          rskAddress: rskAddressMock,
+          quote: quoteMock,
+          providerSignature: signatureMock,
           userBtcTransactionHash: FAKE_BTC_TX_HASH
         }),
         expect.objectContaining({
@@ -746,6 +841,11 @@ describe('Flyover object should', () => {
           lbc: (flyover as any).liquidityBridgeContract
         })
       )
+    })
+
+    test('fail if liquidity provider has not been selected', async () => {
+      await expect(flyover.registerPegin(registerPeginParams))
+        .rejects.toThrow('You need to select a provider to do this operation')
     })
 
     test('fail if not connected to RSK', async () => {
@@ -787,6 +887,18 @@ describe('Flyover object should', () => {
 
       await expect(flyover.registerPegin(registerPeginParams))
         .rejects.toThrow(MOCK_ERROR_MESSAGE)
+    })
+
+    test('fail when allowInsecureConnections is false and Provider apiBaseUrl is insecure', async () => {
+      (flyover as any).config.allowInsecureConnections = false
+      const provider = { ...providerMock }
+      provider.apiBaseUrl = 'http://localhost:1234'
+      flyover.useLiquidityProvider(provider)
+      await flyover.connectToRsk(rskConnectionMock)
+      flyover.connectToBitcoin(bitcoinDataSourceMock)
+
+      await expect(flyover.registerPegin(registerPeginParams))
+        .rejects.toThrow('Provider API base URL is not secure. Please enable insecure connections on Flyover configuration')
     })
   })
 
@@ -860,6 +972,7 @@ describe('Flyover object should', () => {
           allowInsecureConnections: true
         }),
         expect.objectContaining({
+          pegInContract: expect.any(PegInContract),
           pegOutContract: expect.any(PegOutContract),
           discoveryContract: expect.any(DiscoveryContract)
         }),
@@ -914,6 +1027,7 @@ describe('Flyover object should', () => {
       expect(getPegoutPaymentData).toBeCalledTimes(1)
       expect(getPegoutPaymentData).toBeCalledWith(
         expect.objectContaining({
+          pegInContract: expect.any(PegInContract),
           pegOutContract: expect.any(PegOutContract),
           discoveryContract: expect.any(DiscoveryContract)
         }),

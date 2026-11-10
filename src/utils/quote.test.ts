@@ -1,7 +1,32 @@
 import { describe, test, expect } from '@jest/globals'
-import { getQuoteTotal, satsToWei } from './quote'
-import { type PegoutQuote } from '../api'
+import { getQuoteTotal, isPeginStillPayable, satsToWei, weiToSatsCeil, weiToBtcCeil } from './quote'
+import { type QuoteDetail, type PegoutQuote, type Quote } from '../api'
 
+    const peginQuote: Quote = {
+      quote: {
+        fedBTCAddr: 'any addres',
+        lbcAddr: 'any addres',
+        lpRSKAddr: 'any addres',
+        btcRefundAddr: 'any addres',
+        rskRefundAddr: 'any addres',
+        lpBTCAddr: 'any addres',
+        callFee: BigInt('1234567890'),
+        penaltyFee: BigInt(25),
+        contractAddr: 'any addres',
+        data: 'any data',
+        gasLimit: 3,
+        nonce: BigInt(4),
+        gasFee: BigInt('2000000000000000000'),
+        value: BigInt('4000000000000000000'),
+        agreementTimestamp: 6,
+        timeForDeposit: 7,
+        lpCallTime: 8,
+        confirmations: 9,
+        callOnRegister: true,
+        chainId: 31,
+      },
+      quoteHash: 'a hash'
+    }
     const pegoutQuote: PegoutQuote = {
       quote: {
         lbcAddress: 'an address',
@@ -33,9 +58,11 @@ describe('getQuoteTotal function should', () => {
     expect(() => { getQuoteTotal(undefined as any) }).toThrow('empty quote')
   })
   test('fail if quote detail is empty', () => {
+    expect(() => { getQuoteTotal({} as Quote) }).toThrow('empty quote detail')
     expect(() => { getQuoteTotal({} as PegoutQuote) }).toThrow('empty quote detail')
   })
   test('sum properly quote value', () => {
+    expect(getQuoteTotal(peginQuote)).toBe(BigInt('6000000001234567890'))
     expect(getQuoteTotal(pegoutQuote)).toBe(BigInt('12500000000000000000'))
   })
   test('replace missing values with 0', () => {
@@ -45,6 +72,55 @@ describe('getQuoteTotal function should', () => {
       { quote: { gasFee: 5 } },
     ]
     quotes.forEach(quote => { expect(getQuoteTotal(quote)).toBe(BigInt(5)) })
+  })
+})
+
+describe('isPeginStillPayable function should', () => {
+  test('fail if quote is empty', () => {
+    expect(() => { isPeginStillPayable(null as any) }).toThrow('empty quote')
+    expect(() => { isPeginStillPayable(undefined as any) }).toThrow('empty quote')
+  })
+  test('fail if quote detail is empty', () => {
+    expect(() => { isPeginStillPayable({ quote: {}, quoteHash: 'hash 1' } as Quote) }).toThrow('Validation failed for object with following missing properties: agreementTimestamp, timeForDeposit')
+    expect(() => { isPeginStillPayable({ quote: { timeForDeposit: 10 }, quoteHash: 'hash 1' } as Quote) }).toThrow('Validation failed for object with following missing properties: agreementTimestamp')
+    expect(() => { isPeginStillPayable({ quote: { agreementTimestamp: 50 }, quoteHash: 'hash 1' } as Quote) }).toThrow('Validation failed for object with following missing properties: timeForDeposit')
+  })
+  test('return true if quote is still payable', () => {
+    const now = Date.now() / 1000
+    const testCases: { result: boolean, quote: Partial<QuoteDetail> }[] = [
+      {
+        result: false,
+        quote: {
+          agreementTimestamp: now - 3600,
+          timeForDeposit: 3600
+        }
+      },
+      {
+        result: true,
+        quote: {
+          agreementTimestamp: now,
+          timeForDeposit: 3600
+        }
+      },
+      {
+        result: true,
+        quote: {
+          agreementTimestamp: now - 10,
+          timeForDeposit: 20
+        }
+      },
+      {
+        result: false,
+        quote: {
+          agreementTimestamp: now - 10,
+          timeForDeposit: 5
+        }
+      }
+    ]
+    for (const testCase of testCases) {
+      const quote: Quote = { quote: testCase.quote as QuoteDetail, quoteHash: 'hash' }
+      expect(isPeginStillPayable(quote)).toBe(testCase.result)
+    }
   })
 })
 
@@ -65,5 +141,41 @@ describe('satsToWei function should', () => {
   })
   test('fail if sats is negative', () => {
     expect(() => { satsToWei(BigInt(-1)) }).toThrow('Negative sats value')
+  })
+})
+
+describe('weiToSatsCeil function should', () => {
+  test('convert wei to sats rounding up', () => {
+    const cases: [string, string][] = [
+      ['0', '0'],
+      ['1', '1'],
+      ['9999999999', '1'],
+      ['10000000000', '1'],
+      ['10000000001', '2'],
+      ['10023097964000000', '1002310'],
+      ['10023090000000000', '1002309']
+    ]
+    for (const [wei, sats] of cases) {
+      expect(weiToSatsCeil(BigInt(wei))).toBe(BigInt(sats))
+    }
+  })
+  test('fail if wei is negative', () => {
+    expect(() => { weiToSatsCeil(BigInt(-1)) }).toThrow('Negative wei value')
+  })
+})
+
+describe('weiToBtcCeil function should', () => {
+  test('convert wei to BTC string rounding up to the satoshi', () => {
+    const cases: [string, string][] = [
+      ['0', '0.00000000'],
+      ['1', '0.00000001'],
+      ['8101341211956000', '0.00810135'],
+      ['8101340000000000', '0.00810134'],
+      ['1000000000000000000', '1.00000000'],
+      ['1000000000000000001', '1.00000001']
+    ]
+    for (const [wei, btc] of cases) {
+      expect(weiToBtcCeil(BigInt(wei))).toBe(btc)
+    }
   })
 })

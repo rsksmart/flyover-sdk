@@ -4,7 +4,7 @@ import {
   isBtcTestnetAddress, isBtcMainnetAddress, isLegacyBtcAddress
 } from '@rsksmart/bridges-core-sdk'
 import { getSimpleQuoteStatus } from '../constants/status'
-import { getQuoteTotal } from '../utils/quote'
+import { getQuoteTotal, isPeginStillPayable } from '../utils/quote'
 
 export const FlyoverUtils = deepFreeze({
   /**
@@ -17,10 +17,10 @@ export const FlyoverUtils = deepFreeze({
     */
   getSimpleQuoteStatus,
   /**
-    * Get the total value of a given pegout quote without knowing the specific
+    * Get the total value of a given pegin or pegout quote without knowing the specific
     * operations to calculate it.
     *
-    * @param { PegoutQuote } quote The quote to get the total of
+    * @param { Quote | PegoutQuote } quote The quote to get the total of
     *
     * @returns { bigint } The total value of the quote to be paid
     */
@@ -91,5 +91,13 @@ export const FlyoverUtils = deepFreeze({
     *
     * @returns { string } The checksummed address
     */
-  rskChecksum
+  rskChecksum,
+  /**
+    * Checks if a given pegin quote is still payable or if it has expired
+    *
+    * @param { Quote } quote The quote of the pegin to check
+    *
+    * @returns { boolean } Weather the quote is still payable or not
+    */
+  isPeginStillPayable
 } as const)

@@ -1,15 +1,18 @@
 import { assertTruthy, type FlyoverConfig, validateRequiredFields } from '@rsksmart/bridges-core-sdk'
+import { type Quote, type AcceptedQuote } from '../api'
 import { Transaction, networks, address } from 'bitcoinjs-lib'
+import { quoteDetailRequiredFields, quoteRequiredFields, acceptQuoteRequiredFields } from '../api'
+import { FlyoverUtils } from './flyoverUtils'
 import { FlyoverError } from '../client/httpClient'
 import { type FlyoverSDKContext } from '../utils/interfaces'
 import { satsToWei } from '../utils/quote'
 
 /** Interface that holds the parameters for a PegIn deposit validation */
 export interface ValidatePeginTransactionParams {
-  /** The RSK destination address of the PegIn */
-  rskAddress: string
-  /** The amount the PegIn is expected to pay, in wei */
-  expectedAmount: bigint
+  /** The detail of the quote of the PegIn */
+  quoteInfo: Quote
+  /** The signature and derivation address for the PegIn quote */
+  acceptInfo: AcceptedQuote
   /** The serialized Bitcoin transaction to validate */
   btcTx: string
 }
@@ -25,11 +28,20 @@ export async function validatePeginTransaction (
   params: ValidatePeginTransactionParams,
   options: ValidatePeginTransactionOptions = { throwError: true }
 ): Promise<string> {
-  validateRequiredFields(params, 'rskAddress', 'expectedAmount', 'btcTx')
+  validateRequiredFields(params, 'quoteInfo', 'acceptInfo', 'btcTx')
+  validateRequiredFields(params.quoteInfo, ...quoteRequiredFields)
+  validateRequiredFields(params.quoteInfo.quote, ...quoteDetailRequiredFields)
+  validateRequiredFields(params.acceptInfo, ...acceptQuoteRequiredFields)
 
-  const { lbc } = context
-  assertTruthy(lbc, 'Missing Liquidity Bridge Contract')
-  const depositAddress = await lbc.pegInContract.getDepositAddress(params.rskAddress)
+  const expirationError = validateExpiration(params.quoteInfo)
+  if (expirationError !== '') {
+    return throwIfEnabled(expirationError, options)
+  }
+
+  const addressError = await validateAddress(context, params)
+  if (addressError !== '') {
+    return throwIfEnabled(addressError, options)
+  }
 
   let parsedTx: Transaction
   try {
@@ -39,45 +51,58 @@ export async function validatePeginTransaction (
     return throwIfEnabled('Invalid transaction: ' + (error as Error).message, options)
   }
 
-  const addressError = validateAddress(context, depositAddress, parsedTx)
-  if (addressError !== '') {
-    return throwIfEnabled(addressError, options)
-  }
-
-  const amountError = validatePaidAmount(context, params, depositAddress, parsedTx)
+  const amountError = await validatePaidAmount(context, params, parsedTx)
   if (amountError !== '') {
     return throwIfEnabled(amountError, options)
   }
 
-  const utxoError = await validateUtxos(context, depositAddress, parsedTx)
+  const utxoError = await validateUtxos(context, params, parsedTx)
   if (utxoError !== '') {
     return throwIfEnabled(utxoError, options)
   }
   return ''
 }
 
-function validateAddress (
-  context: FlyoverSDKContext,
-  depositAddress: string,
-  parsedTx: Transaction
-): string {
-  if (getDepositOutputs(context.config, depositAddress, parsedTx).length === 0) {
-    return `The transaction doesn't pay the deposit address ${depositAddress}.`
+function validateExpiration (quote: Quote): string {
+  if (!FlyoverUtils.isPeginStillPayable(quote)) {
+    const detail = quote.quote
+    return `The quote ${quote.quoteHash} was expired at ${detail.agreementTimestamp + detail.timeForDeposit}.`
   }
   return ''
 }
 
-function validatePaidAmount (
+async function validateAddress (
+  context: FlyoverSDKContext,
+  params: ValidatePeginTransactionParams
+): Promise<string> {
+  const { lbc, provider } = context
+  assertTruthy(lbc, 'Missing Liquidity Bridge Contract')
+  assertTruthy(provider, 'Missing Liquidity Provider')
+  const isValidAddress = await lbc.pegInContract.validatePeginDepositAddress(params.quoteInfo, params.acceptInfo.bitcoinDepositAddressHash)
+  if (!isValidAddress) {
+    return FlyoverError.untrustedBtcAddressError({
+      serverUrl: provider.apiBaseUrl,
+      address: params.acceptInfo.bitcoinDepositAddressHash
+    }).details
+  }
+  return ''
+}
+
+async function validatePaidAmount (
   context: FlyoverSDKContext,
   params: ValidatePeginTransactionParams,
-  depositAddress: string,
   parsedTx: Transaction
-): string {
-  const totalSats = getDepositOutputs(context.config, depositAddress, parsedTx)
-    .reduce((sum, value) => sum + BigInt(value), BigInt(0))
+): Promise<string> {
+  const { config } = context
+  const totalSats = parsedTx.outs.map<[string, number]>(output => [
+    address.fromOutputScript(output.script, getNetworkForConfig(config)),
+    output.value
+  ])
+    .filter(([address]) => address === params.acceptInfo.bitcoinDepositAddressHash)
+    .reduce((sum, [, value]) => sum + BigInt(value), BigInt(0))
 
   const totalWei = totalSats * BigInt(10 ** 10)
-  const expectedValue = params.expectedAmount
+  const expectedValue = FlyoverUtils.getQuoteTotal(params.quoteInfo)
 
   if (totalWei < expectedValue) {
     return `The amount paid ${totalWei} is less than the expected value ${expectedValue}.`
@@ -85,24 +110,21 @@ function validatePaidAmount (
   return ''
 }
 
-async function validateUtxos (context: FlyoverSDKContext, depositAddress: string, parsedTx: Transaction): Promise<string> {
+async function validateUtxos (context: FlyoverSDKContext, params: ValidatePeginTransactionParams, parsedTx: Transaction): Promise<string> {
   const { config, bridge } = context
   assertTruthy(bridge, 'Missing RskBridge')
   const minBridgeSats = await bridge.getMinimumLockTxValue()
   const minBridgeWei = satsToWei(minBridgeSats)
-  const invalidUtxos = getDepositOutputs(config, depositAddress, parsedTx)
-    .filter(value => satsToWei(BigInt(value)) < minBridgeWei)
+  const invalidUtxos = parsedTx.outs.map<[string, number]>(output => [
+    address.fromOutputScript(output.script, getNetworkForConfig(config)),
+    output.value
+  ])
+    .filter(([address, value]) => address === params.acceptInfo.bitcoinDepositAddressHash && satsToWei(BigInt(value)) < minBridgeWei)
     .length
   if (invalidUtxos > 0) {
     return `The transaction has ${invalidUtxos} outputs with less than the minimum value ${minBridgeWei}.`
   }
   return ''
-}
-
-function getDepositOutputs (config: FlyoverConfig, depositAddress: string, parsedTx: Transaction): number[] {
-  return parsedTx.outs
-    .filter(output => address.fromOutputScript(output.script, getNetworkForConfig(config)) === depositAddress)
-    .map(output => output.value)
 }
 
 function throwIfEnabled (errorMessage: string, options: ValidatePeginTransactionOptions): string {

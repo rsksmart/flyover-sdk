@@ -1,3 +1,4 @@
+import type { Quote } from '../api'
 import type { FlyoverSDKContext } from '../utils/interfaces'
 import { isPeginRefundable } from './isPeginRefundable'
 import { getRawTxWithoutWitnesses } from '../bitcoin/utils'
@@ -7,15 +8,17 @@ import { assertTruthy } from '@rsksmart/bridges-core-sdk'
 
 /** Interface  to encapsulate the parameters for calling the registerPegin function */
 export interface RegisterPeginParams {
-  /** The RSK destination address of the peg-in */
-  rskAddress: string
+  quote: Quote
+  providerSignature: string
   userBtcTransactionHash: string
 }
 
-/** Interface to encapsulate parameters required by the resolvePegIn function of the PegIn contract */
+/** Interface to encapsulate parameters required by the registerPegIn function of the Liquidity Bridge Contract */
 export interface RegisterPeginLbcParams {
-  /** The RSK destination address of the peg-in */
-  rskAddress: string
+  /** The quote of the service */
+  quote: Quote
+  /** The signature of the quote */
+  signature: string
   /** The peg-in transaction */
   btcRawTransaction: string
   /** The merkle tree path that proves transaction inclusion */
@@ -25,9 +28,9 @@ export interface RegisterPeginLbcParams {
 }
 
 /**
- * Registers a peg-in transaction in the PegIn contract. Takes a RegisterPeginParams object
- * and fill the missing parameters to get a RegisterPeginLbcParams object. Then calls the resolvePegIn function
- * of the PegIn contract.
+ * Registers a peg-in transaction in the Liquidity Bridge Contract. Takes a RegisterPeginParams object
+ * and fill the missing parameters to get a RegisterPeginLbcParams object. Then calls the registerPegin function
+ * of the Liquidity Bridge Contract.
  * @param params - The parameters for calling the registerPegin function
  * @param flyoverContext - The context of the Flyover SDK
  * @returns The transaction hash of the register pegin transaction
@@ -36,10 +39,11 @@ export async function registerPegin (
   params: RegisterPeginParams,
   flyoverContext: FlyoverSDKContext
 ): Promise<string> {
-  const { rskAddress, userBtcTransactionHash } = params
+  const { quote, providerSignature, userBtcTransactionHash } = params
 
   const isRefundable = await isPeginRefundable({
-    rskAddress,
+    quote,
+    providerSignature,
     btcTransactionHash: userBtcTransactionHash
   }, flyoverContext)
 
@@ -47,7 +51,7 @@ export async function registerPegin (
     throw new FlyoverError({
       timestamp: Date.now(),
       recoverable: false,
-      message: 'Peg-in is not refundable',
+      message: 'Quote is not refundable',
       details: isRefundable.error
     })
   }
@@ -61,12 +65,13 @@ export async function registerPegin (
   const block = await btcConnection.getBlockFromTransaction(userBtcTransactionHash)
   const partialMarkleTree = pmtBuilder.buildPMT(block.transactionHashes, userBtcTransactionHash)
 
-  const txResult = await lbc.pegInContract.resolvePegin({
-    rskAddress,
+  const txResult = await lbc.pegInContract.registerPegin({
+    quote,
+    signature: providerSignature,
     btcRawTransaction: btcRawTxWithoutWitnesses,
     partialMerkleTree: partialMarkleTree.hex,
     height: block.height
-  })
+  }, 'execution')
 
   return txResult.txHash
 }
