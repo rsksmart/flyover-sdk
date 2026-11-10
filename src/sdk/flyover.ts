@@ -1,5 +1,6 @@
 import { getProviders } from './getProviders'
 import {
+  type AcceptedQuote, type Quote,
   type LiquidityProvider, type PegoutQuoteRequest, type PegoutQuote,
   type AcceptedPegoutQuote,
   type DepositEvent,
@@ -10,6 +11,7 @@ import {
 } from '../api'
 import { getPegoutQuote } from './getPegoutQuote'
 import { acceptPegoutQuote } from './acceptPegoutQuote'
+import { getPeginPaymentData, type PeginAmountUnit, type PeginPaymentData } from './getPeginPaymentData'
 import { getPegoutPaymentData, type PegoutPaymentData } from './getPegoutPaymentData'
 import { LiquidityBridgeContract } from '../blockchain/lbc'
 import { depositPegout } from './depositPegout'
@@ -39,6 +41,7 @@ import { isPeginRefundable, type IsPeginRefundableParams } from './isPeginRefund
 import { type RegisterPeginParams, registerPegin } from './registerPegin'
 import { acceptAuthenticatedPegoutQuote } from './acceptAuthenticatedPegoutQuote'
 import { signQuote } from './signQuote'
+import { estimateRecommendedPegin, RecommendedPeginExtraArgs } from './recommendedPegin'
 import { estimateRecommendedPegout, RecommendedPegoutExtraArgs } from './recommendedPegout'
 import { PegInContract } from '../blockchain/pegin'
 import { PegOutContract } from '../blockchain/pegout'
@@ -164,6 +167,36 @@ export class Flyover implements Bridge {
     this.checkLbc()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return acceptAuthenticatedPegoutQuote(this.httpClient, this.liquidityBridgeContract!,this.liquidityProvider!, quote, signature)
+  }
+
+  /**
+   * Get the payment data needed to pay for a pegin quote. The returned data contains
+   * the BTC deposit address and the amount to send, which can be encoded into a QR code
+   * by the client application.
+   *
+   * @param { Quote } quote The pegin quote to pay for
+   * @param { AcceptedQuote } acceptedQuote The accepted quote returned by {@link Flyover.acceptQuote} or {@link Flyover.acceptAuthenticatedQuote}
+   * @param { object } options Optional configuration
+   * @param { PeginAmountUnit } options.amountUnit Unit for the returned amount ('BTC', 'SAT', or 'WEI'). Defaults to 'SAT'.
+   * 'BTC' and 'SAT' amounts are rounded up to the next satoshi so the payment always covers the quote total.
+   * 'WEI' returns the exact quote total, which may not be payable as a whole number of satoshis
+   *
+   * @returns { PeginPaymentData } The address and amount to pay
+   *
+   * @throws { FlyoverError } If the signature on the accepted quote is invalid
+   * @throws { FlyoverError } If the deposit address cannot be validated
+   */
+  async getPeginPaymentData (
+    quote: Quote,
+    acceptedQuote: AcceptedQuote,
+    options?: { amountUnit?: PeginAmountUnit }
+  ): Promise<PeginPaymentData> {
+    this.checkLiquidityProvider()
+    this.checkLbc()
+    // checkLiquidityProvider() throws if liquidityProvider is undefined; checkLbc() throws if rskConnection is
+    // undefined and initializes liquidityBridgeContract otherwise — both are guaranteed non-null here
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return getPeginPaymentData(this.liquidityBridgeContract!, this.liquidityProvider!, quote, acceptedQuote, options)
   }
 
   /**
@@ -534,6 +567,20 @@ export class Flyover implements Bridge {
     this.checkLiquidityProvider()
     this.ensureRskBridge()
     return validatePeginTransaction(this.getFlyoverContext(), params, options)
+  }
+
+  /**
+   * Get the recommended PegIn quote value to use in the quote request so the total value to be paid for that
+   * quote results in the closest possible value to the **amount** parameter.
+   *
+   * @param { bigint } amount The amount to approximate the quote total
+   * @param { RecommendedPeginExtraArgs } extraArgs Extra arguments that can be provided to improve the estimation
+   * @returns { RecommendedOperation } The estimation of which should be the quote value to result in a quote total
+   * close to the **amount** parameter. Also includes the estimations for each one of the fees.
+   */
+  async estimateRecommendedPegin(amount: bigint, extraArgs: RecommendedPeginExtraArgs): Promise<RecommendedOperation> {
+    this.checkLiquidityProvider()
+    return estimateRecommendedPegin(this.getFlyoverContext(), amount, extraArgs)
   }
 
   /**

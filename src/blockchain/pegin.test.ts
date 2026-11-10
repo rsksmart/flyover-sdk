@@ -30,6 +30,7 @@ describe('PegInContract class should', () => {
     const contractMock = {
       registerPegIn: jest.fn(),
       validatePegInDepositAddress: jest.fn(),
+      hashPegInQuoteEIP712: jest.fn(),
       callStatic: { registerPegIn: jest.fn() }
     }
     const quote = { quote: {}, quoteHash: 'hash' } as unknown as PeginQuote
@@ -64,6 +65,13 @@ describe('PegInContract class should', () => {
       jest.mocked(ethers.Contract).mockImplementation(() => contractMock as any)
       const lbc = new PegInContract(connectionMock, config)
       await expectRemoved(lbc.registerPegin(registerParams), 'registerPegIn')
+    })
+
+    test('reject hashPeginQuoteEIP712 without calling the contract', async () => {
+      jest.mocked(ethers.Contract).mockImplementation(() => contractMock as any)
+      const lbc = new PegInContract(connectionMock, config)
+      await expectRemoved(lbc.hashPeginQuoteEIP712(quote), 'hashPegInQuoteEIP712')
+      expect(contractMock.hashPegInQuoteEIP712).not.toHaveBeenCalled()
     })
   })
 

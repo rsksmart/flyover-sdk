@@ -5,7 +5,7 @@ import { acceptAuthenticatedPegoutQuote } from './acceptAuthenticatedPegoutQuote
 import { getPegoutQuote } from './getPegoutQuote'
 import { acceptPegoutQuote } from './acceptPegoutQuote'
 import { depositPegout } from './depositPegout'
-import { type Quote, type LiquidityProvider, type PegoutQuote, type PegoutQuoteRequest, type AcceptedPegoutQuote } from '../api'
+import { type Quote, type LiquidityProvider, type PegoutQuote, type PegoutQuoteRequest, type AcceptedQuote, type AcceptedPegoutQuote } from '../api'
 import { LiquidityBridgeContract } from '../blockchain/lbc'
 import { refundPegout } from './refundPegout'
 import { registerPegin, type RegisterPeginParams } from './registerPegin'
@@ -24,7 +24,9 @@ import { type BitcoinDataSource } from '../bitcoin/BitcoinDataSource'
 import { isPegoutRefundable } from './isPegoutRefundable'
 import { isPeginRefundable, type IsPeginRefundableParams } from './isPeginRefundable'
 import { signQuote } from './signQuote'
+import { estimateRecommendedPegin } from './recommendedPegin'
 import { estimateRecommendedPegout, RecommendedPegoutExtraArgs } from './recommendedPegout'
+import { getPeginPaymentData } from './getPeginPaymentData'
 import { getPegoutPaymentData } from './getPegoutPaymentData'
 import { PegOutContract } from '../blockchain/pegout'
 import { PegInContract } from '../blockchain/pegin'
@@ -49,8 +51,10 @@ jest.mock('./isPeginQuotePaid')
 jest.mock('./isPegoutQuotePaid')
 jest.mock('./isPegoutRefundable')
 jest.mock('./isPeginRefundable')
+jest.mock('./recommendedPegin')
 jest.mock('./recommendedPegout')
 jest.mock('./signQuote')
+jest.mock('./getPeginPaymentData')
 jest.mock('./getPegoutPaymentData')
 
 const mockedGetPegoutQuote = getPegoutQuote as jest.Mock<typeof getPegoutQuote>
@@ -993,6 +997,28 @@ describe('Flyover object should', () => {
     })
   })
 
+  describe('estimateRecommendedPegin method should', () => {
+    const amount = BigInt(100)
+    const extraArgs = { data: '0x1122', destinationAddress: '0x03f23ae1917722d5a27a2ea0bcc98725a2a2a49a' }
+    test('invoke correctly estimateRecommendedPegin', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      await flyover.estimateRecommendedPegin(amount, extraArgs)
+      expect(estimateRecommendedPegin).toBeCalledTimes(1)
+      expect(estimateRecommendedPegin).toBeCalledWith(
+        expect.objectContaining({
+          httpClient: expect.anything(),
+          provider: providerMock,
+        }),
+        amount,
+        extraArgs
+      )
+    })
+    test('fail if LP has not been selected', async () => {
+      await expect(flyover.estimateRecommendedPegin(amount, extraArgs)).rejects.toThrow('You need to select a provider to do this operation')
+    })
+  })
+
   describe('estimateRecommendedPegout method should', () => {
     const amount = BigInt(100)
     const extraArgs: RecommendedPegoutExtraArgs = { destinationAddressType: 'p2tr' }
@@ -1011,6 +1037,56 @@ describe('Flyover object should', () => {
     })
     test('fail if LP has not been selected', async () => {
       await expect(flyover.estimateRecommendedPegout(amount, extraArgs)).rejects.toThrow('You need to select a provider to do this operation')
+    })
+  })
+
+  describe('getPeginPaymentData method should', () => {
+    const acceptedQuoteMock: AcceptedQuote = {
+      signature: signatureMock,
+      bitcoinDepositAddressHash: '2MvkytopbHAGgTwrpQjpGVM5WZYvujPqf9u'
+    }
+    const optionsMock = { amountUnit: 'SAT' as const }
+
+    test('invoke correctly getPeginPaymentData', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      await flyover.getPeginPaymentData(quoteMock, acceptedQuoteMock, optionsMock)
+      expect(getPeginPaymentData).toBeCalledTimes(1)
+      expect(getPeginPaymentData).toBeCalledWith(
+        expect.objectContaining({
+          pegInContract: expect.any(PegInContract),
+          pegOutContract: expect.any(PegOutContract),
+          discoveryContract: expect.any(DiscoveryContract)
+        }),
+        providerMock,
+        quoteMock,
+        acceptedQuoteMock,
+        optionsMock
+      )
+    })
+
+    test('forward options to getPeginPaymentData when omitted', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await flyover.connectToRsk(rskConnectionMock)
+      await flyover.getPeginPaymentData(quoteMock, acceptedQuoteMock)
+      expect(getPeginPaymentData).toBeCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        undefined
+      )
+    })
+
+    test('fail if LP has not been selected', async () => {
+      await expect(flyover.getPeginPaymentData(quoteMock, acceptedQuoteMock, optionsMock))
+        .rejects.toThrow('You need to select a provider to do this operation')
+    })
+
+    test('throw error if not connected to RSK', async () => {
+      flyover.useLiquidityProvider(providerMock)
+      await expect(flyover.getPeginPaymentData(quoteMock, acceptedQuoteMock, optionsMock))
+        .rejects.toThrow('Not connected to RSK')
     })
   })
 

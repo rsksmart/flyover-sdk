@@ -33,6 +33,11 @@ export class PegInContract {
     throw removedFromContract('registerPegIn')
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async hashPeginQuoteEIP712 (_quote: PeginQuote): Promise<string> {
+    throw removedFromContract('hashPegInQuoteEIP712')
+  }
+
   async getEip712Domain (): Promise<{ name: string, version: string, chainId: bigint, verifyingContract: string }> {
     return getEip712Domain(this.peginContract)
   }
