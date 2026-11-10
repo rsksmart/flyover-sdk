@@ -9,6 +9,7 @@ To run the integration test suite, the following environment variables are requi
 - **TEST_NODE_URL**: url of the RSK node that will be used.
 - **TEST_RSK_ADDRESS**: RSK address to use as pegin destination address.
 - **TEST_BTC_ADDRESS**: BTC address to use as pegout destination address.
+- **TEST_PEGIN_AMOUNT**: amount of the test pegins.
 - **TEST_PEGOUT_AMOUNT**: amount of the test pegouts.
 - **TEST_MEMPOOL_SPACE_URL**: MempoolSpace API url. This is used to fetch some UTXO information during the tests.
 
